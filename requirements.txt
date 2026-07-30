@@ -1,0 +1,21 @@
+# Email Commitment Tracker — dependencies
+# Phase 1 (Foundation & Email Collection) installs only what this phase uses.
+# Later phases append their own deps (kept as comments below for the roadmap).
+
+python-dotenv>=1.0      # load non-secret config from .env
+SQLAlchemy>=2.0         # ORM + SQLite engine (storage layer)
+beautifulsoup4>=4.12    # HTML email -> clean text
+
+keyring>=24             # store the IMAP password in the OS secure keychain
+
+requests>=2.31          # HTTP client for the local Ollama API
+pydantic>=2.0           # validation layer between the LLM and the database
+
+# --- Dev / test ---
+pytest>=8.0
+
+# --- Added in later phases (NOT installed yet) ---
+# Phase 4:  icalendar, fastapi, uvicorn
+# Phase 6:  streamlit, apscheduler
+# Phase 7:  networkx, pyvis
+# Phase 8:  pyinstaller, pystray

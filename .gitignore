@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local secrets & config
+.env
+
+# Local runtime data — NEVER commit email content, the database, or the calendar
+data/
+*.db
+*.sqlite3
+*.ics
+
+# OS cruft
+.DS_Store
+Thumbs.db

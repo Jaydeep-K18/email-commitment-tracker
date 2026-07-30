@@ -1,0 +1,14 @@
+Message-ID: <html-002@example.com>
+From: "Team Updates" <news@company.com>
+To: student@example.com
+Subject: =?UTF-8?Q?Weekly_Update_=E2=9C=93?=
+Date: Wed, 23 Jul 2025 12:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+
+<html><head><title>News</title><style>.x{color:red}</style></head><body>
+<h1>Weekly Update</h1>
+<p>Reminder: the demo is on <b>Friday</b>.</p>
+<script>alert('tracking')</script>
+<p>Thanks for reading!</p>
+</body></html>

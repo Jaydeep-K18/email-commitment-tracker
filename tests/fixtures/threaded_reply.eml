@@ -1,0 +1,20 @@
+Message-ID: <reply-003@example.com>
+In-Reply-To: <root-000@example.com>
+References: <root-000@example.com>
+From: Bob Smith <bob@example.com>
+To: alice@x.com
+Subject: Re: Status update
+Date: Mon, 21 Jul 2025 16:30:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+
+Thanks Alice. I will send the status update by Friday.
+
+--
+Bob Smith
+Senior Engineer | Example Corp
+
+On Mon, Jul 21, 2025 at 3:00 PM Alice <alice@x.com> wrote:
+> Hi Bob, can you send me the status update this week?
+> Thanks,
+> Alice
