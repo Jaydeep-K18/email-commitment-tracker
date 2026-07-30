@@ -1,8 +1,8 @@
 """SQLAlchemy ORM models.
 
-Defines :class:`RawEmail` (Phase 1), :class:`VipContact` (Phase 2) and
-:class:`Commitment` (Phase 3) per PROJECT_PLAN.md §10. Phase 4 adds ``SyncLog``
-on the shared :class:`Base`.
+Defines :class:`RawEmail` (Phase 1), :class:`VipContact` (Phase 2),
+:class:`Commitment` (Phase 3) and :class:`SyncLog` (Phase 4) per
+PROJECT_PLAN.md §10.
 """
 from __future__ import annotations
 
@@ -140,4 +140,33 @@ class Commitment(Base):
         return (
             f"Commitment(id={self.id!r}, type={self.type!r}, "
             f"subject={self.subject!r}, deadline={self.deadline!r})"
+        )
+
+
+class SyncLog(Base):
+    """Audit trail of calendar sync operations (schema §10).
+
+    Kept so a failed publish is visible and retryable rather than silent; Phase 5
+    builds its retry logic on top of these rows.
+    """
+
+    __tablename__ = "sync_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    commitment_id: Mapped[int] = mapped_column(
+        ForeignKey("commitments.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    # created / updated / deleted
+    action: Mapped[str] = mapped_column(String, nullable=False)
+    # success / failed / pending
+    status: Mapped[str] = mapped_column(String, nullable=False, default="success")
+    synced_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow_naive, nullable=False
+    )
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    def __repr__(self) -> str:  # pragma: no cover - debug aid
+        return (
+            f"SyncLog(id={self.id!r}, commitment_id={self.commitment_id!r}, "
+            f"action={self.action!r}, status={self.status!r})"
         )

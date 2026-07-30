@@ -50,6 +50,7 @@ def _get_bool(name: str, default: bool) -> bool:
 DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "tracker.db"
 DATABASE_URL = f"sqlite:///{DB_PATH}"
+ICS_PATH = DATA_DIR / "calendar.ics"
 
 # --- IMAP connection (non-secret; the password lives in the keyring) ---
 IMAP_HOST = os.getenv("IMAP_HOST", "imap.gmail.com")
@@ -73,6 +74,20 @@ EXTRACTION_MAX_BODY_CHARS = _get_int("EXTRACTION_MAX_BODY_CHARS", 6000)
 # Records below this confidence are discarded. When the model reports very low
 # confidence it is usually flagging its own guess — take it at its word.
 EXTRACTION_MIN_CONFIDENCE = _get_float("EXTRACTION_MIN_CONFIDENCE", 0.3)
+
+# --- Calendar output ---
+CALENDAR_NAME = os.getenv("CALENDAR_NAME", "Email Commitments")
+# Reminder lead time for events that have a specific time of day.
+CALENDAR_REMINDER_MINUTES = _get_int("CALENDAR_REMINDER_MINUTES", 30)
+# Reminder lead time for all-day (date-only) deadlines.
+CALENDAR_ALLDAY_REMINDER_HOURS = _get_int("CALENDAR_ALLDAY_REMINDER_HOURS", 24)
+# How often subscribed calendar apps are asked to re-poll the feed.
+CALENDAR_REFRESH_MINUTES = _get_int("CALENDAR_REFRESH_MINUTES", 60)
+
+# --- Local calendar server ---
+# Binds to loopback by default: the feed is not exposed to the network at all.
+SERVER_HOST = os.getenv("SERVER_HOST", "127.0.0.1")
+SERVER_PORT = _get_int("SERVER_PORT", 8765)
 
 # --- Keyring ---
 KEYRING_SERVICE = "email_commitment_tracker"

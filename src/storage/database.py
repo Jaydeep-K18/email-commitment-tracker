@@ -17,7 +17,7 @@ from src.filtering.vip_filter import (
     normalize_match_value,
     normalize_tier,
 )
-from src.storage.models import Base, Commitment, RawEmail, VipContact
+from src.storage.models import Base, Commitment, RawEmail, SyncLog, VipContact
 
 if TYPE_CHECKING:  # avoid a runtime import of higher layers from storage
     from src.collection.email_parser import ParsedEmail
@@ -243,6 +243,55 @@ def save_commitment(
     session.add(commitment)
     session.flush()
     return commitment
+
+
+# --- Calendar sync (Phase 4) ----------------------------------------------
+
+def commitments_for_calendar(session: Session) -> list[Commitment]:
+    """Commitments eligible to appear on the calendar.
+
+    Phase 4 rule: anything with a real deadline that the user has not dismissed.
+    Questions with no date naturally fall out. Phase 5 layers tier logic on top
+    of this (CRITICAL auto-syncs, MONITOR waits for approval).
+    """
+    stmt = (
+        select(Commitment)
+        .where(
+            Commitment.deadline.is_not(None),
+            Commitment.status != "dismissed",
+        )
+        .order_by(Commitment.deadline.asc())
+    )
+    return list(session.execute(stmt).scalars().all())
+
+
+def log_sync(
+    session: Session,
+    commitment_id: int,
+    action: str,
+    status: str = "success",
+    error_message: str | None = None,
+) -> SyncLog:
+    """Record one calendar sync operation for auditing and retry."""
+    entry = SyncLog(
+        commitment_id=commitment_id,
+        action=action,
+        status=status,
+        error_message=error_message,
+    )
+    session.add(entry)
+    session.flush()
+    return entry
+
+
+def recent_sync_log(session: Session, limit: int = 20) -> list[SyncLog]:
+    """Most recent sync operations, newest first."""
+    stmt = (
+        select(SyncLog)
+        .order_by(SyncLog.synced_at.desc(), SyncLog.id.desc())
+        .limit(limit)
+    )
+    return list(session.execute(stmt).scalars().all())
 
 
 def list_commitments(

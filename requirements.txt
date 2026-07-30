@@ -11,11 +11,13 @@ keyring>=24             # store the IMAP password in the OS secure keychain
 requests>=2.31          # HTTP client for the local Ollama API
 pydantic>=2.0           # validation layer between the LLM and the database
 
+icalendar>=6.0          # RFC 5545 .ics generation
+fastapi>=0.110          # serves the calendar file locally
+uvicorn>=0.29           # ASGI server for FastAPI
+
 # --- Dev / test ---
 pytest>=8.0
-
-# --- Added in later phases (NOT installed yet) ---
-# Phase 4:  icalendar, fastapi, uvicorn
+httpx>=0.27             # required by fastapi.testclient
 # Phase 6:  streamlit, apscheduler
 # Phase 7:  networkx, pyvis
 # Phase 8:  pyinstaller, pystray
