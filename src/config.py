@@ -84,6 +84,16 @@ CALENDAR_ALLDAY_REMINDER_HOURS = _get_int("CALENDAR_ALLDAY_REMINDER_HOURS", 24)
 # How often subscribed calendar apps are asked to re-poll the feed.
 CALENDAR_REFRESH_MINUTES = _get_int("CALENDAR_REFRESH_MINUTES", 60)
 
+# --- Sync engine (Phase 5) ---
+# How many consecutive failed publishes to keep retrying before giving up on a
+# commitment. Failures are recorded in sync_log either way.
+SYNC_MAX_RETRIES = _get_int("SYNC_MAX_RETRIES", 3)
+# How similar two commitment subjects must be (0-1 word overlap) before a
+# follow-up email is treated as updating an existing commitment rather than
+# creating a new one. Set high enough that unrelated deadlines from the same
+# person are not merged together.
+SYNC_DUPLICATE_THRESHOLD = _get_float("SYNC_DUPLICATE_THRESHOLD", 0.6)
+
 # --- Local calendar server ---
 # Binds to loopback by default: the feed is not exposed to the network at all.
 SERVER_HOST = os.getenv("SERVER_HOST", "127.0.0.1")

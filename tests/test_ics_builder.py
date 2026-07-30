@@ -48,6 +48,7 @@ def make_commitment(**overrides) -> Commitment:
         vip_tier="CRITICAL",
         status="pending",
         calendar_synced=False,
+        ics_uid=None,
         created_at=datetime(2026, 7, 30, 12, 0),
     )
     fields.update(overrides)
@@ -221,64 +222,37 @@ def _store(session, **overrides) -> Commitment:
     return commitment
 
 
-def test_commitments_for_calendar_excludes_undated_and_dismissed(session):
+def test_calendar_candidates_exclude_undated_and_closed(session):
+    """Storage returns candidates; the sync engine applies the tier policy."""
     wanted = _store(session)
     _store(session, id=2, deadline=None)
     _store(session, id=3, status="dismissed")
+    _store(session, id=4, status="superseded")
     session.commit()
 
-    eligible = database.commitments_for_calendar(session)
+    eligible = database.calendar_candidates(session)
     assert [c.id for c in eligible] == [wanted.id]
 
 
-def test_publish_marks_synced_and_writes_the_file(session, tmp_path):
+def test_write_ics_file_writes_bytes_to_disk(session, tmp_path):
     commitment = _store(session)
     session.commit()
     target = tmp_path / "calendar.ics"
 
-    result = ics_builder.publish_calendar(session, path=target)
-    session.commit()
+    written = ics_builder.write_ics_file([commitment], path=target)
 
-    assert result.events == 1
-    assert result.created == 1
-    assert result.updated == 0
+    assert written > 0
     assert target.exists()
-    assert result.bytes_written > 0
-
-    assert commitment.calendar_synced is True
-    assert commitment.ics_uid == event_uid(commitment)
     assert b"BEGIN:VEVENT" in target.read_bytes()
 
 
-def test_republishing_records_an_update_not_a_duplicate(session, tmp_path):
-    _store(session)
-    session.commit()
-    target = tmp_path / "calendar.ics"
+def test_an_assigned_uid_wins_over_the_derived_one():
+    """Inheriting a UID is how a follow-up updates an existing event."""
+    commitment = make_commitment(ics_uid="commitment-99@email-commitment-tracker.local")
+    assert event_uid(commitment) == "commitment-99@email-commitment-tracker.local"
 
-    ics_builder.publish_calendar(session, path=target)
-    session.commit()
-    second = ics_builder.publish_calendar(session, path=target)
-    session.commit()
-
-    assert second.created == 0
-    assert second.updated == 1
-    # Still exactly one event in the file.
-    assert len(events_of(parse(target.read_bytes()))) == 1
-
-
-def test_publish_writes_a_sync_log_row_per_event(session, tmp_path):
-    _store(session)
-    _store(session, id=2, deadline=datetime(2026, 9, 1, 9, 0))
-    session.commit()
-
-    ics_builder.publish_calendar(session, path=tmp_path / "calendar.ics")
-    session.commit()
-
-    entries = database.recent_sync_log(session)
-    assert len(entries) == 2
-    assert all(e.action == "created" for e in entries)
-    assert all(e.status == "success" for e in entries)
-    assert all(e.error_message is None for e in entries)
+    content = render_ics([commitment])
+    assert b"UID:commitment-99@email-commitment-tracker.local" in content
 
 
 def test_log_sync_can_record_a_failure(session):

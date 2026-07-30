@@ -19,8 +19,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 
 from src import config
-from src.storage.database import commitments_for_calendar, init_db, session_scope
+from src.storage.database import init_db, session_scope
 from src.sync.ics_builder import render_ics
+from src.sync.sync_engine import calendar_commitments, review_queue
 
 log = logging.getLogger(__name__)
 
@@ -44,12 +45,14 @@ app = FastAPI(
 
 @app.get("/health")
 def health() -> dict:
-    """Report liveness and how many events the feed currently contains."""
+    """Report liveness, feed size, and anything waiting on the user."""
     with session_scope() as session:
-        event_count = len(commitments_for_calendar(session))
+        event_count = len(calendar_commitments(session))
+        awaiting = len(review_queue(session))
     return {
         "status": "ok",
         "calendar_events": event_count,
+        "awaiting_approval": awaiting,
         "calendar_url": (
             f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics"
         ),
@@ -58,9 +61,13 @@ def health() -> dict:
 
 @app.get("/calendar.ics")
 def calendar_feed() -> Response:
-    """Serve the current calendar as a subscribable ``.ics`` feed."""
+    """Serve the current calendar as a subscribable ``.ics`` feed.
+
+    Selection goes through the sync engine rather than a raw query, so the feed
+    a subscriber polls always reflects the same tier policy as a published file.
+    """
     with session_scope() as session:
-        commitments = commitments_for_calendar(session)
+        commitments = calendar_commitments(session)
         content = render_ics(commitments)
 
     return Response(

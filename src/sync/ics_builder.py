@@ -14,15 +14,12 @@ UTC here would make a 10:00 IST deadline display as 04:30.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 
 from icalendar import Alarm, Calendar, Event
 from icalendar.prop import vDuration
-from sqlalchemy.orm import Session
 
 from src import config
-from src.storage import database
 from src.storage.models import Commitment
 
 #: Namespace for event UIDs. A commitment always maps to the same UID, so a
@@ -48,7 +45,15 @@ _TYPE_LABEL = {
 
 
 def event_uid(commitment: Commitment) -> str:
-    """Stable UID for a commitment's calendar event."""
+    """Stable UID for a commitment's calendar event.
+
+    An already-assigned ``ics_uid`` always wins. That is what lets a follow-up
+    email update an existing event: the conflict resolver hands the newer
+    commitment the UID of the one it replaces, so the subscriber's calendar
+    revises the event in place instead of gaining a second copy (Phase 5).
+    """
+    if commitment.ics_uid:
+        return commitment.ics_uid
     if commitment.id is not None:
         return f"commitment-{commitment.id}@{UID_DOMAIN}"
     # Fall back to a content hash for unsaved commitments (used in tests).
@@ -189,39 +194,6 @@ def write_ics_file(commitments: list[Commitment], path=None) -> int:
     return len(content)
 
 
-@dataclass
-class PublishResult:
-    """Outcome of publishing the calendar."""
-
-    events: int = 0
-    created: int = 0
-    updated: int = 0
-    bytes_written: int = 0
-    path: str = ""
-
-
-def publish_calendar(session: Session, path=None) -> PublishResult:
-    """Regenerate the ``.ics`` file from the database and record the sync.
-
-    Marks each published commitment ``calendar_synced`` with its stable
-    ``ics_uid``, and writes a ``sync_log`` row per event so a publish is
-    auditable. Phase 5 replaces the selection step with tier-aware logic.
-    """
-    commitments = database.commitments_for_calendar(session)
-    result = PublishResult(events=len(commitments))
-
-    for commitment in commitments:
-        action = "updated" if commitment.calendar_synced else "created"
-        commitment.ics_uid = event_uid(commitment)
-        commitment.calendar_synced = True
-        database.log_sync(session, commitment.id, action=action, status="success")
-        if action == "created":
-            result.created += 1
-        else:
-            result.updated += 1
-
-    target = path or config.ICS_PATH
-    result.bytes_written = write_ics_file(commitments, path=target)
-    result.path = str(target)
-    session.flush()
-    return result
+# Publishing is orchestrated by :func:`src.sync.sync_engine.run_sync`, which
+# owns tier policy and conflict resolution. This module stays pure rendering so
+# there is exactly one code path deciding what reaches the calendar.

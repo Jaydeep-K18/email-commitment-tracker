@@ -123,18 +123,33 @@ class Commitment(Base):
     confidence: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     # Inherited from the source email's VIP tier.
     vip_tier: Mapped[str | None] = mapped_column(String, nullable=True)
-    # pending / fulfilled / overdue / dismissed
+    # pending / fulfilled / overdue / dismissed, plus ``superseded`` (Phase 5),
+    # set when a follow-up email replaces this commitment.
     status: Mapped[str] = mapped_column(String, default="pending", nullable=False)
     # Calendar fields are populated in Phases 4-5.
     calendar_synced: Mapped[bool] = mapped_column(
         Boolean, default=False, nullable=False
     )
     ics_uid: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Phase 5 additions, extending schema §10:
+    # MONITOR-tier commitments stay off the calendar until the user approves
+    # them; higher tiers are approved implicitly by the sync engine.
+    sync_approved: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    # Set on the *newer* commitment when it replaces an earlier one, so the
+    # supersede chain stays traceable back to each source email.
+    supersedes_id: Mapped[int | None] = mapped_column(
+        ForeignKey("commitments.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, nullable=False
     )
 
     source_email: Mapped["RawEmail"] = relationship(backref="commitments")
+    supersedes: Mapped["Commitment | None"] = relationship(
+        remote_side=[id], backref="superseded_by"
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - debug aid
         return (

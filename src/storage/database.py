@@ -8,7 +8,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Iterator
 
-from sqlalchemy import create_engine, event, select
+from sqlalchemy import create_engine, event, inspect, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from src import config
@@ -40,10 +40,52 @@ def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):  # noqa: A
 SessionLocal = sessionmaker(bind=engine, future=True, expire_on_commit=False)
 
 
+#: Columns added to existing tables after their first release, as
+#: ``table -> [(column, SQL type and default)]``. ``create_all`` only creates
+#: missing *tables*, so a database made by an earlier phase needs these added
+#: explicitly. Every entry must be additive and safe to apply to live data.
+_ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
+    # Phase 5. supersedes_id is declared without its REFERENCES clause here:
+    # SQLite cannot add a foreign key to an existing table, and the column is
+    # only ever written with ids the sync engine just read from this table.
+    "commitments": [
+        ("sync_approved", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("supersedes_id", "INTEGER"),
+    ],
+}
+
+
+def _existing_columns(connection, table: str) -> set[str]:
+    rows = connection.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()
+    return {row[1] for row in rows}
+
+
+def _migrate_added_columns() -> None:
+    """Add any columns missing from an older database file.
+
+    Additive only — no column is ever dropped, renamed, or retyped, so running
+    this against a database holding real commitments cannot lose data.
+    """
+    inspector = inspect(engine)
+    present_tables = set(inspector.get_table_names())
+    with engine.begin() as connection:
+        for table, columns in _ADDED_COLUMNS.items():
+            if table not in present_tables:
+                continue  # create_all just made it with every column
+            existing = _existing_columns(connection, table)
+            for column, definition in columns:
+                if column in existing:
+                    continue
+                connection.exec_driver_sql(
+                    f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
+                )
+
+
 def init_db() -> None:
     """Create the data directory and all tables if they don't already exist."""
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(engine)
+    _migrate_added_columns()
 
 
 @contextmanager
@@ -247,22 +289,97 @@ def save_commitment(
 
 # --- Calendar sync (Phase 4) ----------------------------------------------
 
-def commitments_for_calendar(session: Session) -> list[Commitment]:
-    """Commitments eligible to appear on the calendar.
+#: Statuses that permanently take a commitment off the calendar.
+_CLOSED_STATUSES = ("dismissed", "superseded")
 
-    Phase 4 rule: anything with a real deadline that the user has not dismissed.
-    Questions with no date naturally fall out. Phase 5 layers tier logic on top
-    of this (CRITICAL auto-syncs, MONITOR waits for approval).
+
+def calendar_candidates(session: Session) -> list[Commitment]:
+    """Commitments that *could* appear on the calendar, before tier logic.
+
+    A coarse query: dated, still open. Deciding which candidates actually get
+    published is the sync engine's job (:mod:`src.sync.sync_engine`) — storage
+    deliberately holds no policy.
     """
     stmt = (
         select(Commitment)
         .where(
             Commitment.deadline.is_not(None),
-            Commitment.status != "dismissed",
+            Commitment.status.not_in(_CLOSED_STATUSES),
         )
         .order_by(Commitment.deadline.asc())
     )
     return list(session.execute(stmt).scalars().all())
+
+
+def open_commitments(session: Session) -> list[Commitment]:
+    """Every still-open commitment, dated or not, oldest email first.
+
+    Conflict resolution works over this: a follow-up that *adds* a date to a
+    previously open-ended commitment is exactly the case worth catching, so the
+    undated ones cannot be filtered out here.
+    """
+    stmt = (
+        select(Commitment)
+        .where(Commitment.status.not_in(_CLOSED_STATUSES))
+        .order_by(Commitment.created_at.asc(), Commitment.id.asc())
+    )
+    return list(session.execute(stmt).scalars().all())
+
+
+def published_commitments(session: Session) -> list[Commitment]:
+    """Commitments currently marked as being on the calendar.
+
+    Unlike :func:`calendar_candidates` this ignores status, so a commitment that
+    was published and then dismissed or superseded still shows up and can be
+    retracted from the feed.
+    """
+    stmt = select(Commitment).where(Commitment.calendar_synced.is_(True))
+    return list(session.execute(stmt).scalars().all())
+
+
+def commitments_awaiting_approval(session: Session) -> list[Commitment]:
+    """Dated, open commitments the user has not yet approved for the calendar.
+
+    Backs the review queue. Whether a given tier actually *needs* approval is
+    the sync engine's decision; this is the raw pool it draws from.
+    """
+    stmt = (
+        select(Commitment)
+        .where(
+            Commitment.deadline.is_not(None),
+            Commitment.status.not_in(_CLOSED_STATUSES),
+            Commitment.sync_approved.is_(False),
+        )
+        .order_by(Commitment.deadline.asc())
+    )
+    return list(session.execute(stmt).scalars().all())
+
+
+def set_sync_approval(
+    session: Session, commitment_id: int, approved: bool
+) -> Commitment | None:
+    """Approve or un-approve a commitment for the calendar."""
+    commitment = session.get(Commitment, commitment_id)
+    if commitment is None:
+        return None
+    commitment.sync_approved = approved
+    if not approved:
+        # Un-approving must also pull it back out of the published feed.
+        commitment.calendar_synced = False
+    session.flush()
+    return commitment
+
+
+def set_commitment_status(
+    session: Session, commitment_id: int, status: str
+) -> Commitment | None:
+    """Update a commitment's lifecycle status (e.g. dismissed, fulfilled)."""
+    commitment = session.get(Commitment, commitment_id)
+    if commitment is None:
+        return None
+    commitment.status = status
+    session.flush()
+    return commitment
 
 
 def log_sync(
@@ -290,6 +407,55 @@ def recent_sync_log(session: Session, limit: int = 20) -> list[SyncLog]:
         select(SyncLog)
         .order_by(SyncLog.synced_at.desc(), SyncLog.id.desc())
         .limit(limit)
+    )
+    return list(session.execute(stmt).scalars().all())
+
+
+def latest_sync_entries(session: Session) -> dict[int, SyncLog]:
+    """The most recent sync-log row per commitment, keyed by commitment id."""
+    stmt = select(SyncLog).order_by(SyncLog.synced_at.asc(), SyncLog.id.asc())
+    latest: dict[int, SyncLog] = {}
+    for entry in session.execute(stmt).scalars().all():
+        latest[entry.commitment_id] = entry  # later rows overwrite earlier ones
+    return latest
+
+
+def failed_sync_attempts(session: Session) -> dict[int, int]:
+    """Count of consecutive failed sync attempts per commitment.
+
+    Counts trailing failures only: a later success clears the tally, so a
+    commitment that failed once and then synced is not treated as flaky.
+    """
+    stmt = select(SyncLog).order_by(SyncLog.synced_at.asc(), SyncLog.id.asc())
+    attempts: dict[int, int] = {}
+    for entry in session.execute(stmt).scalars().all():
+        if entry.status == "failed":
+            attempts[entry.commitment_id] = attempts.get(entry.commitment_id, 0) + 1
+        else:
+            attempts.pop(entry.commitment_id, None)
+    return attempts
+
+
+def sync_retry_queue(
+    session: Session, max_attempts: int | None = None
+) -> list[Commitment]:
+    """Commitments whose last sync failed and are still worth retrying.
+
+    Gives the offline case a path back to consistency: a publish that failed
+    because the disk was busy or the file was locked is picked up on the next
+    run rather than being silently dropped.
+    """
+    cap = config.SYNC_MAX_RETRIES if max_attempts is None else max_attempts
+    attempts = failed_sync_attempts(session)
+    if not attempts:
+        return []
+    retryable = [cid for cid, count in attempts.items() if count <= cap]
+    if not retryable:
+        return []
+    stmt = (
+        select(Commitment)
+        .where(Commitment.id.in_(retryable))
+        .order_by(Commitment.deadline.asc())
     )
     return list(session.execute(stmt).scalars().all())
 
