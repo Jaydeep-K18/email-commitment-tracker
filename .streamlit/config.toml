@@ -1,0 +1,21 @@
+# Streamlit settings for the Email Commitment Tracker.
+#
+# These are privacy settings, not cosmetics (PROJECT_PLAN.md §16). Streamlit's
+# defaults bind the dashboard to every network interface and send usage
+# telemetry; both are wrong for an app whose premise is that email-derived data
+# never leaves this machine.
+
+[server]
+# Loopback only — matches the calendar server. Without this Streamlit serves the
+# dashboard on the LAN, so anyone on the same wifi could read the commitments
+# extracted from your inbox.
+address = "127.0.0.1"
+headless = true
+
+[browser]
+# No telemetry.
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#2e6fdb"

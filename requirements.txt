@@ -15,9 +15,11 @@ icalendar>=6.0          # RFC 5545 .ics generation
 fastapi>=0.110          # serves the calendar file locally
 uvicorn>=0.29           # ASGI server for FastAPI
 
+streamlit>=1.36         # local dashboard (needs st.navigation)
+APScheduler>=3.10       # background fetch/extract/sync loop
+
 # --- Dev / test ---
 pytest>=8.0
 httpx>=0.27             # required by fastapi.testclient
-# Phase 6:  streamlit, apscheduler
 # Phase 7:  networkx, pyvis
 # Phase 8:  pyinstaller, pystray
