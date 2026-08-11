@@ -122,7 +122,11 @@ class SchedulerHandle:
     and what it did, without the scheduler needing to know the UI exists.
     """
 
-    def __init__(self, interval_minutes: int | None = None) -> None:
+    def __init__(
+        self,
+        interval_minutes: int | None = None,
+        on_cycle=None,
+    ) -> None:
         self.interval_minutes = (
             interval_minutes or config.SCHEDULER_INTERVAL_MINUTES
         )
@@ -131,6 +135,10 @@ class SchedulerHandle:
         self.last_result: CycleResult | None = None
         self.last_run_at: datetime | None = None
         self.history: list[CycleResult] = []
+        #: Called with the CycleResult after each cycle. The desktop build uses
+        #: it to raise a notification; the dashboard leaves it unset. Kept as a
+        #: callback so the scheduler needs no knowledge of either front end.
+        self.on_cycle = on_cycle
 
     # -- job ---------------------------------------------------------------
 
@@ -141,6 +149,13 @@ class SchedulerHandle:
             self.last_run_at = result.started_at
             self.history.append(result)
             del self.history[:-20]  # keep the tail bounded
+
+        if self.on_cycle is not None:
+            # A failing observer must not stop the schedule or lose the result.
+            try:
+                self.on_cycle(result)
+            except Exception:  # noqa: BLE001
+                log.warning("Cycle callback failed.", exc_info=True)
 
     def run_now(self) -> CycleResult:
         """Run a cycle immediately on the calling thread."""

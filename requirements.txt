@@ -21,7 +21,10 @@ APScheduler>=3.10       # background fetch/extract/sync loop
 networkx>=3.0           # commitment graph structure
 pyvis>=0.3.2            # interactive rendering of that graph
 
+pystray>=0.19           # system tray icon and desktop notifications
+pillow>=10.0            # draws the tray icon (pystray requires it)
+
 # --- Dev / test ---
 pytest>=8.0
 httpx>=0.27             # required by fastapi.testclient
-# Phase 8:  pyinstaller, pystray
+pyinstaller>=6.0        # builds the desktop executable (not needed to run)

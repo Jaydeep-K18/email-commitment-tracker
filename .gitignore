@@ -19,6 +19,12 @@ data/
 *.sqlite3
 *.ics
 
+# PyInstaller output (Phase 8). The .spec file is source and is committed; the
+# 100MB+ executable it produces is a build artefact and is not.
+build/
+dist/
+*.log
+
 # OS cruft
 .DS_Store
 Thumbs.db

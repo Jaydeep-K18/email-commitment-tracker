@@ -28,7 +28,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import streamlit as st  # noqa: E402
 
 from dashboard import notifications, styles  # noqa: E402
-from src import config  # noqa: E402
+from src import config, first_run  # noqa: E402
 from src.collection.scheduler import SchedulerHandle  # noqa: E402
 from src.storage.database import init_db  # noqa: E402
 
@@ -60,6 +60,11 @@ def _scheduler() -> SchedulerHandle:
 _database()
 scheduler = _scheduler()
 
+# Until there is a mailbox to read, every other page would show an empty state
+# and the scheduler controls would fail on the first cycle. Setup replaces the
+# whole dashboard rather than sitting alongside it as a page nobody finds.
+setup_needed = first_run.needs_setup()
+
 # Read once per rerun and pass the same notice to both the badge and the toast,
 # so the two can never disagree about what has arrived.
 notice = notifications.pending_notice()
@@ -70,6 +75,12 @@ def _sidebar() -> None:
         st.title("📬 Tracker")
         styles.theme_toggle()
         st.caption("Private by design — email is processed on this machine only.")
+
+        if setup_needed:
+            # Nothing below this point can work yet, and offering a Fetch button
+            # that is guaranteed to fail is worse than offering nothing.
+            st.info(f"Setup needed: {first_run.setup_state().missing}.")
+            return
 
         notifications.render_sidebar_badge(notice)
 
@@ -125,13 +136,21 @@ def _sidebar() -> None:
 
 
 _sidebar()
-notifications.render_toast(notice)
 
-pages = st.navigation([
-    st.Page("pages/overview.py", title="Overview", icon="📊", default=True),
-    st.Page("pages/feed.py", title="Commitments", icon="📋"),
-    st.Page("pages/review_queue.py", title="Review queue", icon="✅"),
-    st.Page("pages/graph.py", title="Network", icon="🕸️"),
-    st.Page("pages/vip_manager.py", title="VIP contacts", icon="👥"),
-])
-pages.run()
+if setup_needed:
+    # Sole page, so there is no navigation to wander off into mid-setup.
+    st.navigation([
+        st.Page("pages/setup.py", title="Setup", icon="👋", default=True),
+    ]).run()
+else:
+    notifications.render_toast(notice)
+    st.navigation([
+        st.Page("pages/overview.py", title="Overview", icon="📊", default=True),
+        st.Page("pages/feed.py", title="Commitments", icon="📋"),
+        st.Page("pages/review_queue.py", title="Review queue", icon="✅"),
+        st.Page("pages/graph.py", title="Network", icon="🕸️"),
+        st.Page("pages/vip_manager.py", title="VIP contacts", icon="👥"),
+        # Reachable after setup too, so credentials can be changed and the
+        # calendar URL found again without hunting for a terminal.
+        st.Page("pages/setup.py", title="Mailbox setup", icon="⚙️"),
+    ]).run()

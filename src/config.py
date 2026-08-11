@@ -7,15 +7,81 @@ rather than any file — see PROJECT_PLAN.md §16 (Security and Privacy).
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
+from typing import Mapping
 
 import keyring
 from dotenv import load_dotenv
 
-# Project root is the parent of this ``src`` package.
-BASE_DIR = Path(__file__).resolve().parent.parent
+#: Name used for the per-user data directory of a packaged build.
+APP_NAME = "EmailCommitmentTracker"
+
+
+def is_frozen() -> bool:
+    """True when running from a PyInstaller bundle rather than a checkout."""
+    return bool(getattr(sys, "frozen", False))
+
+
+def resource_dir(*, frozen: bool | None = None) -> Path:
+    """Where the app's own read-only files live.
+
+    PyInstaller unpacks a one-file build into a temporary directory and sets
+    ``sys._MEIPASS`` to it, so bundled resources are found there rather than
+    next to ``__file__``.
+    """
+    if frozen if frozen is not None else is_frozen():
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            return Path(meipass)
+    return Path(__file__).resolve().parent.parent
+
+
+def user_data_dir(
+    *,
+    frozen: bool | None = None,
+    base_dir: Path | None = None,
+    environ: Mapping[str, str] | None = None,
+    platform: str | None = None,
+) -> Path:
+    """Where the database, the .ics file and .env live.
+
+    In a checkout this stays ``<repo>/data`` so development is unchanged. A
+    packaged build must not write there: ``_MEIPASS`` is a temp directory that
+    is deleted when the app exits, so the database would be lost on every quit,
+    and an installed .exe may sit somewhere the user cannot write at all.
+    """
+    env = os.environ if environ is None else environ
+    override = env.get("ECT_DATA_DIR", "").strip()
+    if override:
+        return Path(override).expanduser()
+
+    frozen = is_frozen() if frozen is None else frozen
+    if not frozen:
+        return (base_dir or resource_dir(frozen=False)) / "data"
+
+    system = platform or sys.platform
+    if system == "win32":
+        root = env.get("LOCALAPPDATA") or env.get("APPDATA")
+        base = Path(root) if root else Path.home() / "AppData" / "Local"
+    elif system == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        xdg = env.get("XDG_DATA_HOME")
+        base = Path(xdg) if xdg else Path.home() / ".local" / "share"
+    return base / APP_NAME
+
+
+# Read-only app files (bundled resources when frozen, the repo in a checkout).
+BASE_DIR = resource_dir()
+# Writable per-user state. Kept separate from BASE_DIR so a packaged build
+# stores the database outside the bundle.
+DATA_DIR = user_data_dir(base_dir=BASE_DIR)
 
 # Load non-secret config from .env at import time (no-op if the file is absent).
+# A packaged build has no repo to read, so the user's own data directory is
+# checked first and the bundled copy is the fallback.
+load_dotenv(DATA_DIR / ".env")
 load_dotenv(BASE_DIR / ".env")
 
 
@@ -47,7 +113,7 @@ def _get_bool(name: str, default: bool) -> bool:
 
 
 # --- Paths ---
-DATA_DIR = BASE_DIR / "data"
+# DATA_DIR is resolved above, before .env is loaded from it.
 DB_PATH = DATA_DIR / "tracker.db"
 DATABASE_URL = f"sqlite:///{DB_PATH}"
 ICS_PATH = DATA_DIR / "calendar.ics"
