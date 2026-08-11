@@ -300,3 +300,63 @@ def test_datetimes_are_serialised_rather_than_crashing_the_render():
 
 def test_an_empty_graph_still_renders():
     assert "drawGraph" in g.render_html(g.build_graph([]))
+
+
+# --- Theme -----------------------------------------------------------------
+
+def canvas_background(html: str) -> str:
+    """The colour pyvis paints the graph canvas.
+
+    Asserted precisely rather than by substring: the inlined vis-network bundle
+    mentions plenty of colours (including #ffffff in a CSS gradient filter), so
+    a bare `"#ffffff" in html` passes whatever theme was actually requested.
+    """
+    # Anchored on the canvas div's own height rule — an unanchored search finds
+    # the bundle's own chrome colours (#f7f7f7, #4588e6, …) long before the one
+    # pyvis was asked for.
+    match = re.search(
+        r"height:\s*\d+px;\s*background-color:\s*(#[0-9a-fA-F]{6})", html
+    )
+    return match.group(1).lower() if match else ""
+
+
+def test_the_canvas_follows_the_dashboard_theme():
+    """The graph is in an iframe, so it cannot inherit the page's CSS."""
+    graph = g.build_graph([make()])
+    assert canvas_background(g.render_html(graph, theme="light")) == "#ffffff"
+    assert canvas_background(g.render_html(graph, theme="dark")) == "#0f1626"
+
+
+def test_the_canvas_border_is_not_left_bright_against_a_dark_canvas():
+    """pyvis hardcodes a lightgray border, which glares in dark mode."""
+    dark = g.render_html(g.build_graph([make()]), theme="dark")
+    assert "lightgray" not in dark.lower()
+    assert g._CANVAS["dark"]["border"] in dark
+
+
+def test_the_you_node_inverts_so_it_stays_visible_on_a_dark_canvas():
+    graph = g.build_graph([make()])
+    light = g.render_html(graph, theme="light")
+    dark = g.render_html(graph, theme="dark")
+
+    assert g.YOU_COLOUR in light          # near-black on white
+    assert g._CANVAS["dark"]["you"] in dark
+    # The near-black centre node would vanish against the dark canvas.
+    assert dark.count(g.YOU_COLOUR) < light.count(g.YOU_COLOUR)
+
+
+def test_rendering_dark_does_not_mutate_the_source_graph():
+    """render_html must stay safe to call twice with different themes."""
+    graph = g.build_graph([make()])
+    g.render_html(graph, theme="dark")
+    assert graph.nodes[g.YOU]["color"] == g.YOU_COLOUR
+
+
+def test_an_unknown_theme_falls_back_to_light():
+    graph = g.build_graph([make()])
+    assert canvas_background(g.render_html(graph, theme="solarized")) == "#ffffff"
+
+
+def test_the_dark_canvas_is_still_offline_safe():
+    rendered = g.render_html(g.build_graph([make()]), theme="dark")
+    assert re.findall(r'(?:src|href)=["\'](?:https?:)?//[^"\']+', rendered) == []

@@ -27,6 +27,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 import streamlit as st  # noqa: E402
 
+from dashboard import notifications, styles  # noqa: E402
 from src import config  # noqa: E402
 from src.collection.scheduler import SchedulerHandle  # noqa: E402
 from src.storage.database import init_db  # noqa: E402
@@ -37,6 +38,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Palette, stylesheet and cursor spotlight. Must run before anything renders so
+# no element is ever painted with Streamlit's default chrome first.
+styles.inject()
 
 
 @st.cache_resource
@@ -55,11 +60,18 @@ def _scheduler() -> SchedulerHandle:
 _database()
 scheduler = _scheduler()
 
+# Read once per rerun and pass the same notice to both the badge and the toast,
+# so the two can never disagree about what has arrived.
+notice = notifications.pending_notice()
+
 
 def _sidebar() -> None:
     with st.sidebar:
         st.title("📬 Tracker")
+        styles.theme_toggle()
         st.caption("Private by design — email is processed on this machine only.")
+
+        notifications.render_sidebar_badge(notice)
 
         st.divider()
         st.subheader("Automatic updates")
@@ -113,6 +125,7 @@ def _sidebar() -> None:
 
 
 _sidebar()
+notifications.render_toast(notice)
 
 pages = st.navigation([
     st.Page("pages/overview.py", title="Overview", icon="📊", default=True),

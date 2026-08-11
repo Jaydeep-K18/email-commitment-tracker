@@ -5,7 +5,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from dashboard import data
+from dashboard import data, styles
 from dashboard.components import commitment_card
 from src.filtering.vip_filter import TIERS
 from src.storage.database import list_commitments, session_scope
@@ -15,7 +15,7 @@ st.title("Commitments")
 now = datetime.now()
 
 # --- Filters --------------------------------------------------------------
-with st.container(border=True):
+with st.container(border=True, key="ect-panel-filters"):
     first, second = st.columns(2)
     with first:
         types = st.multiselect(
@@ -70,11 +70,8 @@ for band in (data.OVERDUE, data.TODAY, data.URGENT, data.UPCOMING, data.UNDATED)
     group = [c for c in commitments if data.urgency(c.deadline, now=now) == band]
     if not group:
         continue
-    colour, label = data.URGENCY_STYLE[band]
-    st.markdown(
-        f"<h4 style='color:{colour};margin-bottom:0.2rem'>"
-        f"{data.URGENCY_ICON[band]} {label} ({len(group)})</h4>",
-        unsafe_allow_html=True,
-    )
+    # The band colour comes from the palette, not from URGENCY_STYLE directly,
+    # so the heading stays legible when the dashboard is in dark mode.
+    styles.band_heading(band, len(group))
     for commitment in group:
         commitment_card.render(commitment, now=now, key_prefix=f"feed_{band}")

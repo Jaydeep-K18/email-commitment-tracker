@@ -53,6 +53,14 @@ class RawEmail(Base):
     vip_tier: Mapped[str | None] = mapped_column(String, nullable=True)
     # Whether the extraction pipeline (Phase 3) has run on this email yet.
     processed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # Phase 6 addition, extending schema §10: whether the user has already been
+    # shown the "new email from a VIP" notification for this row. Deliberately
+    # separate from ``processed`` — the notification is about the email
+    # *arriving*, which is true whether or not the LLM later found a commitment
+    # in it (or ran at all).
+    notification_seen: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, nullable=False
     )

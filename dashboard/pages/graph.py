@@ -10,7 +10,7 @@ from datetime import datetime
 import streamlit as st
 import streamlit.components.v1 as components
 
-from dashboard import data
+from dashboard import data, styles
 from dashboard import graph as graph_builder
 from src.storage.database import list_commitments, session_scope
 
@@ -71,7 +71,11 @@ columns[2].metric("You owe", stats.you_owe)
 columns[3].metric("Owed to you", stats.owed_to_you)
 
 # --- The graph ------------------------------------------------------------
-components.html(graph_builder.render_html(network), height=640, scrolling=False)
+components.html(
+    graph_builder.render_html(network, theme=styles.current_theme()),
+    height=640,
+    scrolling=False,
+)
 
 st.caption(
     "Drag to rearrange · scroll to zoom · hover a node or edge for detail. "

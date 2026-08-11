@@ -6,13 +6,15 @@ collection layer. Schema: PROJECT_PLAN.md §10.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Iterable, Iterator
 
-from sqlalchemy import create_engine, event, inspect, select
+from sqlalchemy import ColumnElement, create_engine, event, func, inspect, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from src import config
 from src.filtering.vip_filter import (
+    SKIP,
+    TIERS,
     normalize_match_type,
     normalize_match_value,
     normalize_tier,
@@ -52,6 +54,21 @@ _ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("sync_approved", "BOOLEAN NOT NULL DEFAULT 0"),
         ("supersedes_id", "INTEGER"),
     ],
+    # Phase 6.
+    "raw_emails": [
+        ("notification_seen", "BOOLEAN NOT NULL DEFAULT 0"),
+    ],
+}
+
+#: One-shot data fixes run in the same transaction as the ``ALTER TABLE`` that
+#: first adds a column, as ``(table, column) -> SQL``. A fresh database never
+#: reaches these: ``create_all`` makes the column, the ALTER is skipped, and so
+#: is the backfill — which is correct, since there are no old rows to fix.
+_COLUMN_BACKFILLS: dict[tuple[str, str], str] = {
+    # Every email already in the database arrived before notifications existed,
+    # so none of it is news. Without this, the first dashboard rerun after
+    # upgrading would announce the user's entire VIP back-catalogue at once.
+    ("raw_emails", "notification_seen"): "UPDATE raw_emails SET notification_seen = 1",
 }
 
 
@@ -64,7 +81,9 @@ def _migrate_added_columns() -> None:
     """Add any columns missing from an older database file.
 
     Additive only — no column is ever dropped, renamed, or retyped, so running
-    this against a database holding real commitments cannot lose data.
+    this against a database holding real commitments cannot lose data. Each new
+    column's backfill (if it has one) runs inside the same transaction as its
+    ALTER, so the pair can never be left half-applied.
     """
     inspector = inspect(engine)
     present_tables = set(inspector.get_table_names())
@@ -79,6 +98,9 @@ def _migrate_added_columns() -> None:
                 connection.exec_driver_sql(
                     f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
                 )
+                backfill = _COLUMN_BACKFILLS.get((table, column))
+                if backfill:
+                    connection.exec_driver_sql(backfill)
 
 
 def init_db() -> None:
@@ -100,6 +122,24 @@ def session_scope() -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+
+# --- Notification policy (Phase 6) ----------------------------------------
+
+#: Tiers whose arrival is worth telling the user about: every VIP tier except
+#: SKIP. Derived rather than spelled out so it cannot drift from the filter's
+#: own tier list.
+NOTIFY_TIERS: tuple[str, ...] = tuple(tier for tier in TIERS if tier != SKIP)
+
+
+def is_notifiable_tier(vip_tier: str | None) -> bool:
+    """Whether email at this tier should raise a notification.
+
+    Untagged email (``vip_tier IS NULL``) is excluded alongside SKIP: a sender
+    the VIP filter has not classified is not yet *known* to be a VIP, and
+    guessing would produce exactly the false alarms the tiers exist to prevent.
+    """
+    return vip_tier in NOTIFY_TIERS
 
 
 def email_exists(session: Session, message_id: str) -> bool:
@@ -133,6 +173,12 @@ def save_email(
         received_at=parsed.received_at,
         vip_tier=vip_tier,
         processed=processed,
+        # Only VIP-tier arrivals are ever announced, so everything else is
+        # stored already-seen rather than sitting unseen forever. That also
+        # means promoting a SKIP sender to a VIP tier later cannot retroactively
+        # announce their entire history — a notification is about arrival, and
+        # those emails arrived while the user did not care about them.
+        notification_seen=not is_notifiable_tier(vip_tier),
     )
     session.add(email)
     session.flush()  # assign the primary key within this transaction
@@ -476,3 +522,66 @@ def list_commitments(
     if limit:
         stmt = stmt.limit(limit)
     return list(session.execute(stmt).scalars().all())
+
+
+# --- Notification state (Phase 6) -----------------------------------------
+
+def _unseen_vip_filter() -> tuple[ColumnElement[bool], ...]:
+    """The shared WHERE clause: a VIP email the user has not been told about."""
+    return (
+        RawEmail.notification_seen.is_(False),
+        RawEmail.vip_tier.in_(NOTIFY_TIERS),
+    )
+
+
+def unseen_vip_emails(session: Session, limit: int | None = None) -> list[RawEmail]:
+    """VIP-tier emails the user has not yet been shown a notification for.
+
+    Newest first, because a toast that has to truncate should name the senders
+    who just wrote rather than the oldest ones. Note this ignores ``processed``
+    entirely: extraction is a separate concern and an email is news the moment
+    it lands, not when the LLM gets round to it.
+    """
+    stmt = (
+        select(RawEmail)
+        .where(*_unseen_vip_filter())
+        .order_by(RawEmail.received_at.desc(), RawEmail.id.desc())
+    )
+    if limit:
+        stmt = stmt.limit(limit)
+    return list(session.execute(stmt).scalars().all())
+
+
+def count_unseen_vip_emails(session: Session) -> int:
+    """How many VIP emails are waiting to be announced (backs the sidebar badge).
+
+    A count query rather than ``len(unseen_vip_emails(...))`` so the badge stays
+    cheap on every Streamlit rerun even once the mailbox is large.
+    """
+    stmt = select(func.count()).select_from(RawEmail).where(*_unseen_vip_filter())
+    return int(session.execute(stmt).scalar_one())
+
+
+def mark_emails_seen(
+    session: Session, email_ids: Iterable[int] | None = None
+) -> int:
+    """Mark notifications as seen. ``None`` means every unseen VIP email.
+
+    Returns how many rows actually changed, which makes it idempotent in the way
+    that matters: a second call (Streamlit reruns invite double submissions)
+    finds nothing left unseen, rewrites nothing, and reports 0.
+    """
+    stmt = select(RawEmail).where(RawEmail.notification_seen.is_(False))
+    if email_ids is None:
+        stmt = stmt.where(RawEmail.vip_tier.in_(NOTIFY_TIERS))
+    else:
+        ids = list(email_ids)
+        if not ids:
+            return 0
+        stmt = stmt.where(RawEmail.id.in_(ids))
+
+    rows = list(session.execute(stmt).scalars().all())
+    for email in rows:
+        email.notification_seen = True
+    session.flush()
+    return len(rows)

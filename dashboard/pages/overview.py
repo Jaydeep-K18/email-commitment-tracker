@@ -5,7 +5,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from dashboard import data
+from dashboard import data, styles
 from dashboard.components import commitment_card
 from src import config
 from src.storage.database import session_scope
@@ -30,20 +30,29 @@ if snapshot.total_open == 0:
     st.stop()
 
 # --- Headline numbers -----------------------------------------------------
-first_row = st.columns(4)
-first_row[0].metric("Open commitments", snapshot.total_open)
-first_row[1].metric(
-    "Overdue", snapshot.overdue, delta=None if not snapshot.overdue else "needs action",
-    delta_color="inverse",
-)
-first_row[2].metric("Due today", snapshot.due_today)
-first_row[3].metric("Due this week", snapshot.due_this_week)
-
-second_row = st.columns(4)
-second_row[0].metric("On the calendar", snapshot.on_calendar)
-second_row[1].metric("Awaiting your approval", snapshot.awaiting_approval)
-second_row[2].metric("You owe", snapshot.you_owe)
-second_row[3].metric("Owed to you", snapshot.owed_to_you)
+# One responsive grid rather than two rows of st.metric: the tiles carry the
+# same eight numbers, but a shared accent rule ties each one to the urgency
+# colour it represents.
+styles.stat_row([
+    styles.Stat("Open commitments", snapshot.total_open, tone="primary"),
+    styles.Stat(
+        "Overdue",
+        snapshot.overdue,
+        tone=data.OVERDUE,
+        hint="needs action" if snapshot.overdue else None,
+        loud_hint=True,
+    ),
+    styles.Stat("Due today", snapshot.due_today, tone=data.TODAY),
+    styles.Stat("Due this week", snapshot.due_this_week, tone=data.URGENT),
+])
+styles.stat_row([
+    styles.Stat("On the calendar", snapshot.on_calendar, tone=data.UPCOMING),
+    styles.Stat(
+        "Awaiting your approval", snapshot.awaiting_approval, tone=data.URGENT
+    ),
+    styles.Stat("You owe", snapshot.you_owe, tone="primary"),
+    styles.Stat("Owed to you", snapshot.owed_to_you, tone="neutral"),
+])
 
 if snapshot.awaiting_approval:
     st.warning(
@@ -54,26 +63,37 @@ if snapshot.awaiting_approval:
 st.divider()
 
 # --- What's next ----------------------------------------------------------
-left, right = st.columns(2)
+left, right = st.columns(2, gap="medium")
 
 with left:
-    st.subheader("Next on your calendar")
-    if not upcoming:
-        st.caption("Nothing is currently published to the calendar.")
-    for commitment in upcoming:
-        commitment_card.render(commitment, now=now, key_prefix="overview")
+    with styles.panel(
+        "Next on your calendar",
+        key="ect-panel-upcoming",
+        icon="📅",
+        count=len(upcoming),
+    ):
+        if not upcoming:
+            st.caption("Nothing is currently published to the calendar.")
+        for commitment in upcoming:
+            commitment_card.render(commitment, now=now, key_prefix="overview")
 
 with right:
-    st.subheader("Questions awaiting a reply")
-    if not questions:
-        st.caption("No open questions.")
-    else:
-        st.caption(
+    with styles.panel(
+        "Questions awaiting a reply",
+        key="ect-panel-questions",
+        icon="❓",
+        count=len(questions),
+        caption=(
             "Questions never go on the calendar — this is the only place they "
             "appear."
         )
-    for commitment in questions:
-        commitment_card.render(commitment, now=now, key_prefix="overview_q")
+        if questions
+        else None,
+    ):
+        if not questions:
+            st.caption("No open questions.")
+        for commitment in questions:
+            commitment_card.render(commitment, now=now, key_prefix="overview_q")
 
 st.divider()
 st.caption(

@@ -9,15 +9,21 @@ The pages under ``dashboard/pages/`` are left as thin rendering on top of this.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
+from typing import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src import config
-from src.storage.database import calendar_candidates, list_commitments
-from src.storage.models import Commitment
+from src.storage.database import (
+    calendar_candidates,
+    count_unseen_vip_emails,
+    list_commitments,
+    unseen_vip_emails,
+)
+from src.storage.models import Commitment, RawEmail
 from src.sync.sync_engine import decide, review_queue
 
 # --- Urgency --------------------------------------------------------------
@@ -253,3 +259,97 @@ def pending_questions(session: Session) -> list[Commitment]:
     """
     rows = list_commitments(session, commitment_type="question_pending")
     return [c for c in rows if c.status not in ("dismissed", "superseded", "fulfilled")]
+
+
+# --- New-email notifications ----------------------------------------------
+
+#: Prefix for the arrival notification. Kept in the message itself rather than
+#: passed to ``st.toast(icon=...)`` so the same string works in a toast, a
+#: caption, or a test assertion.
+NOTIFY_ICON = "📬"
+
+#: How many senders a notification names before collapsing the rest into
+#: "and N others". A toast is one glanceable line — past three names it stops
+#: being read and starts being skipped.
+NOTIFY_MAX_SENDERS = 3
+
+
+@dataclass
+class NewEmailNotice:
+    """Unseen VIP arrivals, reduced to what the dashboard needs to say."""
+
+    count: int = 0
+    #: De-duplicated sender labels, most recent arrival first.
+    senders: list[str] = field(default_factory=list)
+    #: Exactly the rows this notice covers. Marking *these* seen rather than
+    #: "everything unseen" means an email that lands between rendering and
+    #: clicking is not silently swallowed.
+    email_ids: list[int] = field(default_factory=list)
+
+    def __bool__(self) -> bool:
+        return self.count > 0
+
+    @property
+    def sender_summary(self) -> str:
+        return summarise_senders(self.senders)
+
+    @property
+    def message(self) -> str:
+        """One-line summary, e.g. ``📬 2 new emails from Alice Chen, Bob Rao``."""
+        noun = "email" if self.count == 1 else "emails"
+        line = f"{NOTIFY_ICON} {self.count} new {noun}"
+        summary = self.sender_summary
+        return f"{line} from {summary}" if summary else line
+
+
+def sender_label(email: RawEmail) -> str:
+    """How to name a sender: display name, else address, else a placeholder."""
+    name = (email.sender_name or "").strip()
+    if name:
+        return name
+    address = (email.sender_email or "").strip()
+    return address or "an unknown sender"
+
+
+def summarise_senders(
+    names: Sequence[str], max_names: int = NOTIFY_MAX_SENDERS
+) -> str:
+    """Join sender names for a one-line notification, truncating politely.
+
+    Order is preserved (callers pass newest first), so when the list is cut it
+    is the people who wrote longest ago who fall into "and N others".
+    """
+    listed = list(names)
+    if not listed:
+        return ""
+    if len(listed) <= max_names:
+        return ", ".join(listed)
+
+    hidden = len(listed) - max_names
+    others = "1 other" if hidden == 1 else f"{hidden} others"
+    return ", ".join(listed[:max_names]) + f" and {others}"
+
+
+def new_email_notice(session: Session) -> NewEmailNotice:
+    """Build the notice for every VIP email the user has not been told about.
+
+    Unlimited by design: the unseen set is bounded by what arrives between two
+    dismissals, not by mailbox size, and the count has to be exact for the badge
+    to be trustworthy.
+    """
+    rows = unseen_vip_emails(session)
+    senders: list[str] = []
+    for email in rows:
+        label = sender_label(email)
+        if label not in senders:  # two emails from one person read as one name
+            senders.append(label)
+    return NewEmailNotice(
+        count=len(rows),
+        senders=senders,
+        email_ids=[email.id for email in rows],
+    )
+
+
+def unseen_email_count(session: Session) -> int:
+    """Just the badge number, without loading the rows behind it."""
+    return count_unseen_vip_emails(session)

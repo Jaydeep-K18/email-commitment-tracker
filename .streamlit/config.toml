@@ -17,5 +17,14 @@ headless = true
 gatherUsageStats = false
 
 [theme]
+# Light/dark is chosen at runtime from the sidebar and applied by
+# dashboard/styles.py, which repaints Streamlit's chrome with CSS variables.
+# `base` stays pinned so that repaint always starts from the same known
+# baseline; letting Streamlit follow the operating system instead would leave
+# the two halves of the page disagreeing about which mode is active.
 base = "light"
 primaryColor = "#2e6fdb"
+
+# Fonts are the ones Streamlit bundles and serves from its own static
+# directory. Nothing here may reference a webfont URL (PROJECT_PLAN.md §16) —
+# dashboard/styles.py uses system stacks for the same reason.

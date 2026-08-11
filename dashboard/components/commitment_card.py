@@ -35,7 +35,10 @@ def render(
     """Render one commitment. Actions are optional so read-only pages stay clean."""
     decision = decide(commitment)
 
-    with st.container(border=True):
+    # The key becomes an ``st-key-…`` CSS class, which is how dashboard/styles.py
+    # gives cards their surface and hover state. ``key_prefix`` already
+    # distinguishes call sites, so prefix plus id is unique within a rerun.
+    with st.container(border=True, key=f"ect-card-{key_prefix}-{commitment.id}"):
         st.markdown(_headline(commitment, now=now))
 
         who = commitment.counterparty_name or commitment.counterparty_email or "unknown"

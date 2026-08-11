@@ -306,20 +306,50 @@ def _coerce(attrs: dict) -> None:
             attrs[name] = value.isoformat(sep=" ", timespec="minutes")
 
 
-def render_html(graph: nx.MultiDiGraph, height: int = 620) -> str:
+#: Canvas colours per theme. The graph renders inside an iframe, so it cannot
+#: inherit the dashboard's CSS variables and has to be told which mode it is in
+#: — otherwise it stays a glaring white card in an otherwise dark page.
+_CANVAS = {
+    "light": {
+        "bg": "#ffffff", "font": "#111827", "you": YOU_COLOUR,
+        "border": "#e4e9f0",
+    },
+    # "You" is near-black in light mode, which would disappear against a dark
+    # canvas, so the centre node inverts along with the background.
+    "dark": {
+        "bg": "#0f1626", "font": "#e7edf9", "you": "#f2f6ff",
+        "border": "#25314b",
+    },
+}
+
+#: pyvis hardcodes ``border: 1px solid lightgray`` around the canvas, which is a
+#: bright line against a dark background. It is not configurable, so it is
+#: rewritten after generation.
+_CANVAS_BORDER_RE = re.compile(r"border:\s*1px\s+solid\s+lightgray", re.IGNORECASE)
+
+
+def render_html(
+    graph: nx.MultiDiGraph, height: int = 620, theme: str = "light"
+) -> str:
     """Render the graph as self-contained, offline-safe HTML."""
     from pyvis.network import Network
+
+    canvas = _CANVAS.get(theme, _CANVAS["light"])
 
     net = Network(
         height=f"{height}px",
         width="100%",
         directed=True,
-        bgcolor="#ffffff",
-        font_color="#111827",
+        bgcolor=canvas["bg"],
+        font_color=canvas["font"],
         # Inlines vis-network rather than linking it from a CDN.
         cdn_resources="in_line",
         notebook=False,
     )
-    net.from_nx(_json_safe(graph))
+    prepared = _json_safe(graph)
+    if YOU in prepared:
+        prepared.nodes[YOU]["color"] = canvas["you"]
+    net.from_nx(prepared)
     net.set_options(_PHYSICS_OPTIONS)
-    return strip_external_resources(net.generate_html(notebook=False))
+    html = strip_external_resources(net.generate_html(notebook=False))
+    return _CANVAS_BORDER_RE.sub(f"border: 1px solid {canvas['border']}", html)
