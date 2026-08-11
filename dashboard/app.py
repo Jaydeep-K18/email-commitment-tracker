@@ -118,6 +118,7 @@ pages = st.navigation([
     st.Page("pages/overview.py", title="Overview", icon="📊", default=True),
     st.Page("pages/feed.py", title="Commitments", icon="📋"),
     st.Page("pages/review_queue.py", title="Review queue", icon="✅"),
+    st.Page("pages/graph.py", title="Network", icon="🕸️"),
     st.Page("pages/vip_manager.py", title="VIP contacts", icon="👥"),
 ])
 pages.run()
