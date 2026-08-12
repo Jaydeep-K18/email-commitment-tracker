@@ -84,17 +84,40 @@ def fetch_recent(imap: imaplib.IMAP4) -> list[bytes]:
     return raws
 
 
-def fetch_and_store() -> FetchResult:
-    """Fetch recent emails and store any new ones. Returns a :class:`FetchResult`."""
-    init_db()
+def collect_raw_messages() -> list[bytes]:
+    """Fetch raw messages from whichever transport is configured.
+
+    Google is preferred when signed in, because that is the path the user chose
+    on the setup screen. IMAP remains the fallback and is the only route for
+    non-Gmail mailboxes, so neither can be removed.
+
+    Both return raw RFC822 bytes, which is what keeps parsing, VIP filtering and
+    dedup identical regardless of how the mail arrived.
+    """
+    from src.collection import gmail_fetcher
+
+    if gmail_fetcher.is_available():
+        try:
+            return gmail_fetcher.fetch_recent()
+        except Exception as exc:  # noqa: BLE001
+            # A Google outage or a revoked token should not strand a user who
+            # still has a working app password configured.
+            log.warning("Gmail API fetch failed (%s); trying IMAP.", exc)
+
     imap = connect()
     try:
-        raws = fetch_recent(imap)
+        return fetch_recent(imap)
     finally:
         try:
             imap.logout()
         except Exception:  # pragma: no cover - best-effort cleanup
             pass
+
+
+def fetch_and_store() -> FetchResult:
+    """Fetch recent emails and store any new ones. Returns a :class:`FetchResult`."""
+    init_db()
+    raws = collect_raw_messages()
 
     # Load VIP rules once for the whole batch rather than per email.
     with session_scope() as session:

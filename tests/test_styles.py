@@ -251,7 +251,10 @@ def _theme_app():
         st.text(styles.current_theme())
         styles.theme_toggle()
 
-    return AppTest.from_function(script)
+    # Generous timeout for the same reason as tests/test_notifications.py: the
+    # default 3 seconds has to cover importing dashboard.styles and everything
+    # under it, which is a cold-import cost rather than anything being tested.
+    return AppTest.from_function(script, default_timeout=30)
 
 
 def test_the_theme_defaults_to_light_with_no_url_hint():

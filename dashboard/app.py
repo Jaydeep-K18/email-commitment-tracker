@@ -124,15 +124,24 @@ def _sidebar() -> None:
             )
 
         st.divider()
-        st.caption("Calendar subscription URL")
-        st.code(
-            f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics",
-            language=None,
-        )
-        st.caption(
-            "Serve it with `python -m src.server.calendar_server`, then subscribe "
-            "from your calendar app."
-        )
+        if first_run.setup_state().signed_in_with_google:
+            st.caption("Calendar")
+            st.success("Writing to Google Calendar", icon="📅")
+        else:
+            st.caption("Calendar subscription URL")
+            st.code(
+                f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics",
+                language=None,
+            )
+            # Deliberately names the calendar apps this can work with. Google
+            # fetches subscription URLs from its own servers, which cannot reach
+            # a loopback address here, so pointing Google Calendar at this is a
+            # dead end no amount of retrying fixes.
+            st.caption(
+                "Serve it with `python -m src.server.calendar_server`, then "
+                "subscribe from Outlook desktop, Apple Calendar or Thunderbird. "
+                "For **Google Calendar**, connect Google on the setup page."
+            )
 
 
 _sidebar()

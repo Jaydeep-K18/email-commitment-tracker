@@ -143,10 +143,21 @@ class SyncReport:
     bytes_written: int = 0
     path: str = ""
     errors: list[str] = field(default_factory=list)
+    # --- Google Calendar (Phase 9) ---
+    #: None when not signed in, so "nothing to do" reads differently from "zero
+    #: events synced".
+    google_created: int | None = None
+    google_updated: int | None = None
+    google_removed: int | None = None
+    google_errors: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
         return not self.errors
+
+    @property
+    def google_connected(self) -> bool:
+        return self.google_created is not None
 
 
 def run_sync(session: Session, path=None) -> SyncReport:
@@ -211,12 +222,78 @@ def run_sync(session: Session, path=None) -> SyncReport:
     # Anything previously published but no longer eligible (dismissed, approval
     # revoked, superseded) must stop claiming to be on the calendar.
     published_ids = {c.id for c in selected}
+    revoked = []
     for commitment in database.published_commitments(session):
         if commitment.id not in published_ids:
             commitment.calendar_synced = False
+            revoked.append(commitment)
             database.log_sync(
                 session, commitment.id, action="deleted", status="success"
             )
 
+    _push_to_google(session, report, selected, revoked)
+
     session.flush()
     return report
+
+
+def _push_to_google(
+    session: Session,
+    report: SyncReport,
+    selected: list[Commitment],
+    revoked: list[Commitment],
+) -> None:
+    """Mirror the published set into Google Calendar, if signed in.
+
+    Runs after the ``.ics`` file is already written, and never raises: the local
+    feed is the guaranteed output, and losing the network must not turn a
+    successful publish into a failed cycle. Google outcomes are logged under
+    their own ``google_*`` actions, outside the retry queue's tally.
+    """
+    from src.sync import google_calendar
+
+    if not google_calendar.is_available():
+        return  # Not signed in: the counters stay None.
+
+    report.google_created = 0
+    report.google_updated = 0
+    report.google_removed = 0
+
+    try:
+        service = google_calendar.build_service()
+    except Exception as exc:  # noqa: BLE001 - reported, never fatal
+        log.warning("Google Calendar unavailable this cycle: %s", exc)
+        report.google_errors.append(str(exc))
+        return
+
+    try:
+        pushed = google_calendar.push(session, selected, service=service)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Google Calendar push failed: %s", exc)
+        report.google_errors.append(str(exc))
+        return
+
+    report.google_created = pushed.created
+    report.google_updated = pushed.updated
+    for commitment in selected:
+        if commitment.id not in {cid for cid, _ in pushed.failed}:
+            database.log_sync(
+                session, commitment.id, action="google_synced", status="success"
+            )
+    for commitment_id, message in pushed.failed:
+        report.google_errors.append(message)
+        database.log_sync(
+            session,
+            commitment_id,
+            action="google_synced",
+            status="failed",
+            error_message=message,
+        )
+
+    try:
+        report.google_removed = google_calendar.remove(
+            session, revoked, service=service
+        )
+    except Exception as exc:  # noqa: BLE001
+        log.warning("Could not remove revoked events from Google: %s", exc)
+        report.google_errors.append(str(exc))

@@ -29,22 +29,28 @@ ENV_USER_KEY = "IMAP_USER"
 
 @dataclass(frozen=True)
 class SetupState:
-    """What the app still needs before it can fetch anything."""
+    """What the app still needs before it can fetch anything.
+
+    There are two independent ways to be ready: signed in with Google, or an
+    address plus an app password. Either is sufficient — Google is the easy path
+    for Gmail, and the app password is the only route for every other mailbox.
+    """
 
     has_user: bool
     has_password: bool
+    signed_in_with_google: bool = False
 
     @property
     def complete(self) -> bool:
-        return self.has_user and self.has_password
+        return self.signed_in_with_google or (self.has_user and self.has_password)
 
     @property
     def missing(self) -> str:
+        if self.complete:
+            return ""
         if not self.has_user:
-            return "an email address"
-        if not self.has_password:
-            return "an app password"
-        return ""
+            return "a Google sign-in or an email address"
+        return "a Google sign-in or an app password"
 
 
 def password_is_stored(user: str | None = None) -> bool:
@@ -60,10 +66,13 @@ def password_is_stored(user: str | None = None) -> bool:
 
 
 def setup_state(user: str | None = None) -> SetupState:
+    from src.auth import google_auth
+
     account = config.IMAP_USER if user is None else user
     return SetupState(
         has_user=bool(account),
         has_password=password_is_stored(account),
+        signed_in_with_google=google_auth.is_signed_in(),
     )
 
 

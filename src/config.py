@@ -129,6 +129,27 @@ IMAP_USE_SSL = _get_bool("IMAP_USE_SSL", True)
 FETCH_LOOKBACK_DAYS = _get_int("FETCH_LOOKBACK_DAYS", 7)
 FETCH_MAX_EMAILS = _get_int("FETCH_MAX_EMAILS", 50)
 
+# --- Google (Phase 9) ---
+# The OAuth client the user creates in their own Google Cloud project. It is not
+# a secret in the usual sense — Google classes installed-app clients as public —
+# but it is per-user, so it lives in the data directory rather than the repo.
+GOOGLE_CLIENT_SECRETS = DATA_DIR / os.getenv(
+    "GOOGLE_CLIENT_SECRETS_NAME", "google_client_secret.json"
+)
+# Read-only mail, and events-only calendar access. Deliberately not
+# `calendar`, which would also grant the power to delete whole calendars.
+GOOGLE_SCOPES = (
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/calendar.events",
+)
+# Which calendar events are written to. "primary" is the user's default.
+GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
+# Loopback port for the consent redirect. 0 lets the OS choose a free one,
+# which avoids a collision with the dashboard or the calendar server.
+GOOGLE_OAUTH_PORT = _get_int("GOOGLE_OAUTH_PORT", 0)
+# Gmail search used when fetching through the API, mirroring the IMAP window.
+GOOGLE_GMAIL_QUERY = os.getenv("GOOGLE_GMAIL_QUERY", "")
+
 # --- Local LLM (Ollama) ---
 # All inference is local; nothing here reaches an external service.
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")

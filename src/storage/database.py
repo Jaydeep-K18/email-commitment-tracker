@@ -53,6 +53,8 @@ _ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
     "commitments": [
         ("sync_approved", "BOOLEAN NOT NULL DEFAULT 0"),
         ("supersedes_id", "INTEGER"),
+        # Phase 9.
+        ("gcal_event_id", "TEXT"),
     ],
     # Phase 6.
     "raw_emails": [
@@ -466,8 +468,16 @@ def latest_sync_entries(session: Session) -> dict[int, SyncLog]:
     return latest
 
 
+#: Actions belonging to the ``.ics`` channel — the one the retry queue governs.
+#: Google Calendar writes are logged too (Phase 9) but under their own prefixed
+#: actions, and are deliberately excluded from the retry tally: a spell offline
+#: must not burn through SYNC_MAX_RETRIES and make the app give up publishing a
+#: commitment to the local feed, which was succeeding the whole time.
+ICS_SYNC_ACTIONS = frozenset({"created", "updated", "deleted"})
+
+
 def failed_sync_attempts(session: Session) -> dict[int, int]:
-    """Count of consecutive failed sync attempts per commitment.
+    """Count of consecutive failed ``.ics`` sync attempts per commitment.
 
     Counts trailing failures only: a later success clears the tally, so a
     commitment that failed once and then synced is not treated as flaky.
@@ -475,6 +485,8 @@ def failed_sync_attempts(session: Session) -> dict[int, int]:
     stmt = select(SyncLog).order_by(SyncLog.synced_at.asc(), SyncLog.id.asc())
     attempts: dict[int, int] = {}
     for entry in session.execute(stmt).scalars().all():
+        if entry.action not in ICS_SYNC_ACTIONS:
+            continue
         if entry.status == "failed":
             attempts[entry.commitment_id] = attempts.get(entry.commitment_id, 0) + 1
         else:

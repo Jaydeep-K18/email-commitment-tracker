@@ -10,14 +10,61 @@ import streamlit as st
 
 from dashboard import styles
 from src import config, first_run
+from src.auth import google_auth
 
 st.title("Welcome — let's connect your mailbox")
 st.caption(
-    "Everything stays on this machine. Your email is read locally, the "
-    "deadlines are extracted by a local model, and nothing is uploaded."
+    "Your email is read on this machine and the deadlines are extracted by a "
+    "local model — no email content is sent to any AI service."
 )
 
 state = first_run.setup_state()
+
+# --- The easy path --------------------------------------------------------
+with styles.panel(
+    "Connect with Google", icon="🔗", key="ect-panel-setup-google",
+    caption="Reads your mail and writes your calendar events. Recommended.",
+):
+    account = google_auth.account()
+    if account is not None:
+        st.success(f"Signed in{f' as {account.email}' if account.email else ''}.")
+        st.caption(
+            f"Mail access: {'yes' if account.has_mail else 'no'} · "
+            f"Calendar access: {'yes' if account.has_calendar else 'no'}"
+        )
+        if st.button("Disconnect Google", use_container_width=True):
+            google_auth.clear_token()
+            st.rerun()
+    elif not google_auth.client_secrets_present():
+        st.warning(
+            "No Google client configuration found yet. Create an OAuth client "
+            "ID of type **Desktop app** in your own Google Cloud project "
+            "(free), download the JSON, and save it as:"
+        )
+        st.code(str(config.GOOGLE_CLIENT_SECRETS), language=None)
+        st.caption("Step-by-step walkthrough: `docs/google-setup.md`")
+    else:
+        st.markdown(
+            "This is what lets deadlines appear in **Google Calendar on your "
+            "phone**. The local `.ics` feed cannot do that: Google fetches "
+            "subscription URLs from its own servers, which cannot reach this "
+            "machine."
+        )
+        if st.button("Sign in with Google", type="primary", use_container_width=True):
+            with st.spinner("Finish signing in from the browser tab that opened…"):
+                try:
+                    signed = google_auth.sign_in()
+                except Exception as exc:  # noqa: BLE001 - shown to the user
+                    st.error(f"Sign-in did not complete: {exc}")
+                else:
+                    st.success(f"Signed in as {signed.email or 'your account'}.")
+                    st.rerun()
+
+st.divider()
+st.caption(
+    "Or connect any other mailbox (Outlook, Yahoo, university IMAP) with an "
+    "app password:"
+)
 
 with styles.panel("Step 1 — your email address", icon="📮", key="ect-panel-setup-user"):
     address = st.text_input(
@@ -79,22 +126,26 @@ st.divider()
 with styles.panel(
     "Step 3 — subscribe your calendar", icon="📅", key="ect-panel-setup-cal"
 ):
-    st.markdown(
-        "Once commitments start arriving they are published to this address. "
-        "Add it as a **subscribed calendar** (not an import) so it keeps "
-        "itself up to date:"
-    )
-    st.code(
-        f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics",
-        language=None,
-    )
-    st.caption(
-        "Google Calendar: Other calendars → From URL. "
-        "Outlook: Add calendar → Subscribe from web. "
-        "Apple Calendar: File → New Calendar Subscription."
-    )
-    if not state.complete:
+    if state.signed_in_with_google:
+        st.success(
+            "Nothing to do — events are written straight into your Google "
+            "Calendar, and appear on your phone within a minute."
+        )
+    else:
+        st.markdown(
+            "Add this as a **subscribed calendar** (not an import) so it keeps "
+            "itself up to date:"
+        )
+        st.code(
+            f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics",
+            language=None,
+        )
         st.caption(
-            "This link only answers while the tracker is running on this "
-            "machine, which is what keeps the feed private."
+            "Works with **Outlook desktop**, **Apple Calendar** and "
+            "**Thunderbird**, which fetch the feed from this machine."
+        )
+        st.warning(
+            "This will **not** work with Google Calendar. Google fetches "
+            "subscription URLs from its own servers, and they cannot reach "
+            "`127.0.0.1` on your laptop. Connect with Google above instead."
         )

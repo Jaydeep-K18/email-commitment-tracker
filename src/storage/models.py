@@ -139,6 +139,10 @@ class Commitment(Base):
         Boolean, default=False, nullable=False
     )
     ics_uid: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Phase 9. The id Google gave the event created for this commitment. Its
+    # presence is what makes a second sync patch the existing event instead of
+    # creating a duplicate, so it is the Google-side counterpart of ics_uid.
+    gcal_event_id: Mapped[str | None] = mapped_column(String, nullable=True)
     # Phase 5 additions, extending schema §10:
     # MONITOR-tier commitments stay off the calendar until the user approves
     # them; higher tiers are approved implicitly by the sync engine.

@@ -375,7 +375,13 @@ def app(tmp_path, monkeypatch):
     db.commit()
     db.close()
     try:
-        yield AppTest.from_string(_WIRING)
+        # AppTest allows a script 3 seconds by default, which is a budget for
+        # *import time* here, not for the behaviour under test: the wiring pulls
+        # in dashboard.data and the whole storage layer. That is over budget on
+        # a cold bytecode cache — i.e. on the first run after any of those files
+        # is edited — which made this fail intermittently for reasons that had
+        # nothing to do with toasts.
+        yield AppTest.from_string(_WIRING, default_timeout=30)
     finally:
         engine.dispose()
 

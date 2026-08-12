@@ -1,10 +1,13 @@
 """Desktop notifications when a background cycle finds new commitments.
 
 The scheduler reports *how many* commitments a cycle extracted but not which
-ones, and ``commitments`` has no created-at column — so "new" is defined here as
-"id above the highest one we had already seen". That high-water mark is primed
-once at startup, which is what stops a first run announcing the entire existing
-backlog as though it had just arrived.
+ones, so "new" is defined here as "id above the highest one we had already
+seen". The high-water mark is primed once at startup, which is what stops a
+first run announcing the entire existing backlog as though it had just arrived.
+
+An id comparison is preferred over ``Commitment.created_at`` deliberately: ids
+are monotonic and immutable, so the check cannot be confused by a clock that
+moves backwards (DST, an NTP correction, a laptop waking in another timezone).
 """
 from __future__ import annotations
 
