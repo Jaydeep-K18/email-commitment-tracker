@@ -80,7 +80,13 @@ def decide(commitment: Commitment) -> SyncDecision:
 
     tier = (commitment.vip_tier or "").upper()
 
-    if tier == SKIP:
+    # SKIP normally ends it: approving from the review queue is deliberately not
+    # offered as a way past the skip list. Hand-picking one open email in the
+    # Gmail panel is the single exception, because unknown senders are tiered
+    # SKIP automatically — so without it, "Add to calendar" would silently do
+    # nothing for anyone not already on the VIP list. Choosing an individual
+    # email is a more specific statement than a rule about its sender.
+    if tier == SKIP and not commitment.manually_added:
         return SyncDecision(False, "sender is on the skip list")
 
     if tier in AUTO_SYNC_TIERS:
@@ -96,6 +102,8 @@ def decide(commitment: Commitment) -> SyncDecision:
     # unknown tier as "ask first" fails safe: a commitment is never published
     # off the back of a tier the policy does not recognise.
     if commitment.sync_approved:
+        if tier == SKIP:
+            return SyncDecision(True, "you added this from the Gmail panel")
         label = tier or "untiered"
         return SyncDecision(True, f"{label} commitment approved by you")
 

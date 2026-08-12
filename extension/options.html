@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Email Commitment Tracker — options</title>
+  <style>
+    :root {
+      --primary: #2e6fdb;
+      --primary-strong: #1f56b3;
+      --primary-soft: rgba(46, 111, 219, 0.11);
+      --surface: #ffffff;
+      --text: #1b2733;
+      --muted: #5b6b7c;
+      --border: rgba(27, 39, 51, 0.14);
+      --ok: #2f8f5b;
+      --error: #c0392b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #6ea8fe;
+        --primary-strong: #93c1ff;
+        --primary-soft: rgba(110, 168, 254, 0.16);
+        --surface: #141b24;
+        --text: #e6edf5;
+        --muted: #9fb0c2;
+        --border: rgba(230, 237, 245, 0.16);
+        --ok: #58c08a;
+        --error: #ef6f61;
+      }
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      width: 340px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: "Google Sans", Roboto, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 15px; margin: 0 0 4px; }
+    p.sub { margin: 0 0 16px; color: var(--muted); font-size: 12px; }
+    label { display: block; font-weight: 600; margin-bottom: 4px; }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text);
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    input:focus { outline: 2px solid var(--primary-soft); border-color: var(--primary); }
+    .row { display: flex; gap: 8px; }
+    button {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--primary-strong);
+      border: 1px solid var(--border);
+    }
+    button:hover { filter: brightness(1.06); }
+    #status { margin-top: 12px; font-size: 12px; min-height: 18px; }
+    .ok { color: var(--ok); }
+    .error { color: var(--error); }
+    .muted { color: var(--muted); }
+    .hint {
+      margin-top: 16px;
+      padding: 10px;
+      background: var(--primary-soft);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    code { font-family: ui-monospace, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Email Commitment Tracker</h1>
+  <p class="sub">Connect this extension to the tracker running on your machine.</p>
+
+  <label for="token">Access token</label>
+  <input id="token" type="password" placeholder="paste from the setup page" autocomplete="off" />
+
+  <label for="baseUrl">Tracker address</label>
+  <input id="baseUrl" type="text" placeholder="http://127.0.0.1:8765" autocomplete="off" />
+
+  <div class="row">
+    <button id="save">Save</button>
+    <button id="test" class="ghost">Test</button>
+  </div>
+
+  <div id="status" class="muted"></div>
+
+  <div class="hint">
+    Find the token in the tracker dashboard under <strong>Mailbox setup →
+    Gmail side panel</strong>. It stops other websites you visit from talking to
+    the tracker, since <code>127.0.0.1</code> is reachable by any page.
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

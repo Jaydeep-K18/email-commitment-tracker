@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Email Commitment Tracker",
+  "version": "1.0.0",
+  "description": "Shows deadlines found in the open email by your local tracker, and adds them to your calendar.",
+
+  "permissions": ["storage"],
+
+  "host_permissions": ["http://127.0.0.1:8765/*"],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "css": ["panel.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "options_page": "options.html",
+
+  "action": {
+    "default_title": "Email Commitment Tracker",
+    "default_popup": "options.html"
+  }
+}

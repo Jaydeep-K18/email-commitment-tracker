@@ -11,6 +11,7 @@ import streamlit as st
 from dashboard import styles
 from src import config, first_run
 from src.auth import google_auth
+from src.server import api_token
 
 st.title("Welcome — let's connect your mailbox")
 st.caption(
@@ -149,3 +150,37 @@ with styles.panel(
             "subscription URLs from its own servers, and they cannot reach "
             "`127.0.0.1` on your laptop. Connect with Google above instead."
         )
+
+st.divider()
+
+with styles.panel(
+    "Gmail side panel", icon="🧩", key="ect-panel-setup-ext",
+    caption="Optional. Adds an 'Add to calendar' panel inside Gmail.",
+):
+    st.markdown(
+        "1. Open `chrome://extensions`, turn on **Developer mode**\n"
+        "2. **Load unpacked**, and choose the `extension` folder in this project\n"
+        "3. Open the extension's **options** and paste the token below"
+    )
+
+    if st.session_state.pop("ect_token_rotated", False):
+        st.warning("Old token revoked — paste the new one into the extension.")
+
+    if st.session_state.get("ect_show_token"):
+        st.code(api_token.get_or_create_token(), language=None)
+        st.caption(
+            "Treat this like a password. It is what stops other websites you "
+            "visit from talking to the tracker — `127.0.0.1` is reachable by "
+            "any page your browser has open."
+        )
+    # Not shown until asked for: the dashboard is the sort of thing that ends
+    # up on a shared screen.
+    elif st.button("Show access token", use_container_width=True):
+        st.session_state["ect_show_token"] = True
+        st.rerun()
+
+    if st.button("Generate a new token", use_container_width=True):
+        api_token.rotate_token()
+        st.session_state["ect_show_token"] = True
+        st.session_state["ect_token_rotated"] = True
+        st.rerun()

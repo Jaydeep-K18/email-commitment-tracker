@@ -55,6 +55,8 @@ _ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("supersedes_id", "INTEGER"),
         # Phase 9.
         ("gcal_event_id", "TEXT"),
+        # Phase 10.
+        ("manually_added", "BOOLEAN NOT NULL DEFAULT 0"),
     ],
     # Phase 6.
     "raw_emails": [
@@ -148,6 +150,17 @@ def email_exists(session: Session, message_id: str) -> bool:
     """Return True if an email with this Message-ID is already stored."""
     stmt = select(RawEmail.id).where(RawEmail.message_id == message_id)
     return session.execute(stmt).first() is not None
+
+
+def email_by_message_id(session: Session, message_id: str) -> RawEmail | None:
+    """The stored email with this Message-ID, if there is one.
+
+    ``save_email`` returns None for a duplicate, which is the right answer while
+    fetching but not when the caller needs the existing row to attach something
+    to — adding a second commitment from the Gmail panel, for instance.
+    """
+    stmt = select(RawEmail).where(RawEmail.message_id == message_id)
+    return session.execute(stmt).scalars().first()
 
 
 def save_email(

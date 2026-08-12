@@ -1,0 +1,175 @@
+/* The in-Gmail panel.
+ *
+ * Colours mirror dashboard/styles.py so the panel and the dashboard read as one
+ * product. Every rule is scoped under .ect-panel and every class is prefixed,
+ * because this stylesheet is injected into Gmail's own page and must not touch
+ * anything Google owns. Font sizes are absolute rather than em-based for the
+ * same reason: they must not inherit from whatever Gmail sets.
+ */
+
+.ect-panel {
+  --ect-primary: #2e6fdb;
+  --ect-primary-strong: #1f56b3;
+  --ect-primary-soft: rgba(46, 111, 219, 0.11);
+  --ect-surface: #ffffff;
+  --ect-text: #1b2733;
+  --ect-muted: #5b6b7c;
+  --ect-border: rgba(27, 39, 51, 0.14);
+  --ect-warn: #b8730f;
+  --ect-error: #c0392b;
+
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483000;   /* above Gmail's own overlays, below nothing useful */
+  width: 320px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ect-surface);
+  color: var(--ect-text);
+  border: 1px solid var(--ect-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(16, 26, 38, 0.18);
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ect-panel {
+    --ect-primary: #6ea8fe;
+    --ect-primary-strong: #93c1ff;
+    --ect-primary-soft: rgba(110, 168, 254, 0.16);
+    --ect-surface: #141b24;
+    --ect-text: #e6edf5;
+    --ect-muted: #9fb0c2;
+    --ect-border: rgba(230, 237, 245, 0.16);
+    --ect-warn: #e0a458;
+    --ect-error: #ef6f61;
+  }
+}
+
+.ect-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ect-border);
+  background: var(--ect-primary-soft);
+}
+
+.ect-panel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ect-primary);
+  flex: none;
+}
+
+.ect-panel__title {
+  font-weight: 600;
+  font-size: 13px;
+  flex: 1;
+}
+
+.ect-panel__collapse {
+  border: none;
+  background: transparent;
+  color: var(--ect-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.ect-panel__collapse:hover { background: var(--ect-primary-soft); }
+
+.ect-panel__body {
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.ect-panel--collapsed .ect-panel__body { display: none; }
+
+.ect-note {
+  margin: 0 0 8px;
+  color: var(--ect-muted);
+  font-size: 12px;
+}
+
+.ect-note--warn  { color: var(--ect-warn); }
+.ect-note--error { color: var(--ect-error); }
+
+.ect-item {
+  border: 1px solid var(--ect-border);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.ect-item--known { background: var(--ect-primary-soft); }
+
+.ect-item__subject {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.ect-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ect-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ect-primary);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.ect-chip--soft {
+  background: var(--ect-primary-soft);
+  color: var(--ect-primary-strong);
+}
+
+.ect-item__quote {
+  font-size: 12px;
+  color: var(--ect-muted);
+  font-style: italic;
+  margin-bottom: 8px;
+  /* Quotes can be long; keep the panel a fixed shape. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ect-button {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  background: var(--ect-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ect-button:hover:not(:disabled) { background: var(--ect-primary-strong); }
+.ect-button:disabled { opacity: 0.75; cursor: default; }
+
+.ect-button--ghost {
+  background: transparent;
+  color: var(--ect-primary-strong);
+  border: 1px solid var(--ect-border);
+}
+
+.ect-button--done  { background: #2f8f5b; }
+.ect-button--error { background: var(--ect-error); }

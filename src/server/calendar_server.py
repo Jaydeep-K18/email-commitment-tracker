@@ -1,9 +1,12 @@
 """Local FastAPI server that publishes the calendar subscription feed.
 
-Serves exactly two endpoints (PROJECT_PLAN.md Phase 4):
+Serves two public endpoints (PROJECT_PLAN.md Phase 4):
 
 ``GET /calendar.ics``  the subscription feed the user's calendar app polls
 ``GET /health``        liveness check
+
+and, from Phase 10, a token-guarded ``/api/*`` surface used by the Gmail side
+panel — see :mod:`src.server.api` and :mod:`src.server.api_token`.
 
 The feed is regenerated from the database on every request, so a calendar app
 polling the URL always sees current data without anything needing to push to it.
@@ -17,8 +20,10 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 from src import config
+from src.server import api, api_token
 from src.storage.database import init_db, session_scope
 from src.sync.ics_builder import render_ics
 from src.sync.sync_engine import calendar_commitments, review_queue
@@ -38,9 +43,25 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="Email Commitment Tracker",
     description="Serves a local .ics calendar of commitments extracted from email.",
-    version="0.4.0",
+    version="0.10.0",
     lifespan=lifespan,
 )
+
+# The Gmail panel is a browser extension, so its requests are cross-origin and
+# need CORS. Restricted to extension schemes rather than "*": the API is
+# reachable by any page the user has open, and while the token is the real
+# guard, there is no reason to let arbitrary websites past the browser's own
+# check as well. `chrome-extension://*` cannot be expressed in allow_origins,
+# hence the regex.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^(chrome-extension|moz-extension|safari-web-extension)://.+$",
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", api_token.TOKEN_HEADER],
+)
+
+app.include_router(api.router)
 
 
 @app.get("/health")

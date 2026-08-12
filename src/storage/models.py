@@ -143,6 +143,15 @@ class Commitment(Base):
     # presence is what makes a second sync patch the existing event instead of
     # creating a duplicate, so it is the Google-side counterpart of ics_uid.
     gcal_event_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Phase 10. True when the user picked this out of an open email in the Gmail
+    # panel, rather than it being extracted in the background. Kept separate
+    # from sync_approved because the two answer different questions: approval is
+    # "yes, publish this one" from the review queue, whereas this records that
+    # the user was looking at the email and chose it — a stronger statement,
+    # and the only thing allowed to override a SKIP sender.
+    manually_added: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     # Phase 5 additions, extending schema §10:
     # MONITOR-tier commitments stay off the calendar until the user approves
     # them; higher tiers are approved implicitly by the sync engine.
