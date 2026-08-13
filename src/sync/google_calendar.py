@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from src import config
 from src.auth import google_auth
@@ -71,12 +71,29 @@ def build_service(credentials=None):
     return build("calendar", "v3", credentials=creds, cache_discovery=False)
 
 
+def _local_rfc3339(when: datetime) -> str:
+    """A naive wall-clock time as RFC 3339 with this machine's UTC offset.
+
+    Google rejects a naive ``dateTime`` outright — "Missing time zone definition
+    for start time" — where iCalendar happily accepts one as floating local time.
+    That difference is why the ``.ics`` feed worked while every *timed* event was
+    refused by the API.
+
+    Attaching the offset (rather than a ``timeZone`` field) needs no IANA
+    database and no extra dependency, and ``astimezone()`` on a naive value
+    resolves the offset *for that date*, so a deadline on the far side of a DST
+    change still lands on the wall-clock time the email actually said.
+    """
+    return when.astimezone().isoformat()
+
+
 def event_body(commitment: Commitment) -> dict:
     """Map a commitment onto a Google Calendar event resource.
 
-    Times are sent without a timezone, as ``.ics`` does. Deadlines are stored as
-    the wall-clock time written in the email, so "5pm" must stay 5pm rather than
-    being reinterpreted as UTC and displayed at 22:30.
+    Deadlines are stored as the wall-clock time written in the email, so "5pm"
+    must stay 5pm rather than being reinterpreted as UTC and shown at 22:30.
+    Timed events carry this machine's UTC offset to preserve that; all-day
+    events use a bare ``date``, which is timezone-less by definition.
     """
     if commitment.deadline is None:
         raise ValueError("commitment has no deadline and cannot become an event")
@@ -97,9 +114,9 @@ def event_body(commitment: Commitment) -> dict:
         minutes = config.CALENDAR_ALLDAY_REMINDER_HOURS * 60
         body["transparency"] = "transparent"
     else:
-        body["start"] = {"dateTime": commitment.deadline.isoformat()}
+        body["start"] = {"dateTime": _local_rfc3339(commitment.deadline)}
         body["end"] = {
-            "dateTime": (commitment.deadline + timedelta(hours=1)).isoformat()
+            "dateTime": _local_rfc3339(commitment.deadline + timedelta(hours=1))
         }
         minutes = config.CALENDAR_REMINDER_MINUTES
 

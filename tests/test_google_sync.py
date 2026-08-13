@@ -148,14 +148,50 @@ def test_a_timed_deadline_becomes_a_one_hour_event(session):
     assert body["end"]["dateTime"].startswith("2026-08-20T15:30")
 
 
-def test_a_timed_event_carries_no_timezone(session):
-    """Deadlines are the wall-clock time written in the email. Sending them as
-    UTC would display a 5pm deadline at 22:30 for a reader in IST."""
+def test_a_timed_event_keeps_wall_clock_time_but_states_its_offset(session):
+    """Two requirements that pull against each other, and both are real.
+
+    Deadlines are the wall-clock time written in the email, so converting to UTC
+    would show a 5pm deadline at 22:30 for a reader in IST. But Google rejects a
+    naive dateTime outright ("Missing time zone definition for start time"),
+    where iCalendar accepts it as floating local time — which is why the .ics
+    feed worked while every timed event was refused by the API.
+
+    Stating the local offset satisfies both: the digits stay 17:00 and the
+    request is well-formed. An earlier version of this test asserted the absence
+    of an offset and so encoded the bug.
+    """
     commitment = make(session, deadline=datetime(2026, 8, 20, 17, 0))
     stamp = google_calendar.event_body(commitment)["start"]["dateTime"]
 
+    assert stamp.startswith("2026-08-20T17:00:00")   # not shifted to UTC
     assert not stamp.endswith("Z")
-    assert "+" not in stamp
+    # Offset present, in either direction of UTC.
+    assert ("+" in stamp) or (stamp.count("-") > 2)
+
+
+def test_every_timed_event_is_acceptable_to_google(session):
+    """Guards the exact 400 the API returned: a timed start or end with no
+    offset and no timeZone field is rejected."""
+    commitment = make(session, deadline=datetime(2026, 8, 20, 9, 15))
+    body = google_calendar.event_body(commitment)
+
+    for edge in ("start", "end"):
+        stamp = body[edge]["dateTime"]
+        has_offset = stamp.endswith("Z") or "+" in stamp or stamp.count("-") > 2
+        assert has_offset or "timeZone" in body[edge], (
+            f"{edge} would be refused: {body[edge]!r}"
+        )
+
+
+def test_an_all_day_event_needs_no_timezone(session):
+    """A bare date is timezone-less by definition, and Google accepts it — the
+    five all-day events were the only ones that survived the first real sync."""
+    commitment = make(session, deadline=datetime(2026, 8, 20, 0, 0))
+    body = google_calendar.event_body(commitment)
+
+    assert body["start"] == {"date": "2026-08-20"}
+    assert "dateTime" not in body["start"]
 
 
 def test_a_midnight_deadline_becomes_an_all_day_event(session):
