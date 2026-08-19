@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import time
+from dataclasses import dataclass, field
 from typing import Any
 
 import requests
@@ -17,6 +18,34 @@ import requests
 from src import config
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class OllamaHealth:
+    """Whether local inference is actually usable, and why not if it isn't.
+
+    Two separate failures with two different fixes — the server not running
+    (install/start Ollama) versus the model not pulled (``ollama pull``) — so
+    they are reported separately rather than collapsed into one "not ready".
+    """
+
+    running: bool
+    model_present: bool
+    host: str = ""
+    installed: tuple[str, ...] = field(default_factory=tuple)
+
+    @property
+    def ready(self) -> bool:
+        return self.running and self.model_present
+
+    @property
+    def problem(self) -> str:
+        """A one-line description of what is wrong, empty when nothing is."""
+        if not self.running:
+            return f"Ollama is not running at {self.host}."
+        if not self.model_present:
+            return f"The model '{config.OLLAMA_MODEL}' is not installed yet."
+        return ""
 
 
 class OllamaError(RuntimeError):
@@ -74,6 +103,39 @@ class OllamaClient:
             ) from exc
         return [m.get("name", "") for m in payload.get("models", [])]
 
+    def health(self) -> "OllamaHealth":
+        """Report readiness without raising.
+
+        :meth:`ensure_ready` raises, which is right before a batch run and wrong
+        for a setup screen that needs to *display* the problem next to its fix.
+        Both answer the same two questions, so they share the model-matching rule
+        below rather than drifting apart.
+        """
+        if not self.is_available():
+            return OllamaHealth(running=False, model_present=False, host=self.host)
+        try:
+            models = self.list_models()
+        except OllamaUnavailableError:
+            # Reachable a moment ago, gone now. Not worth a distinct state.
+            return OllamaHealth(running=False, model_present=False, host=self.host)
+
+        return OllamaHealth(
+            running=True,
+            model_present=self._model_installed(models),
+            host=self.host,
+            installed=tuple(models),
+        )
+
+    def _model_installed(self, models: list[str]) -> bool:
+        """Whether the configured model is among those installed.
+
+        Ollama reports ``llama3.2:latest``; a user following the README types
+        ``ollama pull llama3.2``. Both must count, or setup tells someone who did
+        exactly what was asked that they did not.
+        """
+        base = self.model.split(":")[0]
+        return any(m == self.model or m.split(":")[0] == base for m in models)
+
     def ensure_ready(self) -> None:
         """Raise a clear, actionable error unless the server and model are ready."""
         if not self.is_available():
@@ -82,9 +144,7 @@ class OllamaClient:
                 "Start it with:  ollama serve"
             )
         models = self.list_models()
-        # Ollama reports "llama3.2:latest"; accept a bare "llama3.2" too.
-        base = self.model.split(":")[0]
-        if not any(m == self.model or m.split(":")[0] == base for m in models):
+        if not self._model_installed(models):
             available = ", ".join(models) or "none"
             raise OllamaError(
                 f"Model '{self.model}' is not installed (available: {available}).\n"

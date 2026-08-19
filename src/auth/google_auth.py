@@ -1,14 +1,25 @@
 """Sign in with Google, and keep the resulting credentials usable.
 
-The app needs two things from Google: permission to read mail, and permission to
-write calendar events. Both come from one consent, so the user signs in once
-rather than hunting through account settings for a 16-character app password.
+Sign-in asks for **identity only**. That is a deliberate cost decision, not
+minimalism for its own sake: Google prices scope tiers very differently, and
+``gmail.readonly`` is *restricted*, meaning an app offering it publicly needs an
+annual third-party security assessment. Identity scopes are *basic* and need no
+verification at all, so an app that signs users in and writes ``.ics`` files can
+be handed to anyone today.
 
-Where the token lives matters. The refresh token is a long-lived credential that
-can re-obtain access to the user's mailbox, so it goes into the OS keyring
-alongside the IMAP password rather than into a JSON file next to the database
-(PROJECT_PLAN.md §16). Only the non-secret parts of the client configuration are
-read from disk.
+Anything beyond identity is therefore requested later and separately, by
+incremental authorization, and only when the user asks for the feature:
+
+``calendar.events``  when the user chooses Google Calendar as their output
+``gmail.readonly``   only for users running their own Cloud project
+
+Because a token may now carry any of three scope sets, nothing here may assume
+which one it has — :func:`credentials` reads the granted scopes back off the
+stored token rather than asserting a fixed list.
+
+Where the token lives matters. The refresh token is a long-lived credential, so
+it goes into the OS keyring alongside the IMAP password rather than into a JSON
+file next to the database (PROJECT_PLAN.md §16).
 """
 from __future__ import annotations
 
@@ -34,7 +45,13 @@ class GoogleAuthError(RuntimeError):
 
 @dataclass(frozen=True)
 class GoogleAccount:
-    """Who is signed in, for display on the setup screen."""
+    """Who is signed in, and what they actually granted.
+
+    The two properties are load-bearing rather than cosmetic: signing in no
+    longer implies either capability, so every caller that reaches a Google API
+    must check first or it will get a 403 on a token that is otherwise perfectly
+    valid.
+    """
 
     email: str
     scopes: tuple[str, ...]
@@ -101,6 +118,21 @@ def is_signed_in() -> bool:
     return stored_token() is not None
 
 
+def granted_scopes() -> tuple[str, ...]:
+    """The scopes the stored token actually carries.
+
+    Read from the token rather than from config, because what the user consented
+    to and what this build would like to have are now routinely different.
+    """
+    data = stored_token() or {}
+    return tuple(data.get("scopes") or ())
+
+
+def has_scope(suffix: str) -> bool:
+    """Whether a scope ending in ``suffix`` was granted."""
+    return any(scope.endswith(suffix) for scope in granted_scopes())
+
+
 # --- Credentials -----------------------------------------------------------
 
 def credentials(*, refresh: bool = True):
@@ -119,7 +151,11 @@ def credentials(*, refresh: bool = True):
             "'Sign in with Google' on the setup page."
         )
 
-    creds = Credentials.from_authorized_user_info(data, list(config.GOOGLE_SCOPES))
+    # The scopes come from the token, not from config. Passing a fixed list here
+    # made every identity-only or calendar-only sign-in look invalid, because the
+    # library treats a requested scope the token lacks as a mismatch.
+    scopes = list(data.get("scopes") or config.GOOGLE_IDENTITY_SCOPES)
+    creds = Credentials.from_authorized_user_info(data, scopes)
 
     if refresh and not creds.valid:
         if not creds.refresh_token:
@@ -154,28 +190,55 @@ def account() -> GoogleAccount | None:
 # --- Sign-in ---------------------------------------------------------------
 
 def client_secrets_present() -> bool:
-    """Whether the user has supplied their own OAuth client configuration."""
-    return config.GOOGLE_CLIENT_SECRETS.exists()
+    """Whether *any* usable OAuth client exists.
+
+    True for a packaged build carrying the embedded client, as well as for a user
+    who supplied their own JSON — sign-in is possible either way.
+    """
+    from src.auth import google_client
+
+    return google_client.client_config() is not None
 
 
-def sign_in() -> GoogleAccount:
+def sign_in(scopes: tuple[str, ...] | None = None) -> GoogleAccount:
     """Run the consent flow in the user's browser and store the result.
 
-    Blocks until the user finishes (or closes) the Google consent screen, so
-    callers on a UI thread should run it in the background.
-    """
-    if not client_secrets_present():
-        raise GoogleAuthError(
-            f"No Google client configuration found at "
-            f"{config.GOOGLE_CLIENT_SECRETS}. Create an OAuth client ID of type "
-            "'Desktop app' in your own Google Cloud project, download the JSON, "
-            "and save it there. See the README."
-        )
+    Defaults to identity only. Ask for more by passing ``scopes`` — for example
+    :data:`config.GOOGLE_CALENDAR_SCOPES` when the user opts into Google
+    Calendar. Previously granted scopes are carried forward, so enabling a second
+    feature never silently revokes the first.
 
+    Blocks until the user finishes (or closes) the consent screen, so callers on
+    a UI thread should run it in the background.
+    """
     from google_auth_oauthlib.flow import InstalledAppFlow
 
-    flow = InstalledAppFlow.from_client_secrets_file(
-        str(config.GOOGLE_CLIENT_SECRETS), list(config.GOOGLE_SCOPES)
+    from src.auth import google_client
+
+    client_config = google_client.client_config()
+    if client_config is None:
+        raise GoogleAuthError(
+            "This build has no Google client configured. Create an OAuth client "
+            "ID of type 'Desktop app' in your own Google Cloud project, download "
+            f"the JSON, and save it as {config.GOOGLE_CLIENT_SECRETS}. "
+            "See docs/google-setup.md."
+        )
+
+    requested = set(scopes or config.GOOGLE_IDENTITY_SCOPES)
+    # Incremental authorization: keep what the user already agreed to. Google
+    # would otherwise issue a token carrying only the new scope, quietly breaking
+    # whichever feature was set up first.
+    requested.update(granted_scopes())
+
+    flow = InstalledAppFlow.from_client_config(
+        client_config,
+        sorted(requested),
+        # PKCE. The client secret inside a distributed binary is not secret
+        # (RFC 8252 §8.5), so the proof key is what actually stops an intercepted
+        # redirect from being exchanged for a token. This is the library default
+        # as of google-auth-oauthlib 1.4, but it is stated rather than assumed:
+        # it is the security property the whole embedded-client design rests on.
+        autogenerate_code_verifier=True,
     )
     # port=0 asks the OS for a free port, so the redirect listener cannot
     # collide with the dashboard (8501) or the calendar server (8765).
@@ -194,11 +257,23 @@ def sign_in() -> GoogleAccount:
     return GoogleAccount(email=email, scopes=tuple(creds.scopes or ()))
 
 
+def grant_calendar_access() -> GoogleAccount:
+    """Ask for calendar permission on top of an existing sign-in."""
+    return sign_in(scopes=config.GOOGLE_CALENDAR_SCOPES)
+
+
+#: OpenID Connect's standard "who is this" endpoint. Covered by the identity
+#: scopes, so it answers for every sign-in — unlike the Gmail profile call this
+#: used to make, which needed the restricted mail scope and therefore returned
+#: nothing for the now-default identity-only user.
+USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+
 def signed_in_email(creds=None) -> str:
     """The address the credentials belong to.
 
-    Read from the id_token when one is present; otherwise asked of Gmail
-    directly, since the token itself does not have to carry an address.
+    Falls through three sources, cheapest first. The address is a nicety for the
+    setup screen, so every failure here is swallowed rather than raised.
     """
     creds = creds or credentials()
 
@@ -206,6 +281,20 @@ def signed_in_email(creds=None) -> str:
     if isinstance(claims, dict) and claims.get("email"):
         return claims["email"]
 
+    try:
+        from google.auth.transport.requests import AuthorizedSession
+
+        response = AuthorizedSession(creds).get(USERINFO_URL, timeout=10)
+        if response.ok:
+            email = response.json().get("email", "")
+            if email:
+                return email
+    except Exception:  # noqa: BLE001
+        log.debug("Could not read the OpenID userinfo address.", exc_info=True)
+
+    # Last resort, and only meaningful for a token that carries the mail scope.
+    if not has_scope("gmail.readonly"):
+        return ""
     try:
         from googleapiclient.discovery import build
 

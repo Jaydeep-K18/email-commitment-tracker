@@ -97,5 +97,13 @@ def fetch_recent(service=None) -> list[bytes]:
 
 
 def is_available() -> bool:
-    """Whether the Gmail API can be used, without making a request."""
-    return google_auth.is_signed_in()
+    """Whether the Gmail API can be used, without making a request.
+
+    Requires the ``gmail.readonly`` scope specifically, not merely a sign-in.
+    That scope is *restricted* — offering it in the shipped client would oblige
+    the project to an annual third-party security assessment — so it is only ever
+    granted to users running their own Cloud project. Everyone else reads mail
+    over IMAP, which this returning False routes them to.
+    """
+    account = google_auth.account()
+    return account is not None and account.has_mail

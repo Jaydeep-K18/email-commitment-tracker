@@ -124,11 +124,27 @@ def _sidebar() -> None:
             )
 
         st.divider()
-        if first_run.setup_state().signed_in_with_google:
-            st.caption("Calendar")
+        st.caption("Calendar")
+
+        from src.sync import google_calendar
+
+        if google_calendar.is_available():
             st.success("Writing to Google Calendar", icon="📅")
-        else:
-            st.caption("Calendar subscription URL")
+
+        # Always offered, whatever else is configured. It is the one output that
+        # needs no account, no permission and no running server, so it is what
+        # keeps the app usable with any calendar app rather than only Google's.
+        if config.ICS_PATH.exists():
+            st.download_button(
+                "Download calendar file",
+                data=config.ICS_PATH.read_bytes(),
+                file_name="email-commitments.ics",
+                mime="text/calendar",
+                use_container_width=True,
+                help="Import into Windows Calendar, Outlook, Apple Calendar…",
+            )
+
+        with st.expander("Auto-updating subscription"):
             st.code(
                 f"http://{config.SERVER_HOST}:{config.SERVER_PORT}/calendar.ics",
                 language=None,
@@ -138,9 +154,9 @@ def _sidebar() -> None:
             # a loopback address here, so pointing Google Calendar at this is a
             # dead end no amount of retrying fixes.
             st.caption(
-                "Serve it with `python -m src.server.calendar_server`, then "
-                "subscribe from Outlook desktop, Apple Calendar or Thunderbird. "
-                "For **Google Calendar**, connect Google on the setup page."
+                "Subscribe from Outlook desktop, Apple Calendar or Thunderbird "
+                "while the app is running. **Google Calendar cannot use this** — "
+                "connect it on the setup page instead."
             )
 
 

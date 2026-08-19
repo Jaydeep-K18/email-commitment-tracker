@@ -133,14 +133,36 @@ FETCH_MAX_EMAILS = _get_int("FETCH_MAX_EMAILS", 50)
 # The OAuth client the user creates in their own Google Cloud project. It is not
 # a secret in the usual sense — Google classes installed-app clients as public —
 # but it is per-user, so it lives in the data directory rather than the repo.
+# A packaged build also carries an embedded client (see google_client.py) so a
+# user never has to create a Cloud project; this file, when present, wins.
 GOOGLE_CLIENT_SECRETS = DATA_DIR / os.getenv(
     "GOOGLE_CLIENT_SECRETS_NAME", "google_client_secret.json"
 )
-# Read-only mail, and events-only calendar access. Deliberately not
-# `calendar`, which would also grant the power to delete whole calendars.
-GOOGLE_SCOPES = (
-    "https://www.googleapis.com/auth/gmail.readonly",
+
+# Scopes are requested in three separate grants rather than one, because Google
+# prices them very differently and bundling them would drag the whole app into
+# the most expensive tier:
+#
+#   identity  (openid, userinfo.email)  basic      — no verification, no user cap
+#   calendar  (calendar.events)         sensitive  — verification review, free
+#   mail      (gmail.readonly)          restricted — verification PLUS an annual
+#                                                    third-party security audit
+#
+# So sign-in asks only for identity, and a user who exports .ics for Outlook
+# never grants a sensitive scope at all. Calendar is requested later by
+# incremental authorization, and only if the user picks Google Calendar.
+GOOGLE_IDENTITY_SCOPES = (
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+)
+# Events-only. Deliberately not `calendar`, which would also grant the power to
+# delete whole calendars.
+GOOGLE_CALENDAR_SCOPES = GOOGLE_IDENTITY_SCOPES + (
     "https://www.googleapis.com/auth/calendar.events",
+)
+# Only reachable for users who supply their own Cloud project — see above.
+GOOGLE_MAIL_SCOPES = GOOGLE_CALENDAR_SCOPES + (
+    "https://www.googleapis.com/auth/gmail.readonly",
 )
 # Which calendar events are written to. "primary" is the user's default.
 GOOGLE_CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "primary")
@@ -163,6 +185,18 @@ EXTRACTION_MAX_BODY_CHARS = _get_int("EXTRACTION_MAX_BODY_CHARS", 6000)
 EXTRACTION_MIN_CONFIDENCE = _get_float("EXTRACTION_MIN_CONFIDENCE", 0.3)
 
 # --- Calendar output ---
+# Where events go. The .ics file is written either way — it costs nothing and is
+# the only output that works with no account and no network. This governs
+# whether Google Calendar is *also* pushed to, so the app is never locked to one
+# calendar vendor.
+CALENDAR_TARGET_ICS = "ics"
+CALENDAR_TARGET_GOOGLE = "google"
+# Empty means "decide from what the user granted": having consented to calendar
+# access is itself the signal that they want it used. Setting this to "ics"
+# explicitly opts out of Google even while signed in, which is what the setup
+# screen writes when the user picks a different calendar app.
+CALENDAR_TARGET = os.getenv("CALENDAR_TARGET", "")
+
 CALENDAR_NAME = os.getenv("CALENDAR_NAME", "Email Commitments")
 # Reminder lead time for events that have a specific time of day.
 CALENDAR_REMINDER_MINUTES = _get_int("CALENDAR_REMINDER_MINUTES", 30)

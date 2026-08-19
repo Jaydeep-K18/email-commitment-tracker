@@ -228,5 +228,17 @@ def remove(session, commitments: list[Commitment], service=None) -> int:
 
 
 def is_available() -> bool:
-    """Whether a Google push can even be attempted, without doing one."""
-    return google_auth.is_signed_in()
+    """Whether a Google push can even be attempted, without doing one.
+
+    Signing in is no longer enough. Identity-only is the default consent, so a
+    signed-in user may never have granted calendar access at all — and a user who
+    chose ``.ics`` output deliberately has not. Checking the granted scope here
+    keeps every sync cycle from attempting a push that can only 403, and keeps
+    the report's ``google_connected`` honest.
+    """
+    account = google_auth.account()
+    if account is None or not account.has_calendar:
+        return False
+    # Granting calendar access is the opt-in; this only lets a user who chose a
+    # different calendar app turn the push off without revoking the scope.
+    return config.CALENDAR_TARGET != config.CALENDAR_TARGET_ICS

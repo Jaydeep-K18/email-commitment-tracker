@@ -429,7 +429,7 @@ def memory_keyring(monkeypatch):
 
 def test_a_token_round_trips_through_the_keyring(memory_keyring):
     google_auth.store_token(
-        FakeCreds({"refresh_token": "r", "scopes": list(config.GOOGLE_SCOPES)}),
+        FakeCreds({"refresh_token": "r", "scopes": list(config.GOOGLE_MAIL_SCOPES)}),
         email="me@example.com",
     )
 
@@ -471,31 +471,96 @@ def test_asking_for_credentials_while_signed_out_says_so(memory_keyring):
 
 # --- Setup state -----------------------------------------------------------
 
-def test_google_alone_completes_setup(monkeypatch):
-    monkeypatch.setattr(google_auth, "is_signed_in", lambda: True)
+@pytest.fixture()
+def local_model_ready(monkeypatch):
+    """Pretend Ollama is installed and the model pulled.
+
+    ``setup_state()`` asks Ollama directly, so without this the result depends on
+    whatever happens to be running on the machine executing the tests — which is
+    how these tests used to pass on a developer laptop and would have failed on a
+    clean one.
+    """
+    from src.extraction.ollama_client import OllamaClient, OllamaHealth
+
+    monkeypatch.setattr(
+        OllamaClient,
+        "health",
+        lambda self: OllamaHealth(running=True, model_present=True, host="stub"),
+    )
+
+
+def stub_account(monkeypatch, *, scopes=()):
+    monkeypatch.setattr(
+        google_auth,
+        "account",
+        lambda: google_auth.GoogleAccount(email="me@example.com", scopes=scopes),
+    )
+
+
+def test_google_with_mail_access_completes_setup(monkeypatch, local_model_ready):
+    stub_account(monkeypatch, scopes=config.GOOGLE_MAIL_SCOPES)
     monkeypatch.setattr(first_run, "password_is_stored", lambda *_a: False)
     monkeypatch.setattr(config, "IMAP_USER", "")
 
     assert first_run.setup_state().complete
 
 
-def test_an_app_password_alone_still_completes_setup(monkeypatch):
+def test_signing_in_without_the_mail_scope_does_not_complete_setup(
+    monkeypatch, local_model_ready
+):
+    """Sign-in now asks for identity only, and identity grants no mailbox.
+
+    Treating any sign-in as sufficient would let the app declare itself ready and
+    then fetch nothing at all.
+    """
+    stub_account(monkeypatch, scopes=config.GOOGLE_IDENTITY_SCOPES)
+    monkeypatch.setattr(first_run, "password_is_stored", lambda *_a: False)
+    monkeypatch.setattr(config, "IMAP_USER", "")
+
+    state = first_run.setup_state()
+    assert state.signed_in_with_google is True
+    assert state.complete is False
+    assert "address" in state.missing
+
+
+def test_an_app_password_alone_still_completes_setup(monkeypatch, local_model_ready):
     """Non-Gmail mailboxes have no other route, so this must keep working."""
-    monkeypatch.setattr(google_auth, "is_signed_in", lambda: False)
+    monkeypatch.setattr(google_auth, "account", lambda: None)
     monkeypatch.setattr(first_run, "password_is_stored", lambda *_a: True)
     monkeypatch.setattr(config, "IMAP_USER", "someone@fastmail.com")
 
     assert first_run.setup_state().complete
 
 
-def test_neither_credential_means_setup_is_needed(monkeypatch):
-    monkeypatch.setattr(google_auth, "is_signed_in", lambda: False)
+def test_neither_credential_means_setup_is_needed(monkeypatch, local_model_ready):
+    monkeypatch.setattr(google_auth, "account", lambda: None)
     monkeypatch.setattr(first_run, "password_is_stored", lambda *_a: False)
     monkeypatch.setattr(config, "IMAP_USER", "")
 
     state = first_run.setup_state()
     assert not state.complete
-    assert "Google" in state.missing
+    assert "address" in state.missing
+
+
+def test_a_missing_local_model_blocks_setup(monkeypatch):
+    """The silent failure this guards against: credentials all present, so the
+    app reports itself ready, and then extraction dies with nothing on screen
+    explaining that no model was ever installed."""
+    from src.extraction.ollama_client import OllamaClient, OllamaHealth
+
+    monkeypatch.setattr(
+        OllamaClient,
+        "health",
+        lambda self: OllamaHealth(running=True, model_present=False, host="stub"),
+    )
+    monkeypatch.setattr(google_auth, "account", lambda: None)
+    monkeypatch.setattr(first_run, "password_is_stored", lambda *_a: True)
+    monkeypatch.setattr(config, "IMAP_USER", "someone@fastmail.com")
+
+    state = first_run.setup_state()
+    assert state.mailbox_ready is True      # credentials are fine
+    assert state.complete is False          # ...but it still cannot work
+    assert "model" in state.missing
 
 
 # --- Gmail fetch -----------------------------------------------------------

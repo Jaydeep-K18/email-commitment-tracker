@@ -109,16 +109,37 @@ def test_waiting_for_a_port_gives_up_rather_than_hanging():
 
 # --- First-run setup -------------------------------------------------------
 
+#: Setup now has a second requirement — a local model — so the mailbox tests
+#: below hold it constant rather than silently relying on its default.
+MODEL_READY = {"ollama_running": True, "model_present": True}
+
+
 def test_setup_is_needed_until_both_pieces_are_present():
-    assert not first_run.SetupState(has_user=False, has_password=False).complete
-    assert not first_run.SetupState(has_user=True, has_password=False).complete
-    assert first_run.SetupState(has_user=True, has_password=True).complete
+    assert not first_run.SetupState(False, False, **MODEL_READY).complete
+    assert not first_run.SetupState(True, False, **MODEL_READY).complete
+    assert first_run.SetupState(True, True, **MODEL_READY).complete
+
+
+def test_credentials_alone_are_not_enough_without_a_model():
+    """A mailbox the app cannot read is not a working setup."""
+    assert not first_run.SetupState(True, True, ollama_running=False).complete
+    assert not first_run.SetupState(
+        True, True, ollama_running=True, model_present=False
+    ).complete
 
 
 def test_the_missing_piece_is_named_in_the_users_terms():
-    assert "address" in first_run.SetupState(False, False).missing
-    assert "password" in first_run.SetupState(True, False).missing
-    assert first_run.SetupState(True, True).missing == ""
+    assert "address" in first_run.SetupState(False, False, **MODEL_READY).missing
+    assert "password" in first_run.SetupState(True, False, **MODEL_READY).missing
+    assert first_run.SetupState(True, True, **MODEL_READY).missing == ""
+
+
+def test_a_missing_model_is_named_before_credentials():
+    """Ollama is the first thing to fix, so it is the first thing reported."""
+    assert "Ollama" in first_run.SetupState(False, False).missing
+    assert "model" in first_run.SetupState(
+        False, False, ollama_running=True, model_present=False
+    ).missing
 
 
 def test_saving_an_address_twice_leaves_one_line():
