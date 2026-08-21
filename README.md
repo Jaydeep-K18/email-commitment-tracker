@@ -107,7 +107,7 @@ because a calendar app subscribing to a URL cannot send a custom header.
 Requires **Python 3.12** and **[Ollama](https://ollama.com/download)**.
 
 ```bash
-git clone https://github.com/Jaydeep72/email-commitment-tracker.git
+git clone https://github.com/Jaydeep-K18/email-commitment-tracker.git
 cd email-commitment-tracker
 python -m venv .venv && .venv/Scripts/activate     # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
