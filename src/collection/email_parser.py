@@ -169,7 +169,11 @@ _QUOTE_PATTERNS = [
 ]
 
 # RFC 3676 signature delimiter: a line containing "-- " (trailing space optional).
-_SIGNATURE_PATTERN = re.compile(r"^--[ \t]*$", re.MULTILINE)
+# ``\r`` is in the character class because RFC 5322 mail is CRLF-terminated, and
+# in MULTILINE mode ``$`` matches before the ``\n`` — leaving the ``\r`` to be
+# matched explicitly. Without it the delimiter is missed on every real
+# CRLF message and the signature is fed to the model as though it were content.
+_SIGNATURE_PATTERN = re.compile(r"^--[ \t\r]*$", re.MULTILINE)
 
 
 def strip_quoted_reply(text: str) -> str:
@@ -197,8 +201,20 @@ def normalize_whitespace(text: str) -> str:
     return collapsed.strip()
 
 
+def canonical_newlines(text: str) -> str:
+    """Convert CRLF and lone CR to LF.
+
+    Runs before anything else so every pattern below sees one line ending rather
+    than three. Real mail arrives CRLF-terminated (RFC 5322), while fixtures and
+    hand-written test strings use LF, and a rule that works on one and silently
+    fails on the other is the worst of both.
+    """
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
 def clean_body(text: str) -> str:
     """Full body cleanup pipeline: drop quotes, then signature, then normalise."""
+    text = canonical_newlines(text)
     text = strip_quoted_reply(text)
     text = strip_signature(text)
     return normalize_whitespace(text)

@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from src.collection.email_parser import (
+    canonical_newlines,
     clean_body,
     decode_mime_header,
     html_to_text,
@@ -78,6 +79,45 @@ def test_clean_body_pipeline_quote_then_signature():
         "> Hi Bob, can you send me the status update this week?\n"
     )
     assert clean_body(body) == "Thanks Alice. I will send the status update by Friday."
+
+
+# --- CRLF, which is what real mail actually looks like ---------------------
+#
+# RFC 5322 messages are CRLF-terminated, but every test above is written with LF
+# because that is what a Python string literal gives you. The signature rule was
+# anchored with `$` and a `[ \t]*` class that did not include `\r`, so it matched
+# nothing on a real message and quietly passed the sender's job title and company
+# to the model as though it were part of the email. It took running the suite
+# against a fresh clone — where git had checked the fixture out as CRLF — for any
+# test to notice.
+
+def test_strip_signature_handles_crlf():
+    body = "Message body here.\r\n\r\n-- \r\nJane Doe\r\nCEO, Example"
+    assert strip_signature(body).strip() == "Message body here."
+
+
+def test_clean_body_handles_a_crlf_message_end_to_end():
+    body = (
+        "Thanks Alice. I will send the status update by Friday.\r\n\r\n"
+        "-- \r\nBob Smith\r\nSenior Engineer\r\n\r\n"
+        "On Mon, Jul 21, 2025 at 3:00 PM Alice <alice@x.com> wrote:\r\n"
+        "> Hi Bob, can you send me the status update this week?\r\n"
+    )
+    cleaned = clean_body(body)
+
+    assert cleaned == "Thanks Alice. I will send the status update by Friday."
+    assert "Senior Engineer" not in cleaned
+    assert "\r" not in cleaned
+
+
+def test_a_bare_delimiter_with_no_trailing_space_still_counts():
+    """Many clients emit "--" without the RFC's trailing space."""
+    assert strip_signature("Body.\r\n--\r\nJane").strip() == "Body."
+    assert strip_signature("Body.\n--\nJane").strip() == "Body."
+
+
+def test_canonical_newlines_collapses_every_ending():
+    assert canonical_newlines("a\r\nb\rc\nd") == "a\nb\nc\nd"
 
 
 # --- End-to-end fixture parsing ------------------------------------------
