@@ -122,17 +122,6 @@ and the mailbox password is stored in your OS keyring — never in a file.
 - Connecting Google Calendar: [`docs/google-setup.md`](docs/google-setup.md)
 - Installing the Gmail panel: [`docs/gmail-panel.md`](docs/gmail-panel.md)
 
-## A note on accuracy
-
-The project does not currently ship a measured accuracy figure, and this README will not
-invent one. What exists are four guards — evidence grounding, a boilerplate denylist, a
-confidence floor, and a corrective retry on validation failure — each added in response to
-an observed failure rather than in anticipation of one.
-
-Worth stating plainly: the model self-reports confidence between 0.90 and 1.00 on
-essentially everything it produces, so that number is not evidence of correctness. Building
-a labelled evaluation set to replace anecdote with precision and recall is the most valuable
-work left.
 
 ## Built with
 
