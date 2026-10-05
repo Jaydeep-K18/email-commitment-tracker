@@ -166,6 +166,10 @@ class SyncReport:
     google_updated: int | None = None
     google_removed: int | None = None
     google_errors: list[str] = field(default_factory=list)
+    #: What was published and what was taken off this cycle. The job system
+    #: queues one Google push per entry instead of pushing inline.
+    selected_ids: list[int] = field(default_factory=list)
+    revoked_ids: list[int] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -180,7 +184,7 @@ class SyncReport:
 _TARGET_LABELS = {"calendar_file": "your calendar file", "google": "Google Calendar"}
 
 
-def _record_calendar_event(
+def record_calendar_event(
     session: Session,
     event_type: str,
     commitment: Commitment,
@@ -213,7 +217,7 @@ def _record_calendar_event(
     )
 
 
-def run_sync(session: Session, path=None) -> SyncReport:
+def run_sync(session: Session, path=None, *, push_google: bool = True) -> SyncReport:
     """Run one full sync cycle: resolve conflicts, then republish the calendar.
 
     Order matters. Conflicts are resolved first so a follow-up email has already
@@ -223,6 +227,10 @@ def run_sync(session: Session, path=None) -> SyncReport:
     A publish failure is recorded against every commitment in the batch and left
     in the retry queue; the previously written ``.ics`` file stays in place, so
     subscribers keep seeing the last good feed rather than an empty calendar.
+
+    ``push_google=False`` leaves Google Calendar alone: the job worker passes it
+    and instead queues one push job per changed commitment, so each external
+    call is retried, backed off and reported on its own.
     """
     # Imported here: conflict_resolver imports this module for its decisions.
     from src.sync import conflict_resolver, ics_builder
@@ -277,7 +285,7 @@ def run_sync(session: Session, path=None) -> SyncReport:
         database.log_sync(session, commitment.id, action=action, status="success")
         if action == "created":
             report.created += 1
-            _record_calendar_event(
+            record_calendar_event(
                 session, CALENDAR_EVENT_CREATED, commitment, "calendar_file", severity="success"
             )
         else:
@@ -294,11 +302,14 @@ def run_sync(session: Session, path=None) -> SyncReport:
             database.log_sync(
                 session, commitment.id, action="deleted", status="success"
             )
-            _record_calendar_event(
+            record_calendar_event(
                 session, CALENDAR_EVENT_REMOVED, commitment, "calendar_file"
             )
 
-    _push_to_google(session, report, selected, revoked)
+    report.selected_ids = [c.id for c in selected]
+    report.revoked_ids = [c.id for c in revoked]
+    if push_google:
+        _push_to_google(session, report, selected, revoked)
     _record_summary(session, report)
 
     session.flush()
@@ -381,7 +392,7 @@ def _push_to_google(
                 session, commitment.id, action="google_synced", status="success"
             )
     for commitment_id in pushed.created_ids:
-        _record_calendar_event(
+        record_calendar_event(
             session, CALENDAR_EVENT_CREATED, by_id[commitment_id], "google", severity="success"
         )
     for commitment_id, message in pushed.failed:
@@ -393,7 +404,7 @@ def _push_to_google(
             status="failed",
             error_message=message,
         )
-        _record_calendar_event(
+        record_calendar_event(
             session,
             CALENDAR_EVENT_FAILED,
             by_id[commitment_id],

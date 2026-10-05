@@ -181,6 +181,11 @@ class Commitment(Base):
     # presence is what makes a second sync patch the existing event instead of
     # creating a duplicate, so it is the Google-side counterpart of ics_uid.
     gcal_event_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    # v2. Hash of the event body last accepted by Google. A push job only runs
+    # when the current body hashes differently, so an unchanged commitment
+    # costs no API call — and the hash is part of the job's idempotency key, so
+    # two pushes of the same content can never both be queued.
+    gcal_synced_hash: Mapped[str | None] = mapped_column(String(32), nullable=True)
     # Phase 10. True when the user picked this out of an open email in the Gmail
     # panel, rather than it being extracted in the background. Kept separate
     # from sync_approved because the two answer different questions: approval is

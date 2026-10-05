@@ -254,6 +254,30 @@ SCHEDULER_EXTRACTION_LIMIT = _get_int("SCHEDULER_EXTRACTION_LIMIT", 10)
 # A deadline this many days out or nearer is shown as urgent.
 DASHBOARD_URGENT_DAYS = _get_int("DASHBOARD_URGENT_DAYS", 3)
 
+# --- Background jobs (v2) ---
+# Redis dispatches job ids to the worker. Optional: without it the worker polls
+# the jobs table instead, which is slower to react but loses nothing, because
+# the table — not Redis — is where every job's state lives.
+REDIS_URL = os.getenv("REDIS_URL", "")
+# Prefix for every Redis key, so the queue can share an instance safely.
+REDIS_KEY_PREFIX = os.getenv("REDIS_KEY_PREFIX", "commitmail")
+# Attempts before a job is declared failed and shown on the Failed Jobs page.
+JOB_MAX_ATTEMPTS = _get_int("JOB_MAX_ATTEMPTS", 5)
+# Exponential backoff: base * 2^(attempt-1), capped, with jitter. 15s base
+# gives retries at roughly 15s, 30s, 1m, 2m — long enough for Ollama to come
+# back, short enough that the user is not left waiting.
+JOB_BACKOFF_BASE_SECONDS = _get_float("JOB_BACKOFF_BASE_SECONDS", 15.0)
+JOB_BACKOFF_CAP_SECONDS = _get_float("JOB_BACKOFF_CAP_SECONDS", 1800.0)
+# How long a worker may hold a job before it is presumed dead and the job is
+# handed to another. Must comfortably exceed the slowest job: one extraction
+# can take OLLAMA_TIMEOUT seconds per attempt, with a retry.
+JOB_LEASE_SECONDS = _get_int("JOB_LEASE_SECONDS", 900)
+# Threads pulling jobs. One by default: extraction is CPU-bound in Ollama, and
+# two concurrent model calls on a laptop CPU are each slower than one.
+WORKER_CONCURRENCY = _get_int("WORKER_CONCURRENCY", 1)
+# How often the worker checks the mailbox, in minutes.
+FETCH_INTERVAL_MINUTES = _get_int("FETCH_INTERVAL_MINUTES", 15)
+
 # --- Keyring ---
 KEYRING_SERVICE = "email_commitment_tracker"
 

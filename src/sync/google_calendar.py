@@ -17,6 +17,9 @@ from :func:`src.sync.sync_engine.calendar_commitments`, which owns tier policy.
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -130,7 +133,56 @@ def event_body(commitment: Commitment) -> dict:
     return body
 
 
-def _push_one(service, session, commitment: Commitment) -> str:
+def deterministic_event_id(install: str, commitment_id: int) -> str:
+    """The Google event id this app will use for a commitment, chosen up front.
+
+    Google lets a client choose an event's id on insert (base32hex: a-v and
+    0-9, 5-1024 characters), and refuses a second insert with the same id with
+    409 Conflict. Choosing the id ourselves is what makes creating an event
+    idempotent: if an insert reached Google but its response was lost — a
+    timeout, a crash, a worker killed mid-request — the retry cannot create a
+    second copy. It hits the 409 instead, and becomes an update.
+
+    Salted with the installation id so two databases writing to one calendar
+    cannot claim each other's events.
+    """
+    digest = hashlib.sha256(f"{install}:{commitment_id}".encode()).digest()
+    return "ect" + base64.b32hexencode(digest).decode().lower().rstrip("=")[:26]
+
+
+def event_content_hash(commitment: Commitment) -> str:
+    """A fingerprint of exactly what would be sent to Google for this commitment."""
+    body = json.dumps(event_body(commitment), sort_keys=True, default=str)
+    return hashlib.sha256(body.encode()).hexdigest()[:32]
+
+
+def is_retryable(exc: BaseException) -> bool:
+    """Whether trying the same request again could succeed.
+
+    Rate limits and server errors pass; a malformed event or a revoked sign-in
+    will fail identically however many times it is retried, so retrying only
+    delays telling the user.
+    """
+    from googleapiclient.errors import HttpError
+
+    try:
+        from google.auth.exceptions import RefreshError
+    except ImportError:  # pragma: no cover - google-auth is a hard dependency
+        RefreshError = ()  # noqa: N806
+
+    if isinstance(exc, RefreshError):
+        return False
+    if isinstance(exc, HttpError):
+        status = exc.resp.status
+        if status == 403:
+            # 403 means both "rate limited" and "forbidden"; only the first
+            # is worth waiting for.
+            return "rateLimitExceeded" in str(exc) or "userRateLimitExceeded" in str(exc)
+        return status == 429 or status >= 500
+    return True   # network errors, timeouts
+
+
+def _push_one(service, session, commitment: Commitment, install: str | None = None) -> str:
     """Create or update one event. Returns "created" or "updated"."""
     from googleapiclient.errors import HttpError
 
@@ -157,12 +209,45 @@ def _push_one(service, session, commitment: Commitment) -> str:
             )
             commitment.gcal_event_id = None
 
-    created = service.events().insert(
-        calendarId=calendar_id, body=body
-    ).execute()
-    commitment.gcal_event_id = created.get("id")
+    if install is None:
+        from src.storage.system_settings import install_id
+
+        install = install_id(session)
+    event_id = deterministic_event_id(install, commitment.id)
+
+    try:
+        created = service.events().insert(
+            calendarId=calendar_id, body={**body, "id": event_id}
+        ).execute()
+        outcome = "created"
+        commitment.gcal_event_id = created.get("id", event_id)
+    except HttpError as exc:
+        if exc.resp.status != 409:
+            raise
+        # The event already exists: an earlier attempt got through but its
+        # response never arrived, or the user deleted it (Google keeps a
+        # deleted event's id). Update it in place, restoring it if cancelled.
+        log.info("Event %s already exists; updating instead of creating.", event_id)
+        service.events().patch(
+            calendarId=calendar_id, eventId=event_id, body={**body, "status": "confirmed"}
+        ).execute()
+        outcome = "updated"
+        commitment.gcal_event_id = event_id
+
     session.flush()
-    return "created"
+    return outcome
+
+
+def push_commitment(session, commitment: Commitment, service=None) -> str:
+    """Push one commitment and record what Google accepted. Raises on failure.
+
+    The unit of work for a background push job, which owns retrying.
+    """
+    service = service or build_service()
+    outcome = _push_one(service, session, commitment)
+    commitment.gcal_synced_hash = event_content_hash(commitment)
+    session.flush()
+    return outcome
 
 
 def push(session, commitments: list[Commitment], service=None) -> PushReport:
@@ -179,7 +264,7 @@ def push(session, commitments: list[Commitment], service=None) -> PushReport:
 
     for commitment in commitments:
         try:
-            outcome = _push_one(service, session, commitment)
+            outcome = push_commitment(session, commitment, service=service)
         except Exception as exc:  # noqa: BLE001 - recorded, not swallowed
             log.warning(
                 "Could not sync commitment %s to Google: %s", commitment.id, exc

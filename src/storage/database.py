@@ -78,6 +78,8 @@ _ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("gcal_event_id", "TEXT"),
         # Phase 10.
         ("manually_added", "BOOLEAN NOT NULL DEFAULT 0"),
+        # v2.
+        ("gcal_synced_hash", "VARCHAR(32)"),
     ],
     # Phase 6.
     "raw_emails": [

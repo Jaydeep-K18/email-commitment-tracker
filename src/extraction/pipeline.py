@@ -286,7 +286,23 @@ def analyze_and_store(
     job, in its own transaction, because this one is about to roll back.
     """
     outcome = extract_from_email(client, email)
+    store_analysis(session, email, outcome, replace_existing=replace_existing)
+    return outcome
 
+
+def store_analysis(
+    session: Session,
+    email: RawEmail,
+    outcome: ExtractionOutcome,
+    *,
+    replace_existing: bool = False,
+) -> None:
+    """The storage half of :func:`analyze_and_store`.
+
+    Split out so the job worker can run the model — which can take minutes on
+    a CPU — with no database transaction open, and only then open one to store
+    the result.
+    """
     if replace_existing:
         delete_commitments_for_email(session, email.id)
 
@@ -332,7 +348,6 @@ def analyze_and_store(
     apply_classification(
         session, email, commitment_types=tuple(c.type.value for c in outcome.commitments)
     )
-    return outcome
 
 
 def record_extraction_failure(email_id: int, exc: BaseException) -> None:
