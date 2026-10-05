@@ -28,3 +28,13 @@ dist/
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# Node / the full-stack app
+node_modules/
+apps/*/dist/
+packages/*/dist/
+coverage/
+.vite/
+playwright-report/
+test-results/
+*.tsbuildinfo

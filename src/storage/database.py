@@ -1,7 +1,13 @@
-"""SQLite database access via SQLAlchemy.
+"""Database access via SQLAlchemy — PostgreSQL in the app, SQLite in the tests.
 
 Owns the engine/session lifecycle, schema creation, and small helpers used by the
-collection layer. Schema: PROJECT_PLAN.md §10.
+collection layer. Schema: PROJECT_PLAN.md §10, plus the v2 tables in
+:mod:`src.storage.models`.
+
+On Postgres the schema is created and evolved by Alembic, never by
+``create_all``: the Node server shares these tables, so the schema needs one
+versioned owner. SQLite keeps ``create_all`` because every test builds a fresh
+throwaway database from the models.
 """
 from __future__ import annotations
 
@@ -26,15 +32,29 @@ if TYPE_CHECKING:  # avoid a runtime import of higher layers from storage
     from src.extraction.schemas import ExtractedCommitment
 
 
-engine = create_engine(config.DATABASE_URL, future=True)
+def is_sqlite(url: str) -> bool:
+    return url.startswith("sqlite")
 
 
-@event.listens_for(engine, "connect")
+def build_engine(url: str):
+    """An engine configured for whichever database ``url`` points at."""
+    if is_sqlite(url):
+        built = create_engine(url, future=True)
+        event.listen(built, "connect", _enable_sqlite_foreign_keys)
+        return built
+    # pool_pre_ping: the worker holds connections across long LLM calls, and a
+    # Postgres restart in the meantime should cost one retry, not a crash.
+    return create_engine(url, future=True, pool_pre_ping=True)
+
+
 def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):  # noqa: ANN001
     """Turn on foreign-key enforcement (SQLite defaults it off)."""
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+
+
+engine = build_engine(config.DATABASE_URL)
 
 
 # expire_on_commit=False so returned objects remain readable after the session
@@ -61,6 +81,20 @@ _ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
     # Phase 6.
     "raw_emails": [
         ("notification_seen", "BOOLEAN NOT NULL DEFAULT 0"),
+        # v2 smart inbox. Listed here only so a pre-v2 SQLite file keeps working
+        # until it is migrated into Postgres; Postgres gets these from Alembic.
+        ("is_read", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("is_starred", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("archived_at", "DATETIME"),
+        ("deleted_at", "DATETIME"),
+        ("category", "VARCHAR"),
+        ("category_source", "VARCHAR"),
+        ("category_reason", "TEXT"),
+        ("in_reply_to", "VARCHAR"),
+        ("cc", "TEXT"),
+        ("is_bulk", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("has_invite", "BOOLEAN NOT NULL DEFAULT 0"),
+        ("has_attachments", "BOOLEAN NOT NULL DEFAULT 0"),
     ],
 }
 
@@ -107,9 +141,25 @@ def _migrate_added_columns() -> None:
                     connection.exec_driver_sql(backfill)
 
 
+def upgrade_schema(url: str | None = None) -> None:
+    """Bring a Postgres database to the latest Alembic revision."""
+    from alembic import command
+    from alembic.config import Config
+
+    alembic_cfg = Config(str(config.BASE_DIR / "alembic.ini"))
+    alembic_cfg.set_main_option("script_location", str(config.BASE_DIR / "migrations"))
+    alembic_cfg.set_main_option(
+        "sqlalchemy.url", (url or config.DATABASE_URL).replace("%", "%%")
+    )
+    command.upgrade(alembic_cfg, "head")
+
+
 def init_db() -> None:
-    """Create the data directory and all tables if they don't already exist."""
+    """Make sure the schema exists and is current."""
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not is_sqlite(config.DATABASE_URL):
+        upgrade_schema()
+        return
     Base.metadata.create_all(engine)
     _migrate_added_columns()
 

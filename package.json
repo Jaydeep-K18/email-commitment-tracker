@@ -1,0 +1,12 @@
+{
+  "name": "commitmail",
+  "private": true,
+  "description": "CommitMail — the full-stack app. React (apps/web), Express (apps/server), shared contracts (packages/shared).",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  }
+}

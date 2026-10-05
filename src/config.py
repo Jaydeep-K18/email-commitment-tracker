@@ -115,7 +115,27 @@ def _get_bool(name: str, default: bool) -> bool:
 # --- Paths ---
 # DATA_DIR is resolved above, before .env is loaded from it.
 DB_PATH = DATA_DIR / "tracker.db"
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+SQLITE_URL = f"sqlite:///{DB_PATH}"
+
+
+def normalize_database_url(url: str) -> str:
+    """Translate a Postgres URL into the form SQLAlchemy needs.
+
+    The Node server and the Python worker share one ``DATABASE_URL``. Node's
+    driver wants the conventional ``postgres://`` scheme, while SQLAlchemy needs
+    to be told which driver to load, so the scheme is rewritten here rather than
+    asking the user to keep two copies of the same connection string in step.
+    """
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
+# Postgres is the database of the full-stack app. The SQLite file remains the
+# default so the unit tests and a checkout without Docker still run, and it is
+# the source the one-off migration into Postgres reads from.
+DATABASE_URL = normalize_database_url(os.getenv("DATABASE_URL", SQLITE_URL))
 ICS_PATH = DATA_DIR / "calendar.ics"
 
 # --- IMAP connection (non-secret; the password lives in the keyring) ---

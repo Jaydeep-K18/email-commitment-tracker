@@ -32,7 +32,13 @@ google-auth>=2.30               # credentials and silent token refresh
 google-auth-oauthlib>=1.2       # the installed-app consent flow
 google-api-python-client>=2.130 # Gmail and Calendar clients
 
+# v2 — the worker behind the full-stack app.
+alembic>=1.13           # owns the schema the Node server shares
+psycopg[binary]>=3.2    # PostgreSQL driver
+redis>=5.0              # job dispatch, delayed retries, locks
+
 # --- Dev / test ---
 pytest>=8.0
+fakeredis>=2.23         # in-process Redis for the job-queue tests
 httpx>=0.27             # required by fastapi.testclient
 pyinstaller>=6.0        # builds the desktop executable (not needed to run)

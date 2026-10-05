@@ -1,0 +1,65 @@
+# Infrastructure for CommitMail. The application processes (Python worker,
+# Express server, React dev server) run on the host; this file runs the
+# services they depend on.
+#
+#   docker compose up -d                       Postgres + Redis
+#   docker compose --profile events up -d      + Kafka
+#   docker compose --profile streaming up -d   + Kafka + Flink
+#
+# Every port is bound to 127.0.0.1. These services hold the contents of your
+# mailbox and must never be reachable from the rest of your network.
+#
+# Passwords come from .env next to this file (see .env.example). Compose refuses
+# to start if they are missing rather than falling back to a default.
+
+name: commitmail
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: commitmail
+      POSTGRES_USER: commitmail
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      # Timestamps are stored as naive UTC. Pinning the server's zone means a
+      # stray now() without a conversion still lands in UTC.
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U commitmail -d commitmail"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Append-only persistence: delayed retries live in Redis between attempts,
+    # and should survive a container restart. (They can also be rebuilt from
+    # the jobs table, which remains the source of truth.)
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+volumes:
+  pgdata:
+  redisdata:
