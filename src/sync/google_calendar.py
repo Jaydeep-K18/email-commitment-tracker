@@ -46,6 +46,9 @@ class PushReport:
     updated: int = 0
     removed: int = 0
     failed: list[tuple[int, str]] = field(default_factory=list)
+    #: Which commitments got a brand-new event, so each can be recorded on its
+    #: email's timeline. Counts alone cannot say which email it was.
+    created_ids: list[int] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
@@ -185,6 +188,7 @@ def push(session, commitments: list[Commitment], service=None) -> PushReport:
             continue
         if outcome == "created":
             report.created += 1
+            report.created_ids.append(commitment.id)
         else:
             report.updated += 1
 

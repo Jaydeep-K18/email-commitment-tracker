@@ -30,6 +30,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from src import config
+from src.events.recorder import COMMITMENT_SUPERSEDED, email_correlation, record_event
 from src.storage import database
 from src.storage.models import Commitment
 
@@ -186,6 +187,15 @@ def resolve_conflicts(
             )
             resolution.notes.append(
                 f"#{stale.id} '{stale.subject}' superseded by #{winner.id}"
+            )
+            record_event(
+                session,
+                COMMITMENT_SUPERSEDED,
+                f"Replaced by a later email: {stale.subject}",
+                entity_type="commitment",
+                entity_id=stale.id,
+                correlation_id=email_correlation(stale.email_id),
+                payload={"superseded_by": winner.id, "winner_email_id": winner.email_id},
             )
             log.info(
                 "Commitment #%s superseded by #%s (%s)",

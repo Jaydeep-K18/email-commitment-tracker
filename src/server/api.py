@@ -19,7 +19,9 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from src import config
+from src.classification.service import apply_classification
 from src.collection.email_parser import ParsedEmail
+from src.events.recorder import COMMITMENT_CREATED, email_correlation, record_event
 from src.filtering import vip_filter
 from src.server import api_token
 from src.storage import database
@@ -310,6 +312,18 @@ def create_commitment(payload: CommitmentPayload) -> dict:
         # made while looking at the email.
         commitment.manually_added = True
         database.set_sync_approval(session, commitment.id, True)
+
+        record_event(
+            session,
+            COMMITMENT_CREATED,
+            f"Added from the Gmail panel: {commitment.subject}",
+            entity_type="commitment",
+            entity_id=commitment.id,
+            correlation_id=email_correlation(email.id),
+            severity="success",
+            payload={"type": commitment.type, "source": "gmail_panel"},
+        )
+        apply_classification(session, email)
 
         return {
             "ok": True,

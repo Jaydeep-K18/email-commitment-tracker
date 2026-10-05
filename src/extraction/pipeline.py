@@ -15,7 +15,17 @@ import re
 import time
 from dataclasses import dataclass, field
 
+from sqlalchemy.orm import Session
+
 from src import config
+from src.classification.service import apply_classification
+from src.events.recorder import (
+    COMMITMENT_CREATED,
+    EMAIL_ANALYZED,
+    EXTRACTION_FAILED,
+    email_correlation,
+    record_event,
+)
 from src.extraction import prompts
 from src.extraction.ollama_client import OllamaClient, OllamaError
 from src.extraction.schemas import (
@@ -257,6 +267,93 @@ def extract_from_email(
     return outcome
 
 
+def analyze_and_store(
+    session: Session,
+    client: OllamaClient,
+    email: RawEmail,
+    *,
+    replace_existing: bool = False,
+) -> ExtractionOutcome:
+    """Extract, store, and record one email's analysis — all in ``session``.
+
+    This is the unit of work both the background loop and the job system run,
+    so the two cannot drift apart. Everything it writes — the commitments, the
+    ``processed`` flag, the refined category and the events describing them —
+    commits together, so a crash halfway leaves the email unprocessed and
+    eligible for a clean retry rather than half-analysed.
+
+    Raises whatever extraction raised; recording the failure is the caller's
+    job, in its own transaction, because this one is about to roll back.
+    """
+    outcome = extract_from_email(client, email)
+
+    if replace_existing:
+        delete_commitments_for_email(session, email.id)
+
+    correlation = email_correlation(email.id)
+    for extracted in outcome.commitments:
+        stored = save_commitment(session, email, extracted)
+        due = f", due {stored.deadline:%d %b %H:%M}" if stored.deadline else ""
+        record_event(
+            session,
+            COMMITMENT_CREATED,
+            f"Found: {stored.subject}{due}",
+            entity_type="commitment",
+            entity_id=stored.id,
+            correlation_id=correlation,
+            payload={
+                "type": stored.type,
+                "deadline": stored.deadline.isoformat() if stored.deadline else None,
+                "confidence": stored.confidence,
+            },
+        )
+
+    email.processed = True
+    found = len(outcome.commitments)
+    record_event(
+        session,
+        EMAIL_ANALYZED,
+        (
+            f"Analyzed in {outcome.duration_seconds:.1f}s: "
+            f"{found} commitment{'s' if found != 1 else ''} found"
+            + (" (after a corrective retry)" if outcome.retried else "")
+        ),
+        entity_type="email",
+        entity_id=email.id,
+        correlation_id=correlation,
+        severity="success",
+        payload={
+            "commitments": found,
+            "retried": outcome.retried,
+            "discarded": outcome.discarded,
+            "duration_ms": round(outcome.duration_seconds * 1000),
+        },
+    )
+    apply_classification(
+        session, email, commitment_types=tuple(c.type.value for c in outcome.commitments)
+    )
+    return outcome
+
+
+def record_extraction_failure(email_id: int, exc: BaseException) -> None:
+    """Record a failed analysis in a transaction of its own.
+
+    Separate because the analysis transaction is being rolled back, and would
+    take the evidence of its own failure with it.
+    """
+    with session_scope() as session:
+        record_event(
+            session,
+            EXTRACTION_FAILED,
+            f"Analysis failed: {exc}",
+            entity_type="email",
+            entity_id=email_id,
+            correlation_id=email_correlation(email_id),
+            severity="error",
+            payload={"error": str(exc), "error_type": type(exc).__name__},
+        )
+
+
 def process_pending_emails(
     limit: int | None = None,
     client: OllamaClient | None = None,
@@ -296,28 +393,27 @@ def process_pending_emails(
                 (email.subject or "(no subject)")[:60],
             )
             try:
-                outcome = extract_from_email(client, email)
+                outcome = analyze_and_store(
+                    session, client, email, replace_existing=replace_existing
+                )
             except OllamaError as exc:
                 # The model/server is unhealthy; stop rather than burn the queue.
                 log.error("Ollama failure on email %s: %s", email_id, exc)
                 stats.emails_failed += 1
+                record_extraction_failure(email_id, exc)
                 raise
             except Exception as exc:
                 log.warning("Extraction failed for email %s: %s", email_id, exc)
                 stats.emails_failed += 1
+                record_extraction_failure(email_id, exc)
                 continue
 
-            if replace_existing:
-                delete_commitments_for_email(session, email.id)
-
             for commitment in outcome.commitments:
-                save_commitment(session, email, commitment)
                 stats.by_type[commitment.type.value] = (
                     stats.by_type.get(commitment.type.value, 0) + 1
                 )
                 stats.commitments_stored += 1
 
-            email.processed = True
             stats.emails_processed += 1
             stats.retries += 1 if outcome.retried else 0
             stats.discarded += outcome.discarded

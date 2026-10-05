@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from email import message_from_bytes
 from email.header import decode_header, make_header
 from email.message import Message
-from email.utils import parseaddr, parsedate_to_datetime
+from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 
 from bs4 import BeautifulSoup
 
@@ -32,6 +32,13 @@ class ParsedEmail:
     subject: str | None
     body_text: str
     received_at: datetime | None
+    # v2: signals the smart-inbox classifier reads. Defaulted so a ParsedEmail
+    # built by hand (as the tests do) does not need to know about them.
+    in_reply_to: str | None = None
+    cc: str | None = None
+    is_bulk: bool = False
+    has_invite: bool = False
+    has_attachments: bool = False
 
 
 # --- Header helpers -------------------------------------------------------
@@ -220,6 +227,55 @@ def clean_body(text: str) -> str:
     return normalize_whitespace(text)
 
 
+# --- Classification signals (v2) ------------------------------------------
+
+#: Precedence values that mark mail sent to a list rather than to a person.
+_BULK_PRECEDENCE = {"bulk", "list", "junk"}
+
+#: Content types that carry a calendar invitation.
+_INVITE_TYPES = {"text/calendar", "application/ics"}
+
+
+def is_bulk_message(msg: Message) -> bool:
+    """Whether the message was sent to a list or by a machine.
+
+    Each check is a header that mailing-list software or automated senders set
+    precisely so that clients can tell: List-Id and List-Unsubscribe (RFC 2369,
+    2919), Precedence, and Auto-Submitted (RFC 3834). A header is far more
+    reliable than guessing from the wording.
+    """
+    if msg.get("List-Unsubscribe") or msg.get("List-Id"):
+        return True
+    if str(msg.get("Precedence") or "").strip().lower() in _BULK_PRECEDENCE:
+        return True
+    auto = str(msg.get("Auto-Submitted") or "").strip().lower()
+    return bool(auto) and auto != "no"
+
+
+def attachment_signals(msg: Message) -> tuple[bool, bool]:
+    """``(has_invite, has_attachments)`` from walking the MIME parts."""
+    has_invite = has_attachments = False
+    for part in msg.walk():
+        if part.is_multipart():
+            continue
+        content_type = part.get_content_type()
+        filename = (part.get_filename() or "").lower()
+        if content_type in _INVITE_TYPES or filename.endswith(".ics"):
+            has_invite = True
+        disposition = str(part.get("Content-Disposition") or "").lower()
+        if disposition.startswith("attachment"):
+            has_attachments = True
+    return has_invite, has_attachments
+
+
+def address_list(raw: str | None) -> str | None:
+    """Comma-separated addresses from a To/Cc header, or None if empty."""
+    if not raw:
+        return None
+    addresses = [addr for _, addr in getaddresses([decode_mime_header(raw)]) if addr]
+    return ", ".join(addresses) or None
+
+
 # --- Public entry point ---------------------------------------------------
 
 def parse_email_message(raw_bytes: bytes) -> ParsedEmail:
@@ -229,6 +285,7 @@ def parse_email_message(raw_bytes: bytes) -> ParsedEmail:
     message_id = _clean_message_id(msg.get("Message-ID"))
     sender_name, sender_email = parse_address(msg.get("From"))
     _, recipient_email = parse_address(msg.get("To"))
+    has_invite, has_attachments = attachment_signals(msg)
 
     return ParsedEmail(
         message_id=message_id,
@@ -239,4 +296,9 @@ def parse_email_message(raw_bytes: bytes) -> ParsedEmail:
         subject=decode_mime_header(msg.get("Subject")) or None,
         body_text=clean_body(get_body(msg)),
         received_at=_parse_date(msg.get("Date")),
+        in_reply_to=_first_message_id(msg.get("In-Reply-To")),
+        cc=address_list(msg.get("Cc")),
+        is_bulk=is_bulk_message(msg),
+        has_invite=has_invite,
+        has_attachments=has_attachments,
     )

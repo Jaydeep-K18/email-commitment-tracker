@@ -26,6 +26,14 @@ from dataclasses import dataclass, field
 from sqlalchemy.orm import Session
 
 from src import config
+from src.events.recorder import (
+    CALENDAR_EVENT_CREATED,
+    CALENDAR_EVENT_FAILED,
+    CALENDAR_EVENT_REMOVED,
+    CALENDAR_SYNCED,
+    email_correlation,
+    record_event,
+)
 from src.filtering.vip_filter import CRITICAL, IMPORTANT, MONITOR, SKIP
 from src.storage import database
 from src.storage.models import Commitment
@@ -168,6 +176,43 @@ class SyncReport:
         return self.google_created is not None
 
 
+#: Where an event was written, as it reads on the activity timeline.
+_TARGET_LABELS = {"calendar_file": "your calendar file", "google": "Google Calendar"}
+
+
+def _record_calendar_event(
+    session: Session,
+    event_type: str,
+    commitment: Commitment,
+    target: str,
+    *,
+    severity: str = "info",
+    error: str | None = None,
+) -> None:
+    """One calendar outcome, filed under the email the commitment came from."""
+    where = _TARGET_LABELS[target]
+    if event_type == CALENDAR_EVENT_CREATED:
+        message = f"Added to {where}: {commitment.subject}"
+    elif event_type == CALENDAR_EVENT_REMOVED:
+        message = f"Removed from {where}: {commitment.subject} ({commitment.status})"
+    else:
+        message = f"Could not add to {where}: {commitment.subject}. {error or ''}".strip()
+    record_event(
+        session,
+        event_type,
+        message,
+        entity_type="commitment",
+        entity_id=commitment.id,
+        correlation_id=email_correlation(commitment.email_id),
+        severity=severity,
+        payload={
+            "target": target,
+            "deadline": commitment.deadline.isoformat() if commitment.deadline else None,
+            **({"error": error} if error else {}),
+        },
+    )
+
+
 def run_sync(session: Session, path=None) -> SyncReport:
     """Run one full sync cycle: resolve conflicts, then republish the calendar.
 
@@ -214,6 +259,14 @@ def run_sync(session: Session, path=None) -> SyncReport:
                 status="failed",
                 error_message=str(exc),
             )
+        record_event(
+            session,
+            CALENDAR_EVENT_FAILED,
+            f"Could not write the calendar file; {len(selected)} events will be retried. {exc}",
+            entity_type="calendar",
+            severity="error",
+            payload={"target": "calendar_file", "error": str(exc), "pending": len(selected)},
+        )
         session.flush()
         return report
 
@@ -224,6 +277,9 @@ def run_sync(session: Session, path=None) -> SyncReport:
         database.log_sync(session, commitment.id, action=action, status="success")
         if action == "created":
             report.created += 1
+            _record_calendar_event(
+                session, CALENDAR_EVENT_CREATED, commitment, "calendar_file", severity="success"
+            )
         else:
             report.updated += 1
 
@@ -238,11 +294,45 @@ def run_sync(session: Session, path=None) -> SyncReport:
             database.log_sync(
                 session, commitment.id, action="deleted", status="success"
             )
+            _record_calendar_event(
+                session, CALENDAR_EVENT_REMOVED, commitment, "calendar_file"
+            )
 
     _push_to_google(session, report, selected, revoked)
+    _record_summary(session, report)
 
     session.flush()
     return report
+
+
+def _record_summary(session: Session, report: SyncReport) -> None:
+    """One event per cycle: the heartbeat Flink measures sync throughput from."""
+    parts = [f"{report.published} on the calendar ({report.created} new)"]
+    if report.google_connected:
+        parts.append(
+            f"Google: {report.google_created} created, {report.google_updated} updated"
+        )
+    if report.superseded:
+        parts.append(f"{report.superseded} superseded by follow-ups")
+    problems = len(report.errors) + len(report.google_errors)
+    record_event(
+        session,
+        CALENDAR_SYNCED,
+        "Calendar synced: " + " · ".join(parts),
+        entity_type="calendar",
+        severity="warning" if problems else "success",
+        payload={
+            "published": report.published,
+            "created": report.created,
+            "updated": report.updated,
+            "superseded": report.superseded,
+            "awaiting_approval": report.awaiting_approval,
+            "google_created": report.google_created,
+            "google_updated": report.google_updated,
+            "google_removed": report.google_removed,
+            "errors": problems,
+        },
+    )
 
 
 def _push_to_google(
@@ -283,11 +373,17 @@ def _push_to_google(
 
     report.google_created = pushed.created
     report.google_updated = pushed.updated
+    by_id = {c.id: c for c in selected}
+    failed_ids = {cid for cid, _ in pushed.failed}
     for commitment in selected:
-        if commitment.id not in {cid for cid, _ in pushed.failed}:
+        if commitment.id not in failed_ids:
             database.log_sync(
                 session, commitment.id, action="google_synced", status="success"
             )
+    for commitment_id in pushed.created_ids:
+        _record_calendar_event(
+            session, CALENDAR_EVENT_CREATED, by_id[commitment_id], "google", severity="success"
+        )
     for commitment_id, message in pushed.failed:
         report.google_errors.append(message)
         database.log_sync(
@@ -296,6 +392,14 @@ def _push_to_google(
             action="google_synced",
             status="failed",
             error_message=message,
+        )
+        _record_calendar_event(
+            session,
+            CALENDAR_EVENT_FAILED,
+            by_id[commitment_id],
+            "google",
+            severity="error",
+            error=message,
         )
 
     try:

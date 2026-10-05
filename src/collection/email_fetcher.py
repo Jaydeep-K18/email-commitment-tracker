@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 from src import config
+from src.classification.service import apply_classification, classify_unclassified
 from src.collection.email_parser import parse_email_message
 from src.filtering import vip_filter
 from src.storage.database import init_db, save_email, session_scope
@@ -36,6 +37,10 @@ class FetchResult:
     by_tier: dict[str, int] = field(
         default_factory=lambda: {tier: 0 for tier in vip_filter.TIERS}
     )
+    #: Ids of every email stored this cycle, and of the subset the model should
+    #: read. The job system enqueues one analysis job per id in the latter.
+    new_ids: list[int] = field(default_factory=list)
+    analyze_ids: list[int] = field(default_factory=list)
 
 
 def connect() -> imaplib.IMAP4:
@@ -146,10 +151,17 @@ def fetch_and_store() -> FetchResult:
                     # SKIP senders are closed out immediately — never extracted.
                     processed=not decision.should_process,
                 )
+                if saved is not None:
+                    # In the same transaction, so no email is ever visible in
+                    # the inbox without a category.
+                    apply_classification(session, saved, commitment_types=())
             if saved is None:
                 result.duplicates += 1
             else:
                 result.new += 1
+                result.new_ids.append(saved.id)
+                if decision.should_process:
+                    result.analyze_ids.append(saved.id)
                 result.by_tier[decision.tier] = (
                     result.by_tier.get(decision.tier, 0) + 1
                 )
@@ -159,6 +171,14 @@ def fetch_and_store() -> FetchResult:
                     )
         except Exception as exc:
             log.warning("Store failed for %s: %s", parsed.message_id, exc)
+
+    # Emails stored before categories existed, or migrated in from an older
+    # database, get one here — so "every stored email has a category" holds
+    # after any fetch. A no-op once they all do.
+    with session_scope() as session:
+        backfilled = classify_unclassified(session)
+    if backfilled:
+        log.info("Categorised %d previously uncategorised email(s).", backfilled)
 
     log.info(
         "Fetch complete: %d fetched, %d new, %d duplicates, tiers=%s",

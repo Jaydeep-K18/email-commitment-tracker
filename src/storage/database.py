@@ -18,6 +18,7 @@ from sqlalchemy import ColumnElement, create_engine, event, func, inspect, selec
 from sqlalchemy.orm import Session, sessionmaker
 
 from src import config
+from src.events.recorder import EMAIL_RECEIVED, email_correlation, record_event
 from src.filtering.vip_filter import (
     SKIP,
     TIERS,
@@ -244,9 +245,30 @@ def save_email(
         # announce their entire history — a notification is about arrival, and
         # those emails arrived while the user did not care about them.
         notification_seen=not is_notifiable_tier(vip_tier),
+        in_reply_to=parsed.in_reply_to,
+        cc=parsed.cc,
+        is_bulk=parsed.is_bulk,
+        has_invite=parsed.has_invite,
+        has_attachments=parsed.has_attachments,
     )
     session.add(email)
     session.flush()  # assign the primary key within this transaction
+
+    sender = parsed.sender_name or parsed.sender_email or "an unknown sender"
+    record_event(
+        session,
+        EMAIL_RECEIVED,
+        f"Email from {sender}: {parsed.subject or '(no subject)'}",
+        entity_type="email",
+        entity_id=email.id,
+        correlation_id=email_correlation(email.id),
+        payload={
+            "sender_email": parsed.sender_email,
+            "subject": parsed.subject,
+            "vip_tier": vip_tier,
+            "will_analyze": not processed,
+        },
+    )
     return email
 
 
