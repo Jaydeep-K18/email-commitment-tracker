@@ -104,6 +104,7 @@ export const JOB_TYPES = [
   "remove_google_event",
   "apply_vip_rules",
   "enforce_retention",
+  "classify_emails",
 ] as const;
 export type JobType = (typeof JOB_TYPES)[number];
 

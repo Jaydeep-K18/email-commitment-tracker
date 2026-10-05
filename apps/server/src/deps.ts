@@ -1,0 +1,26 @@
+/**
+ * Everything a route can touch, passed in rather than imported.
+ *
+ * The app is built from this one object, so a test can hand it PGlite instead
+ * of Postgres, no Redis, and a fake worker — and exercise every route exactly
+ * as production runs it, minus the infrastructure.
+ */
+import type { Redis } from "ioredis";
+import type { Logger } from "pino";
+
+import type { Db } from "./db/types";
+import type { Env } from "./env";
+import type { JobQueue } from "./jobs/queue";
+import type { Hub } from "./realtime/hub";
+import type { WorkerClient } from "./worker/client";
+
+export interface Deps {
+  env: Env;
+  db: Db;
+  log: Logger;
+  redis: Redis | null;
+  jobs: JobQueue;
+  worker: WorkerClient;
+  /** Connected browsers; set once the HTTP server exists. */
+  hub: Hub | null;
+}

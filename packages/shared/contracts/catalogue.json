@@ -72,6 +72,7 @@
   ],
   "jobTypes": [
     "apply_vip_rules",
+    "classify_emails",
     "enforce_retention",
     "fetch_mailbox",
     "process_email",

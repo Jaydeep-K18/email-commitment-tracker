@@ -92,6 +92,26 @@ def sync_decisions() -> list[dict]:
     return cases
 
 
+def postgres_schema() -> str:
+    """The full Postgres DDL, as Alembic would run it, without a database.
+
+    The Node server's tests load this into PGlite (Postgres in WebAssembly), so
+    they run against the real schema — triggers, generated columns and all —
+    rather than a hand-written approximation of it.
+    """
+    import io
+
+    from alembic import command
+    from alembic.config import Config
+
+    buffer = io.StringIO()
+    cfg = Config(str(config.BASE_DIR / "alembic.ini"), output_buffer=buffer)
+    cfg.set_main_option("script_location", str(config.BASE_DIR / "migrations"))
+    cfg.set_main_option("sqlalchemy.url", "postgresql+psycopg://contract@localhost/contract")
+    command.upgrade(cfg, "head", sql=True)
+    return buffer.getvalue()
+
+
 def render() -> dict[str, str]:
     """File name -> exact contents. Deterministic, so it can be diffed."""
     def dump(value) -> str:
@@ -100,6 +120,7 @@ def render() -> dict[str, str]:
     return {
         "catalogue.json": dump(catalogue()),
         "sync-decisions.json": dump(sync_decisions()),
+        "schema.sql": postgres_schema(),
     }
 
 

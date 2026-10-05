@@ -193,9 +193,11 @@ def enqueue_unless_active(
     run twice, so the cost is one redundant run.
     """
     scope = scope or job_type
+    # "_" and "%" are LIKE wildcards, and job types contain underscores.
+    literal = scope.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     active = session.scalar(
         select(Job.id)
-        .where(Job.idempotency_key.like(f"{scope}:%"), Job.status.in_(ACTIVE))
+        .where(Job.idempotency_key.like(f"{literal}:%", escape="\\"), Job.status.in_(ACTIVE))
         .limit(1)
     )
     if active is not None:
@@ -417,6 +419,7 @@ _DESCRIPTIONS = {
     "remove_google_event": "remove commitment #{commitment_id} from Google Calendar",
     "apply_vip_rules": "re-apply your contact rules to stored email",
     "enforce_retention": "apply your data-retention settings",
+    "classify_emails": "re-classify selected emails",
 }
 
 

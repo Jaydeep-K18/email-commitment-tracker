@@ -1,0 +1,42 @@
+{
+  "name": "@commitmail/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CommitMail's Express server: authentication, the REST API, WebSockets, and the bridge to the Python worker.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@commitmail/shared": "*",
+    "@node-rs/argon2": "^2.2.1",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.3.0",
+    "ioredis": "^5.11.1",
+    "pg": "^8.23.1",
+    "pino": "^9.14.0",
+    "pino-http": "^10.5.0",
+    "rate-limit-redis": "^4.3.1",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.16",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "@types/ws": "^8.18.2",
+    "supertest": "^7.3.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}

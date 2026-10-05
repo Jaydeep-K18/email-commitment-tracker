@@ -457,3 +457,18 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
                 },
             )
     return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked}
+
+
+@handler("classify_emails")
+def classify_emails(payload: dict, ctx: JobContext) -> dict:
+    """Re-run the classifier on specific emails — after a user hands a category
+    back to automatic, for one. Skips any whose category the user still owns."""
+    from src.classification.service import apply_classification
+
+    email_ids = [int(value) for value in payload.get("email_ids", [])][:1000]
+    with session_scope() as session:
+        changed = sum(
+            apply_classification(session, email)
+            for email in session.scalars(select(RawEmail).where(RawEmail.id.in_(email_ids)))
+        )
+    return {"requested": len(email_ids), "changed": changed}
