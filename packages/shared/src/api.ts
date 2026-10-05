@@ -123,6 +123,23 @@ export interface Commitment {
   source: { emailId: number; subject: string | null; senderName: string | null; senderEmail: string | null };
 }
 
+export interface RelationshipPerson {
+  key: string;
+  label: string;
+  tier: Tier | "untiered";
+  youOwe: number;
+  theyOwe: number;
+  commitments: Array<{
+    id: number;
+    emailId: number;
+    type: CommitmentType;
+    subject: string;
+    deadline: string | null;
+    status: CommitmentStatus;
+    direction: "you_owe" | "they_owe";
+  }>;
+}
+
 // --- Contacts ----------------------------------------------------------------
 
 export interface Contact {

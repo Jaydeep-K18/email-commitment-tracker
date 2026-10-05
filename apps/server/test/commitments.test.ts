@@ -113,3 +113,16 @@ describe("commitment views", () => {
     ]);
   });
 });
+
+describe("relationships", () => {
+  it("merges a person across spellings and points each obligation the right way", async () => {
+    const emailId = await insertEmail(db);
+    await insertCommitment(db, emailId, { counterparty_email: "Priya@Acme.com", counterparty_name: "Priya", type: "deadline_on_you", vip_tier: "MONITOR" });
+    await insertCommitment(db, emailId, { counterparty_email: "priya@acme.com", counterparty_name: "Priya N.", type: "deadline_from_others", vip_tier: "CRITICAL" });
+    await insertCommitment(db, emailId, { counterparty_email: "bob@x.com", type: "meeting", status: "dismissed" });
+
+    const res = await session.get("/api/relationships");
+    expect(res.body.people).toHaveLength(1);
+    expect(res.body.people[0]).toMatchObject({ key: "priya@acme.com", youOwe: 1, theyOwe: 1, tier: "CRITICAL" });
+  });
+});

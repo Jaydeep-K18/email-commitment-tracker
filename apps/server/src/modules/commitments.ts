@@ -196,3 +196,61 @@ export function calendarRouter(deps: Deps): Router {
 
   return router;
 }
+
+/**
+ * Who you are entangled with, and which way it runs — the data behind the
+ * relationship graph. Same rules as the graph the Streamlit dashboard drew:
+ * a person is keyed by address (falling back to name) so spellings merge, and
+ * an obligation runs towards whoever owes: deadlines on you and meetings are
+ * yours, deadlines from others and pending questions are theirs.
+ */
+type Direction = "you_owe" | "they_owe";
+interface Person {
+  key: string;
+  label: string;
+  tiers: Set<string>;
+  youOwe: number;
+  theyOwe: number;
+  commitments: Array<{
+    id: number; emailId: number; type: string; subject: string;
+    deadline: string | null; status: string; direction: Direction;
+  }>;
+}
+
+export function relationshipsRouter(deps: Deps): Router {
+  const router = Router();
+
+  router.get("/", async (_req, res) => {
+    const { rows } = await deps.db.query(
+      `SELECT c.id, c.type, c.subject, c.deadline, c.status, c.vip_tier, c.email_id,
+              lower(trim(coalesce(c.counterparty_email, c.counterparty_name, 'unknown'))) AS person_key,
+              trim(coalesce(c.counterparty_name, c.counterparty_email, 'Unknown')) AS person_label
+         FROM commitments c
+        WHERE c.status IN ('pending', 'overdue')
+        ORDER BY c.deadline NULLS LAST, c.id`,
+    );
+    const TIER_ORDER = ["CRITICAL", "IMPORTANT", "MONITOR", "SKIP"];
+    const people = new Map<string, Person>();
+    for (const row of rows) {
+      const direction: Direction = ["deadline_from_others", "question_pending"].includes(row.type) ? "they_owe" : "you_owe";
+      const person: Person = people.get(row.person_key) ?? {
+        key: row.person_key, label: row.person_label, tiers: new Set<string>(), youOwe: 0, theyOwe: 0, commitments: [],
+      };
+      if (row.vip_tier) person.tiers.add(row.vip_tier);
+      if (direction === "you_owe") person.youOwe += 1;
+      else person.theyOwe += 1;
+      person.commitments.push({
+        id: row.id, emailId: row.email_id, type: row.type, subject: row.subject,
+        deadline: row.deadline ? String(row.deadline).replace(" ", "T") : null, status: row.status, direction,
+      });
+      people.set(row.person_key, person);
+    }
+    res.json({
+      people: [...people.values()]
+        .map(({ tiers, ...person }) => ({ ...person, tier: TIER_ORDER.find((t) => tiers.has(t)) ?? "untiered" }))
+        .sort((a, b) => b.youOwe + b.theyOwe - (a.youOwe + a.theyOwe)),
+    });
+  });
+
+  return router;
+}
