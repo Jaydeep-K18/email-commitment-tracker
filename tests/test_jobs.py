@@ -619,4 +619,4 @@ def test_the_worker_schedules_mail_checks_as_ordinary_jobs(polling, monkeypatch)
 
     with session() as s:
         types = sorted(s.scalars(select(Job.type)))
-    assert types == ["fetch_mailbox", "publish_calendar"]
+    assert types == ["enforce_retention", "fetch_mailbox", "publish_calendar"]

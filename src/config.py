@@ -254,6 +254,11 @@ SCHEDULER_EXTRACTION_LIMIT = _get_int("SCHEDULER_EXTRACTION_LIMIT", 10)
 # A deadline this many days out or nearer is shown as urgent.
 DASHBOARD_URGENT_DAYS = _get_int("DASHBOARD_URGENT_DAYS", 3)
 
+# --- Internal API (v2) ---
+# Shared secret between the Express server and this worker. The worker's
+# /internal routes refuse to run without it; see src/server/internal_api.py.
+INTERNAL_API_TOKEN = os.getenv("INTERNAL_API_TOKEN", "")
+
 # --- Background jobs (v2) ---
 # Redis dispatches job ids to the worker. Optional: without it the worker polls
 # the jobs table instead, which is slower to react but loses nothing, because

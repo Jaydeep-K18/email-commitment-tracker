@@ -120,6 +120,10 @@ def fetch_mailbox(payload: dict, ctx: JobContext) -> dict:
     fetch whose follow-up was lost — is picked up too. The per-email key makes
     that safe: an email that already has a job is not queued again.
     """
+    from src.storage.user_settings import apply_fetch_settings
+
+    with session_scope() as session:
+        apply_fetch_settings(session)
     fetched = ctx.services.fetch()
     with session_scope() as session:
         backlog = emails_awaiting_extraction(session, limit=BACKLOG_BATCH)
@@ -344,3 +348,112 @@ def remove_google_event(payload: dict, ctx: JobContext) -> dict:
             commitment.gcal_synced_hash = None
             record_calendar_event(session, CALENDAR_EVENT_REMOVED, commitment, "google")
         return {"removed": event_id}
+
+
+# --- Contacts and privacy -----------------------------------------------------
+
+@handler("apply_vip_rules")
+def apply_vip_rules(payload: dict, ctx: JobContext) -> dict:
+    """Re-evaluate every stored email after the VIP rules changed.
+
+    Three things depend on a sender's tier and all three are refreshed: the
+    email's own tier, its inbox category, and the tier its commitments carry —
+    which is what the calendar policy reads, so demoting a sender takes their
+    commitments off auto-publish. A category the user chose by hand is kept.
+    """
+    from sqlalchemy import or_, update
+
+    from src.classification.service import apply_classification
+    from src.filtering.vip_filter import apply_tiers_to_stored_emails
+
+    with session_scope() as session:
+        counts = apply_tiers_to_stored_emails(session, retag_all=True)
+        tier_of_email = (
+            select(RawEmail.vip_tier).where(RawEmail.id == Commitment.email_id).scalar_subquery()
+        )
+        session.execute(
+            update(Commitment).values(vip_tier=tier_of_email).execution_options(
+                synchronize_session=False
+            )
+        )
+        reclassified = sum(
+            apply_classification(session, email)
+            for email in session.scalars(
+                select(RawEmail).where(
+                    or_(RawEmail.category_source.is_(None), RawEmail.category_source != "user")
+                )
+            )
+        )
+        queued = sum(
+            enqueue(
+                session,
+                "process_email",
+                {"email_id": email.id},
+                key=f"process_email:{email.id}",
+                correlation_id=email_correlation(email.id),
+            ).created
+            for email in emails_awaiting_extraction(session, limit=BACKLOG_BATCH)
+        )
+        enqueue_unless_active(session, "publish_calendar")
+    return {"retagged": counts["total"], "reclassified": reclassified, "queued_for_analysis": queued}
+
+
+@handler("enforce_retention")
+def enforce_retention(payload: dict, ctx: JobContext) -> dict:
+    """Apply the privacy settings: delete old mail, blank analysed bodies.
+
+    An email is kept past its retention date while it still has a pending
+    commitment with a deadline ahead of it — deleting it would silently remove
+    an upcoming event from the user's calendar.
+    """
+    from datetime import timedelta
+
+    from sqlalchemy import delete, update
+
+    from src.events.recorder import DATA_PURGED, record_event
+    from src.storage import user_settings
+    from src.storage.models import Event, utcnow_naive
+
+    with session_scope() as session:
+        privacy = user_settings.section(session, "privacy")
+        days = int(privacy.get("retentionDays", 0) or 0)
+        keep_bodies = bool(privacy.get("keepEmailBodies", True))
+        now = utcnow_naive()
+        deleted_emails = deleted_events = blanked = 0
+
+        if days > 0:
+            cutoff = now - timedelta(days=days)
+            still_needed = select(Commitment.email_id).where(
+                Commitment.status == "pending", Commitment.deadline >= now
+            )
+            deleted_emails = session.execute(
+                delete(RawEmail).where(
+                    RawEmail.received_at < cutoff, RawEmail.id.not_in(still_needed)
+                )
+            ).rowcount
+            deleted_events = session.execute(
+                delete(Event).where(Event.created_at < cutoff)
+            ).rowcount
+
+        if not keep_bodies:
+            blanked = session.execute(
+                update(RawEmail)
+                .where(RawEmail.processed.is_(True), RawEmail.body_text.is_not(None))
+                .values(body_text=None)
+            ).rowcount
+
+        if deleted_emails or deleted_events or blanked:
+            record_event(
+                session,
+                DATA_PURGED,
+                f"Retention: removed {deleted_emails} email(s) and {deleted_events} "
+                f"activity record(s); cleared {blanked} analysed email bod{'y' if blanked == 1 else 'ies'}",
+                entity_type="privacy",
+                payload={
+                    "retention_days": days,
+                    "emails": deleted_emails,
+                    "events": deleted_events,
+                    "bodies": blanked,
+                },
+            )
+    return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked}

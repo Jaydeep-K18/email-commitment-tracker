@@ -415,6 +415,8 @@ _DESCRIPTIONS = {
     "publish_calendar": "publish the calendar",
     "push_google_event": "send commitment #{commitment_id} to Google Calendar",
     "remove_google_event": "remove commitment #{commitment_id} from Google Calendar",
+    "apply_vip_rules": "re-apply your contact rules to stored email",
+    "enforce_retention": "apply your data-retention settings",
 }
 
 

@@ -45,6 +45,24 @@ SYSTEM_WORKER_STARTED = "system.worker_started"
 SYSTEM_WORKER_STOPPED = "system.worker_stopped"
 SYSTEM_ERROR = "system.error"
 
+# Recorded by the Node server: what the user did. Part of the same audit trail,
+# so "who archived this, and when" is answered by the same timeline as "when
+# did it arrive".
+EMAIL_UPDATED = "email.updated"
+EMAIL_BULK_UPDATED = "email.bulk_updated"
+COMMITMENT_UPDATED = "commitment.updated"
+CONTACT_CREATED = "contact.created"
+CONTACT_UPDATED = "contact.updated"
+CONTACT_DELETED = "contact.deleted"
+SETTINGS_UPDATED = "settings.updated"
+AUTH_SETUP = "auth.setup"
+AUTH_LOGIN = "auth.login"
+AUTH_LOGIN_FAILED = "auth.login_failed"
+AUTH_LOGOUT = "auth.logout"
+AUTH_PASSWORD_CHANGED = "auth.password_changed"
+DATA_EXPORTED = "data.exported"
+DATA_PURGED = "data.purged"
+
 EVENT_TYPES: tuple[str, ...] = (
     EMAIL_RECEIVED,
     EMAIL_CLASSIFIED,
@@ -66,6 +84,20 @@ EVENT_TYPES: tuple[str, ...] = (
     SYSTEM_WORKER_STARTED,
     SYSTEM_WORKER_STOPPED,
     SYSTEM_ERROR,
+    EMAIL_UPDATED,
+    EMAIL_BULK_UPDATED,
+    COMMITMENT_UPDATED,
+    CONTACT_CREATED,
+    CONTACT_UPDATED,
+    CONTACT_DELETED,
+    SETTINGS_UPDATED,
+    AUTH_SETUP,
+    AUTH_LOGIN,
+    AUTH_LOGIN_FAILED,
+    AUTH_LOGOUT,
+    AUTH_PASSWORD_CHANGED,
+    DATA_EXPORTED,
+    DATA_PURGED,
 )
 
 SEVERITIES = ("info", "success", "warning", "error")

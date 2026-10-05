@@ -32,6 +32,7 @@ from src.events.recorder import SYSTEM_WORKER_STARTED, SYSTEM_WORKER_STOPPED, re
 from src.jobs import queue
 from src.jobs.dispatch import Dispatcher, RedisDispatcher, get_dispatcher
 from src.jobs.handlers import JobContext, Services, run_job
+from src.storage import user_settings
 from src.storage.database import init_db, session_scope
 from src.storage.models import Job, ServiceHeartbeat, utcnow_naive
 
@@ -39,6 +40,8 @@ log = logging.getLogger(__name__)
 
 #: Seconds between maintenance passes.
 MAINTENANCE_INTERVAL = 5.0
+#: Retention is enforced once a day; it only ever deletes days-old data.
+RETENTION_INTERVAL = 24 * 60 * 60
 
 
 class Worker:
@@ -57,6 +60,7 @@ class Worker:
         self.stop_event = threading.Event()
         self.jobs_run = 0
         self._next_schedule = 0.0   # monotonic; 0 means "due now"
+        self._next_retention = 0.0
         self._counter_lock = threading.Lock()
 
     # --- One job ----------------------------------------------------------
@@ -149,12 +153,21 @@ class Worker:
             )
 
     def _schedule(self) -> None:
-        if not self.schedule or time.monotonic() < self._next_schedule:
+        if not self.schedule:
             return
-        with session_scope() as session:
-            queue.enqueue_unless_active(session, "fetch_mailbox")
-            queue.enqueue_unless_active(session, "publish_calendar")
-        self._next_schedule = time.monotonic() + config.FETCH_INTERVAL_MINUTES * 60
+        now = time.monotonic()
+        if now >= self._next_schedule:
+            with session_scope() as session:
+                queue.enqueue_unless_active(session, "fetch_mailbox")
+                queue.enqueue_unless_active(session, "publish_calendar")
+                # Read every time, so a change on the settings page applies from
+                # the next check rather than after a restart.
+                interval = user_settings.fetch_interval_minutes(session)
+            self._next_schedule = now + interval * 60
+        if now >= self._next_retention:
+            with session_scope() as session:
+                queue.enqueue_unless_active(session, "enforce_retention")
+            self._next_retention = now + RETENTION_INTERVAL
 
     # --- Lifecycle --------------------------------------------------------
 
@@ -220,6 +233,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--once", action="store_true", help="drain queued jobs, then exit")
     parser.add_argument("--concurrency", type=int, default=None)
     parser.add_argument("--no-schedule", action="store_true", help="never queue fetches itself")
+    parser.add_argument(
+        "--no-api", action="store_true", help="do not serve the .ics feed and internal API"
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -228,6 +244,11 @@ def main(argv: list[str] | None = None) -> int:
     init_db()
     worker = Worker(concurrency=args.concurrency, schedule=not args.no_schedule)
     log.info("Worker %s using %s dispatch.", worker.name, worker.dispatcher.name)
+
+    if not args.no_api:
+        from src.server.runner import start_api_server
+
+        start_api_server()
 
     if args.once:
         ran = worker.run_until_idle()

@@ -330,4 +330,17 @@ def is_available() -> bool:
         return False
     # Granting calendar access is the opt-in; this only lets a user who chose a
     # different calendar app turn the push off without revoking the scope.
-    return config.CALENDAR_TARGET != config.CALENDAR_TARGET_ICS
+    return _calendar_target() != config.CALENDAR_TARGET_ICS
+
+
+def _calendar_target() -> str:
+    """The user's choice from the settings page, else the legacy env var."""
+    try:
+        from src.storage.database import session_scope
+        from src.storage.user_settings import calendar_target
+
+        with session_scope() as session:
+            return calendar_target(session)
+    except Exception:  # noqa: BLE001 - the settings table is optional here
+        log.debug("Calendar target setting unavailable; using the environment.", exc_info=True)
+        return config.CALENDAR_TARGET

@@ -1,0 +1,6402 @@
+[
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "MONITOR tier waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "MONITOR commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "MONITOR tier waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "MONITOR commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "sender is on the skip list",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "sender is on the skip list",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "you added this from the Gmail panel",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "untiered commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "untiered commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "already fulfilled",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "CRITICAL tier syncs automatically",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": true,
+      "reason": "IMPORTANT tier syncs automatically (flagged for review)",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "MONITOR tier waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "MONITOR commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "MONITOR tier waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "MONITOR commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "sender is on the skip list",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "sender is on the skip list",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "you added this from the Gmail panel",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "untiered commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": true,
+      "needsReview": false,
+      "reason": "no VIP tier \u2014 waiting for your approval",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "untiered commitment approved by you",
+      "shouldSync": true
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "dismissed by the user",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "replaced by a newer email",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "deadline_on_you",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "no deadline to put on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": true,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "pending",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "fulfilled",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "overdue",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "dismissed",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "CRITICAL"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "IMPORTANT"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "MONITOR"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": "SKIP"
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": false,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": false,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  },
+  {
+    "input": {
+      "hasDeadline": false,
+      "manuallyAdded": true,
+      "status": "superseded",
+      "syncApproved": true,
+      "type": "question_pending",
+      "vipTier": null
+    },
+    "output": {
+      "awaitingApproval": false,
+      "needsReview": false,
+      "reason": "questions do not go on the calendar",
+      "shouldSync": false
+    }
+  }
+]

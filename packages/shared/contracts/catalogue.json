@@ -1,0 +1,104 @@
+{
+  "categories": [
+    "important",
+    "action_required",
+    "meeting",
+    "update",
+    "low_priority"
+  ],
+  "categoryRank": {
+    "action_required": 0,
+    "important": 2,
+    "low_priority": 4,
+    "meeting": 1,
+    "update": 3
+  },
+  "commitmentStatuses": [
+    "pending",
+    "fulfilled",
+    "overdue",
+    "dismissed",
+    "superseded"
+  ],
+  "commitmentTypes": [
+    "deadline_on_you",
+    "deadline_from_others",
+    "question_pending",
+    "meeting"
+  ],
+  "eventTypes": [
+    "email.received",
+    "email.classified",
+    "email.analyzed",
+    "extraction.failed",
+    "commitment.created",
+    "commitment.superseded",
+    "calendar.event_created",
+    "calendar.event_updated",
+    "calendar.event_failed",
+    "calendar.event_removed",
+    "calendar.synced",
+    "job.queued",
+    "job.started",
+    "job.completed",
+    "job.failed",
+    "job.retrying",
+    "job.retried",
+    "system.worker_started",
+    "system.worker_stopped",
+    "system.error",
+    "email.updated",
+    "email.bulk_updated",
+    "commitment.updated",
+    "contact.created",
+    "contact.updated",
+    "contact.deleted",
+    "settings.updated",
+    "auth.setup",
+    "auth.login",
+    "auth.login_failed",
+    "auth.logout",
+    "auth.password_changed",
+    "data.exported",
+    "data.purged"
+  ],
+  "jobStatuses": [
+    "queued",
+    "running",
+    "retrying",
+    "succeeded",
+    "failed",
+    "cancelled"
+  ],
+  "jobTypes": [
+    "apply_vip_rules",
+    "enforce_retention",
+    "fetch_mailbox",
+    "process_email",
+    "publish_calendar",
+    "push_google_event",
+    "remove_google_event"
+  ],
+  "matchTypes": [
+    "exact_email",
+    "domain",
+    "name_pattern"
+  ],
+  "redisKeys": {
+    "delayed": "{prefix}:jobs:delayed",
+    "processing": "{prefix}:jobs:processing",
+    "ready": "{prefix}:jobs:ready"
+  },
+  "severities": [
+    "info",
+    "success",
+    "warning",
+    "error"
+  ],
+  "tiers": [
+    "CRITICAL",
+    "IMPORTANT",
+    "MONITOR",
+    "SKIP"
+  ]
+}
