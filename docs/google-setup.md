@@ -42,8 +42,16 @@ Click **Enable** on each.
    scopes at sign-in time
 5. On **Test users**, click **Add users** and add **your own Gmail address**
 
-> Leaving the app in *Testing* is the right choice for personal use. It needs no
-> review, and only the test users you list can sign in.
+> *Testing* needs no review, and only the test users you list can sign in — but
+> Google **expires its sign-ins after seven days** whenever an app asks for more
+> than your name and email, which this one does (Gmail, Calendar). After that,
+> mail checks and calendar updates stop until you sign in again; the app says so
+> under **Settings → Integrations** and catches up once you have.
+>
+> To stop the weekly expiry, press **Publish app** on this page to move it to
+> *In production*. You do not need to submit it for verification for your own
+> use: Google shows an "unverified app" warning when you sign in, which you click
+> through as in step 6, and sign-ins then stay valid until you revoke them.
 
 ## 4. Create the credentials
 
@@ -90,6 +98,11 @@ has a different name. The setup page prints the exact path it is checking.
 
 **"Access blocked: … has not completed the Google verification process"** — your
 address is not on the test-user list from step 3.
+
+**"Google would not renew the sign-in"**, or mail and calendar updates stopped
+after about a week — the project is in *Testing*, where Google expires sign-ins
+after seven days (see step 3). Sign in again under **Settings → Integrations**;
+publishing the app stops it from recurring.
 
 **Sign-in worked, but no events appear** — events are only created for
 commitments the tier policy publishes. Check the **Review queue**: `MONITOR` and
