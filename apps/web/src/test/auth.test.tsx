@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
@@ -81,3 +81,39 @@ describe("sign in", () => {
     expect(put?.url.pathname).toBe("/api/settings/notifications");
   });
 });
+
+describe("creating the owner account", () => {
+  async function fill(confirm: string) {
+    let created = false;
+    server.use(
+      http.get("/api/auth/session", () => HttpResponse.json(created ? owner : { ...signedOut, setupRequired: true })),
+      http.post("/api/auth/setup", () => {
+        created = true;
+        return HttpResponse.json(owner, { status: 201 });
+      }),
+    );
+    const { user } = renderApp("/setup");
+    await user.type(await screen.findByLabelText("Your name"), "Jaydeep Kamble");
+    await user.type(screen.getByLabelText("Email"), "owner@example.com");
+    await user.type(screen.getByLabelText("Password"), "correct horse battery");
+    await user.type(screen.getByLabelText("Confirm password"), confirm);
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+  }
+
+  it("sends the account, without the confirmation, and moves on to onboarding", async () => {
+    await fill("correct horse battery");
+    await waitFor(() => expect(lastRequest("POST", "/api/auth/setup")).toBeDefined());
+    expect(lastRequest("POST", "/api/auth/setup")?.body).toEqual({
+      displayName: "Jaydeep Kamble",
+      email: "owner@example.com",
+      password: "correct horse battery",
+    });
+  });
+
+  it("stops at mismatched passwords and says why", async () => {
+    await fill("correct horse batterx");
+    expect(await screen.findByText("The passwords don't match")).toBeInTheDocument();
+    expect(lastRequest("POST", "/api/auth/setup")).toBeUndefined();
+  });
+});
+

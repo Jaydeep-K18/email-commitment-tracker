@@ -44,14 +44,19 @@ export function Setup() {
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const parsed = setupSchema.safeParse(form);
+    // "Confirm" is checked here and never sent: the account schema is strict,
+    // so an extra field would fail it.
+    const { confirm, ...account } = form;
+    const parsed = setupSchema.safeParse(account);
     const next: Record<string, string> = {};
     if (!parsed.success) {
       for (const [key, messages] of Object.entries(parsed.error.flatten().fieldErrors)) {
         if (messages?.[0]) next[key] = key === "email" ? "Enter a valid email address" : messages[0];
       }
+      // A failure no field claims must still say something, never just do nothing.
+      if (!Object.keys(next).length) next.form = "Something in the form isn't right. Check each field and try again.";
     }
-    if (form.password !== form.confirm) next.confirm = "The passwords don't match";
+    if (account.password !== confirm) next.confirm = "The passwords don't match";
     setErrors(next);
     if (Object.keys(next).length || !parsed.success) return;
     createOwner.mutate(parsed.data, { onSuccess: () => navigate("/onboarding", { replace: true }) });
@@ -77,6 +82,11 @@ export function Setup() {
         <Field label="Confirm password" error={errors.confirm}>
           {(props) => <Input {...props} type="password" autoComplete="new-password" value={form.confirm} onChange={set("confirm")} />}
         </Field>
+        {errors.form && (
+          <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger">
+            {errors.form}
+          </p>
+        )}
         {createOwner.error && (
           <p role="alert" className="rounded-lg bg-danger-soft px-3 py-2 text-[13px] text-danger">
             {errorMessage(createOwner.error)}
