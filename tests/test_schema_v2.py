@@ -257,3 +257,20 @@ def test_copying_into_a_database_that_already_has_mail_is_refused(populated_sour
 def test_a_database_cannot_be_migrated_onto_itself(populated_source):
     with pytest.raises(MigrationError, match="same database"):
         migrate(populated_source, populated_source)
+
+
+def test_migrating_inside_the_worker_keeps_its_logging(tmp_path):
+    """The worker upgrades the schema at startup. alembic.ini's WARNING root
+    level must not apply then, or every worker message after it is silenced."""
+    import logging
+
+    from src.storage import database
+
+    root = logging.getLogger()
+    before = root.level
+    root.setLevel(logging.INFO)
+    try:
+        database.upgrade_schema(f"sqlite:///{tmp_path / 'worker.db'}")
+        assert root.level == logging.INFO
+    finally:
+        root.setLevel(before)

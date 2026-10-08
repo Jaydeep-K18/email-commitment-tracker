@@ -16,7 +16,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "engines": {
-    "node": ">=20.11"
+    "node": ">=20.12"
   },
   "devDependencies": {
     "vite": "^6.4.4"

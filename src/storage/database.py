@@ -130,6 +130,8 @@ def upgrade_schema(url: str | None = None) -> None:
     from alembic.config import Config
 
     alembic_cfg = Config(str(config.BASE_DIR / "alembic.ini"))
+    # Keep the caller's logging; see migrations/env.py.
+    alembic_cfg.attributes["configure_logger"] = False
     alembic_cfg.set_main_option("script_location", str(config.BASE_DIR / "migrations"))
     alembic_cfg.set_main_option(
         "sqlalchemy.url", (url or config.DATABASE_URL).replace("%", "%%")

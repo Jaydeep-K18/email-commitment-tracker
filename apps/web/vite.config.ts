@@ -1,12 +1,31 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseEnv } from "node:util";
 
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
-const API = process.env.API_URL ?? "http://127.0.0.1:4000";
+/**
+ * The repository's .env, shared with the server and the worker (data/.env
+ * wins, as it does for them). Read as files rather than through process.env:
+ * a preview runner sets PORT to this dev server's port, not the API's.
+ */
+function sharedEnv(): Record<string, string> {
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const values: Record<string, string> = {};
+  for (const file of [join(root, ".env"), join(root, "data", ".env")]) {
+    if (existsSync(file)) Object.assign(values, parseEnv(readFileSync(file, "utf8")));
+  }
+  return values;
+}
+
+const shared = sharedEnv();
+const API = process.env.API_URL ?? shared.API_URL ?? `http://127.0.0.1:${shared.PORT || 4000}`;
+const WEB_PORT = Number(process.env.PORT) || Number(process.env.WEB_PORT ?? shared.WEB_PORT) || 5173;
 
 /**
  * Demo mode answers the API from a service worker. Its script comes straight
@@ -32,7 +51,7 @@ function demoServiceWorker(): Plugin {
 export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), mode === "demo" && demoServiceWorker()],
   server: {
-    port: Number(process.env.PORT) || 5173,
+    port: WEB_PORT,
     strictPort: true,
     // Same-origin in development too: the browser talks only to Vite, which
     // forwards to Express. Cookies, CSRF and the WebSocket then behave exactly

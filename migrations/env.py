@@ -11,9 +11,12 @@ from src.storage.models import Base
 
 alembic_config = context.config
 
-# disable_existing_loggers=False: when migrations run inside the worker, Alembic
-# must not silence the worker's own loggers on its way through.
-if alembic_config.config_file_name is not None:
+# Logging comes from alembic.ini only when Alembic runs from its own command
+# line. Inside the worker (upgrade_schema) the app has configured logging
+# already, and the ini's WARNING root level would silence every later message.
+if alembic_config.config_file_name is not None and alembic_config.attributes.get(
+    "configure_logger", True
+):
     fileConfig(alembic_config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata

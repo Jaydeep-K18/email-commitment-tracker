@@ -46,10 +46,13 @@ export const envSchema = z.object({
   REDIS_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
   REDIS_KEY_PREFIX: z.string().default("commitmail"),
 
-  /** Origins allowed to make state-changing requests and open WebSockets. */
-  APP_ORIGINS: list.default(
-    "http://127.0.0.1:4000,http://localhost:4000,http://127.0.0.1:5173,http://localhost:5173",
-  ),
+  /**
+   * Origins allowed to make state-changing requests and open WebSockets.
+   * Defaults to this server and the Vite dev server, on whatever ports they use.
+   */
+  APP_ORIGINS: list.optional(),
+  /** The Vite dev server's port; only used to work out the default origins. */
+  WEB_PORT: z.coerce.number().int().min(1).max(65535).default(5173),
   /** Send cookies only over HTTPS. Turn on behind TLS; off for plain localhost. */
   COOKIE_SECURE: booleanText.default("false"),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(24 * 90).default(24 * 7),
@@ -69,7 +72,12 @@ export const envSchema = z.object({
 
   /** Built React app to serve. Unset in development, where Vite serves it. */
   WEB_DIST: z.string().optional(),
-});
+}).transform((env) => ({
+  ...env,
+  APP_ORIGINS:
+    env.APP_ORIGINS ??
+    [env.PORT, env.WEB_PORT].flatMap((port) => [`http://127.0.0.1:${port}`, `http://localhost:${port}`]),
+}));
 
 export type Env = z.infer<typeof envSchema>;
 
