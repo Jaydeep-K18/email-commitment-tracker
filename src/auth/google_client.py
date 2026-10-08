@@ -24,8 +24,8 @@ from src import config
 
 log = logging.getLogger(__name__)
 
-#: Overwritten by scripts/build_desktop.py at packaging time. Empty here on
-#: purpose: running from source uses your own client, not the shipped one.
+#: A distributor can fill these in to ship a client with the app. Empty here on
+#: purpose: running from source uses your own client (docs/google-setup.md).
 EMBEDDED_CLIENT_ID = ""
 EMBEDDED_CLIENT_SECRET = ""
 

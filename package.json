@@ -6,6 +6,15 @@
     "packages/*",
     "apps/*"
   ],
+  "scripts": {
+    "dev:server": "npm run dev -w @commitmail/server",
+    "dev:web": "npm run dev -w @commitmail/web",
+    "demo": "npm run demo -w @commitmail/web",
+    "build": "npm run build -w @commitmail/web && npm run build -w @commitmail/server",
+    "start": "npm start -w @commitmail/server",
+    "test": "npm test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
   "engines": {
     "node": ">=20.11"
   },

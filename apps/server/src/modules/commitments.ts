@@ -199,8 +199,7 @@ export function calendarRouter(deps: Deps): Router {
 
 /**
  * Who you are entangled with, and which way it runs — the data behind the
- * relationship graph. Same rules as the graph the Streamlit dashboard drew:
- * a person is keyed by address (falling back to name) so spellings merge, and
+ * relationship graph. A person is keyed by address (falling back to name) so spellings merge, and
  * an obligation runs towards whoever owes: deadlines on you and meetings are
  * yours, deadlines from others and pending questions are theirs.
  */

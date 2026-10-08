@@ -22,6 +22,7 @@ import { pinoHttp } from "pino-http";
 import { csrfProtection, loadSession, requireAuth } from "./auth/middleware";
 import { authRouter } from "./auth/routes";
 import type { Deps } from "./deps";
+import { findRepoRoot } from "./env";
 import { errorHandler, unknownRoute } from "./http/errors";
 import { buildLimits } from "./http/rateLimit";
 import { notificationsRouter, privacyRouter, settingsRouter } from "./modules/account";
@@ -124,7 +125,9 @@ export function createApp(deps: Deps): Express {
   app.use("/api", api);
 
   // --- The React app ----------------------------------------------------------
-  const webDist = env.WEB_DIST ? resolve(env.WEB_DIST) : null;
+  // Relative to the repository, not the working directory: npm runs workspace
+  // scripts from apps/server, where "apps/web/dist" would not exist.
+  const webDist = env.WEB_DIST ? resolve(findRepoRoot(), env.WEB_DIST) : null;
   if (webDist && existsSync(join(webDist, "index.html"))) {
     app.use(express.static(webDist, { index: false, maxAge: "1h" }));
     app.get(/^(?!\/(api|ext|ws)\b).*/, (_req, res) => {

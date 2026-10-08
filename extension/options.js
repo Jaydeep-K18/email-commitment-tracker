@@ -2,7 +2,8 @@
 // values and offers a live check, so a misconfiguration is caught here rather
 // than showing up later as a silent panel inside Gmail.
 
-const DEFAULT_BASE = "http://127.0.0.1:8765";
+const DEFAULT_BASE = "http://127.0.0.1:4000";
+const LEGACY_BASE = "http://127.0.0.1:8765";
 
 const tokenInput = document.getElementById("token");
 const baseInput = document.getElementById("baseUrl");
@@ -16,7 +17,9 @@ const say = (text, kind = "muted") => {
 async function load() {
   const stored = await chrome.storage.local.get(["token", "baseUrl"]);
   tokenInput.value = stored.token || "";
-  baseInput.value = stored.baseUrl || DEFAULT_BASE;
+  // The pre-v2 default pointed at the worker itself; show the new address.
+  const saved = (stored.baseUrl || "").replace(/\/+$/, "");
+  baseInput.value = !saved || saved === LEGACY_BASE ? DEFAULT_BASE : saved;
 }
 
 async function save() {
@@ -41,7 +44,7 @@ async function test() {
     const data = reply.data || {};
     const calendar = data.google_connected
       ? "Google Calendar connected"
-      : "local .ics only — connect Google in the dashboard";
+      : "local .ics only — connect Google in Settings → Integrations";
     say(
       `Connected. ${data.open_commitments} open commitment(s); ${calendar}.`,
       "ok"

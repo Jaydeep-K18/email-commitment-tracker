@@ -352,5 +352,11 @@ ALTER TABLE commitments ADD COLUMN gcal_synced_hash VARCHAR(32);
 
 UPDATE alembic_version SET version_num='0003' WHERE alembic_version.version_num = '0002';
 
+-- Running upgrade 0003 -> 0004
+
+ALTER TABLE raw_emails DROP COLUMN notification_seen;
+
+UPDATE alembic_version SET version_num='0004' WHERE alembic_version.version_num = '0003';
+
 COMMIT;
 

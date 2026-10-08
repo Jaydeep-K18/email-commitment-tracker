@@ -16,8 +16,20 @@ export interface WorkerClient {
   ping(): Promise<{ ok: boolean; latencyMs: number | null }>;
 }
 
-/** Request headers worth relaying; everything else (cookies!) stays here. */
-const FORWARDED_REQUEST_HEADERS = ["content-type", "accept", "x-tracker-token", "origin", "if-none-match"];
+/**
+ * Request headers worth relaying; everything else (cookies!) stays here. The
+ * two access-control ones carry the Gmail panel's CORS preflight: its token
+ * header makes every POST preflighted, and the worker owns that CORS policy.
+ */
+const FORWARDED_REQUEST_HEADERS = [
+  "content-type",
+  "accept",
+  "x-tracker-token",
+  "origin",
+  "if-none-match",
+  "access-control-request-method",
+  "access-control-request-headers",
+];
 /** Hop-by-hop headers that must not be copied onto our own response. */
 const HOP_BY_HOP = new Set(["connection", "keep-alive", "transfer-encoding", "content-length", "content-encoding"]);
 

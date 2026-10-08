@@ -10,7 +10,7 @@ credential store.
 ## Why this step exists at all
 
 The tracker also publishes a local `.ics` feed at
-`http://127.0.0.1:8765/calendar.ics`. That works with **Outlook desktop**,
+`http://127.0.0.1:4000/calendar.ics`. That works with **Outlook desktop**,
 **Apple Calendar** and **Thunderbird**, which fetch the file from your own
 machine.
 
@@ -65,8 +65,8 @@ setup screen shows the exact path to use.
 
 ## 6. Sign in
 
-Start the app, open the dashboard, go to **Mailbox setup**, and click
-**Sign in with Google**. A browser tab opens; approve the two permissions.
+Start the app, open it in your browser, go to **Settings → Integrations** (or
+the onboarding screen on first run), and click **Sign in with Google**. A browser tab opens; approve the two permissions.
 
 You will see an "unverified app" warning. That is expected — the app is yours
 and has not been through Google's review, which is only needed for public

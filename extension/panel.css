@@ -1,7 +1,6 @@
 /* The in-Gmail panel.
  *
- * Colours mirror dashboard/styles.py so the panel and the dashboard read as one
- * product. Every rule is scoped under .ect-panel and every class is prefixed,
+ * Every rule is scoped under .ect-panel and every class is prefixed,
  * because this stylesheet is injected into Gmail's own page and must not touch
  * anything Google owns. Font sizes are absolute rather than em-based for the
  * same reason: they must not inherit from whatever Gmail sets.

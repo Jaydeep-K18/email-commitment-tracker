@@ -1,5 +1,8 @@
 // Service worker — the only place that talks to the tracker.
 //
+// The tracker is the CommitMail server (Express, port 4000). It relays /ext/*
+// to the Python worker, which runs the model and holds the token check.
+//
 // Manifest V3 removed cross-origin privileges from content scripts: a fetch
 // issued from content.js carries mail.google.com as its origin and is subject
 // to that page's CORS, so it would be blocked. The service worker still has the
@@ -7,14 +10,18 @@
 // origin the tracker's CORS rule allows. Everything therefore goes through here
 // and content.js talks to it by message passing.
 
-const DEFAULT_BASE = "http://127.0.0.1:8765";
+const DEFAULT_BASE = "http://127.0.0.1:4000";
+// Before the full-stack app, the panel talked to the worker directly here.
+// A saved copy of that old default is upgraded rather than left failing.
+const LEGACY_BASE = "http://127.0.0.1:8765";
 const TOKEN_HEADER = "X-Tracker-Token";
 
 async function settings() {
   const stored = await chrome.storage.local.get(["token", "baseUrl"]);
+  const saved = (stored.baseUrl || "").replace(/\/+$/, "");
   return {
     token: stored.token || "",
-    baseUrl: (stored.baseUrl || DEFAULT_BASE).replace(/\/+$/, ""),
+    baseUrl: !saved || saved === LEGACY_BASE ? DEFAULT_BASE : saved,
   };
 }
 
@@ -47,7 +54,7 @@ async function call(path, { method = "GET", body = null } = {}) {
       ok: false,
       status: 0,
       error:
-        "Could not reach the tracker. Is the desktop app running? " +
+        "Could not reach the tracker. Is the CommitMail server running? " +
         `(${err.message})`,
     };
   }
@@ -68,24 +75,28 @@ async function call(path, { method = "GET", body = null } = {}) {
   }
 
   if (!response.ok) {
-    const detail = data && data.detail ? data.detail : response.statusText;
+    // The worker answers {detail}; the server, when it cannot reach the
+    // worker at all, answers {error: {message}}.
+    const detail =
+      (data && (data.detail || (data.error && data.error.message))) ||
+      response.statusText;
     return { ok: false, status: response.status, error: String(detail) };
   }
   return { ok: true, status: response.status, data };
 }
 
 const ROUTES = {
-  status: () => call("/api/status"),
-  analyze: (payload) => call("/api/analyze", { method: "POST", body: payload }),
+  status: () => call("/ext/status"),
+  analyze: (payload) => call("/ext/analyze", { method: "POST", body: payload }),
   lookup: (payload) =>
     call(
-      "/api/lookup?subject=" +
+      "/ext/lookup?subject=" +
         encodeURIComponent(payload.subject || "") +
         "&thread_id=" +
         encodeURIComponent(payload.thread_id || "")
     ),
-  add: (payload) => call("/api/commitments", { method: "POST", body: payload }),
-  sync: () => call("/api/sync", { method: "POST" }),
+  add: (payload) => call("/ext/commitments", { method: "POST", body: payload }),
+  sync: () => call("/ext/sync", { method: "POST" }),
 };
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {

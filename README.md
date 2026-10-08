@@ -43,7 +43,33 @@ extractor produce trustworthy output.
 
 ## How it works
 
-Five layers, each one deciding how much of its input deserves to reach the next:
+A full-stack app around a Python pipeline. PostgreSQL is the single source of truth; the
+Express server is the only thing a browser talks to; the Python worker does the reading,
+extracting and publishing as background jobs.
+
+```
+  React app ─────────────┐
+  Gmail side panel ─/ext─┤        Express + Node (:4000)
+  Calendar apps ─/calendar.ics─▶  sessions · REST API · WebSocket · notifications
+                                    │                     │ relays /ext, the feed,
+                                    ▼                     ▼ and setup steps
+                               PostgreSQL ◀──────── Python worker
+                     mail · commitments · jobs      collect → filter → extract →
+                     the event log                  decide → publish
+                                    ▲                     ▲
+                                    └──── Redis ──────────┘
+                                   job dispatch and delayed retries
+```
+
+| Part | What it does | Where |
+|---|---|---|
+| **React app** | Smart inbox, commitments, calendar, relationships, analytics, jobs, system health, settings | [`apps/web/`](apps/web/) |
+| **Express server** | Owner sign-in, CSRF, the REST API, live updates over WebSocket, notifications | [`apps/server/`](apps/server/) |
+| **Python worker** | The pipeline below, run as retried, idempotent background jobs | [`src/`](src/) |
+| **Shared contracts** | Types, the tier policy and the schema both languages are tested against | [`packages/shared/`](packages/shared/) |
+
+The worker's pipeline has five layers, each deciding how much of its input deserves to
+reach the next:
 
 | Layer | What it does | Where |
 |---|---|---|
@@ -57,17 +83,16 @@ The filter is a cost control, not a nicety: unknown senders default to `SKIP` an
 reach the model at all**. On the author's mailbox that meant 6 of 120 emails were worth
 running inference on.
 
-Around those sit a [Streamlit dashboard](dashboard/) with a review queue and a commitment
-graph, an [APScheduler loop](src/collection/scheduler.py) that runs the cycle unattended, a
-[system-tray desktop app](desktop/), and a [Gmail side panel](extension/) that offers
-*Add to calendar* on the message you are reading.
+Every step is recorded in an event log, which is the activity timeline, the source of
+notifications, and what the live dashboard streams. A [Gmail side panel](extension/)
+offers *Add to calendar* on the message you are reading.
 
 ## The parts that fought back
 
 Most of the interesting work was not the happy path.
 
 **Google Calendar cannot subscribe to a `127.0.0.1` feed.** The app serves a perfectly good
-`.ics` at `http://127.0.0.1:8765/calendar.ics`, and Outlook, Apple Calendar and Thunderbird
+`.ics` at `http://127.0.0.1:4000/calendar.ics`, and Outlook, Apple Calendar and Thunderbird
 all consume it happily. Google does not: it fetches subscription URLs *from Google's
 servers*, which have no route to a loopback address on your laptop. No amount of leaving the
 app running fixes it. That dead end is why the project grew an OAuth flow and writes events
@@ -98,29 +123,55 @@ the bug rather than catching it.
 
 **`127.0.0.1` is not a security boundary.** The Gmail extension talks to a local API, and it
 is tempting to treat loopback as private. It is not — any page your browser has open can
-issue `fetch("http://127.0.0.1:8765/...")` in the background. Every `/api/*` route therefore
-requires a token compared with `compare_digest`. The `.ics` feed stays open deliberately,
-because a calendar app subscribing to a URL cannot send a custom header.
+issue `fetch("http://127.0.0.1:4000/ext/...")` in the background. Every `/ext/*` route
+therefore requires a token compared with `compare_digest`, and the app's own API needs a
+session cookie plus a CSRF token. The `.ics` feed stays open deliberately, because a
+calendar app subscribing to a URL cannot send a custom header.
 
 ## Running it
 
-Requires **Python 3.12** and **[Ollama](https://ollama.com/download)**.
+**Just looking?** The web app has a demo mode that needs only Node — no database, no
+model, no mail. Generated sample data answers every request in the browser:
+
+```bash
+npm install
+npm run demo
+```
+
+**The real thing** needs Python 3.12, Node 20, Docker and
+[Ollama](https://ollama.com/download):
 
 ```bash
 git clone https://github.com/Jaydeep-K18/email-commitment-tracker.git
 cd email-commitment-tracker
+cp .env.example .env               # then replace the change-me passwords
+docker compose up -d               # PostgreSQL and Redis, on 127.0.0.1 only
 python -m venv .venv && .venv/Scripts/activate     # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
+npm install
 ollama pull llama3.2
-python -m streamlit run dashboard/app.py
 ```
 
-The dashboard opens on first-run setup and walks through four steps: install the model,
-sign in, connect a mailbox, and choose where events should go. Mail is read **read-only**,
-and the mailbox password is stored in your OS keyring — never in a file.
+Then run the three processes, the worker first — it brings the database schema up to
+date when it starts:
+
+```bash
+python -m src.jobs.worker          # the pipeline, as background jobs
+npm run dev:server                 # the API on http://127.0.0.1:4000
+npm run dev:web                    # the app on http://localhost:5173
+```
+
+The first visit creates your owner account, then walks through four steps: install the
+model, sign in with Google (optional), connect a mailbox, and choose where events should
+go. Mail is read **read-only**, and the mailbox password is stored in your OS keyring —
+never in a file.
+
+For one Node process instead of two, set `WEB_DIST=apps/web/dist` in `.env`, then
+`npm run build` and `npm start`: the API server serves the built app itself.
 
 - Connecting Google Calendar: [`docs/google-setup.md`](docs/google-setup.md)
 - Installing the Gmail panel: [`docs/gmail-panel.md`](docs/gmail-panel.md)
+- Coming from the SQLite version: `python -m scripts.migrate_sqlite_to_postgres`
 
 ## A note on accuracy
 
@@ -136,11 +187,13 @@ work left.
 
 ## Built with
 
-Python 3.12 · SQLAlchemy · Pydantic · Ollama · FastAPI · Streamlit · APScheduler ·
-NetworkX + pyvis · PyInstaller · Google Calendar & Gmail APIs · Chrome Manifest V3
+**Front end** React 18 · TypeScript · Vite · TanStack Query · React Router · Tailwind CSS ·
+Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · WebSockets · Zod · argon2**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
+Calendar & Gmail APIs**Extension** Chrome Manifest V3**Tests** pytest · Vitest · Testing Library · MSW · PGlite
 
-65 source files, **447 tests**. Development ran in ten phases against a written plan, and
-the commit messages carry the reasoning behind most of the decisions above.
+About 900 tests across both languages — including the 400 tier-policy cases that the
+Python and TypeScript copies of the policy must agree on, word for word. The commit
+messages carry the reasoning behind most of the decisions above.
 
 ## Licence
 

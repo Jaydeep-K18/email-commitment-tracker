@@ -1,12 +1,9 @@
 """First-run setup: what is missing, and how to record what the user supplies.
 
-A packaged build has no ``.env`` to edit and no terminal to run
-``scripts/set_imap_password.py`` in, so the dashboard has to be able to collect
-the same two things itself: which mailbox to read, and the app password for it.
-
-This lives beside :mod:`src.config` rather than in :mod:`desktop` because it is
-about credentials, not packaging — the dashboard needs it whether or not it was
-started from a tray icon.
+The onboarding screens and Settings → Integrations collect the same two
+things a terminal user would put in ``.env`` and the keyring: which mailbox to
+read, and the app password for it. The worker's internal API answers those
+screens from here (see :mod:`src.server.internal_api`).
 
 The password only ever travels from the user's keystrokes into the OS keyring.
 It is never written to ``.env``, never logged, and never returned by anything

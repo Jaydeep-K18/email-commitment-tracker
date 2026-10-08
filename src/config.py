@@ -240,20 +240,6 @@ SYNC_DUPLICATE_THRESHOLD = _get_float("SYNC_DUPLICATE_THRESHOLD", 0.6)
 SERVER_HOST = os.getenv("SERVER_HOST", "127.0.0.1")
 SERVER_PORT = _get_int("SERVER_PORT", 8765)
 
-# --- Background scheduler (Phase 6) ---
-# How often the automatic fetch -> extract -> sync cycle runs.
-SCHEDULER_INTERVAL_MINUTES = _get_int("SCHEDULER_INTERVAL_MINUTES", 30)
-# Extraction is the slow step (local LLM inference on CPU). Turning this off
-# leaves the scheduler fetching and syncing only.
-SCHEDULER_RUN_EXTRACTION = _get_bool("SCHEDULER_RUN_EXTRACTION", True)
-# Emails per automatic cycle. Kept modest so a scheduled run cannot occupy the
-# machine for a very long time.
-SCHEDULER_EXTRACTION_LIMIT = _get_int("SCHEDULER_EXTRACTION_LIMIT", 10)
-
-# --- Dashboard (Phase 6) ---
-# A deadline this many days out or nearer is shown as urgent.
-DASHBOARD_URGENT_DAYS = _get_int("DASHBOARD_URGENT_DAYS", 3)
-
 # --- Internal API (v2) ---
 # Shared secret between the Express server and this worker. The worker's
 # /internal routes refuse to run without it; see src/server/internal_api.py.
