@@ -4,7 +4,7 @@
     python -m src.jobs.worker --once          drain what is queued, then exit
     python -m src.jobs.worker --concurrency 2
 
-One process does three things:
+One process does four things:
 
 * **Run jobs.** ``WORKER_CONCURRENCY`` threads each take an id from the
   dispatcher, claim it against the database, run its handler, and record the
@@ -15,6 +15,8 @@ One process does three things:
 * **Schedule.** Every ``FETCH_INTERVAL_MINUTES`` it queues a mailbox check and
   a calendar publish. It *queues* them — it never runs them inline — so a
   scheduled run is retried, reported and visible exactly like any other job.
+* **Relay events.** With ``KAFKA_BROKERS`` set, a thread publishes every
+  committed event to Kafka (:mod:`src.events.relay`).
 """
 from __future__ import annotations
 
@@ -236,6 +238,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--no-api", action="store_true", help="do not serve the .ics feed and internal API"
     )
+    parser.add_argument(
+        "--no-relay", action="store_true", help="do not publish events to Kafka"
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(
@@ -249,6 +254,11 @@ def main(argv: list[str] | None = None) -> int:
         from src.server.runner import start_api_server
 
         start_api_server()
+
+    if config.KAFKA_BROKERS and not args.no_relay and not args.once:
+        from src.events.relay import start_relay_thread
+
+        start_relay_thread(worker.stop_event)
 
     if args.once:
         ran = worker.run_until_idle()

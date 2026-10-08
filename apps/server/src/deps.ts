@@ -23,4 +23,6 @@ export interface Deps {
   worker: WorkerClient;
   /** Connected browsers; set once the HTTP server exists. */
   hub: Hub | null;
+  /** Where live events come from, decided at startup (Kafka can fall back). */
+  liveEvents: "kafka" | "postgres";
 }

@@ -1,0 +1,15 @@
+{
+  "correlation_id": "email:42",
+  "created_at": "2026-10-08T09:30:00.123456",
+  "entity_id": "42",
+  "entity_type": "email",
+  "id": 4101,
+  "message": "Email from Priya Nair: Q3 report",
+  "payload": {
+    "subject": "Q3 report",
+    "vip_tier": "CRITICAL"
+  },
+  "severity": "info",
+  "source": "worker",
+  "type": "email.received"
+}

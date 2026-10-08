@@ -39,3 +39,9 @@ coverage/
 playwright-report/
 test-results/
 *.tsbuildinfo
+
+# Personal documents that happen to sit in this folder.
+/*.pdf
+
+# Local launch configs for the desktop app, with this machine's ports.
+/.claude/launch.json

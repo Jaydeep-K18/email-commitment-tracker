@@ -76,7 +76,7 @@ async function checkOllama(host: string, model: string): Promise<ComponentHealth
   }
 }
 
-/** A broker's port accepting connections. A Kafka admin check replaces this when events are wired. */
+/** A broker's port accepting connections. */
 function tcpReachable(address: string, timeoutMs = 1_500): Promise<number | null> {
   const [host, port] = address.split(":");
   return new Promise((resolve) => {
@@ -92,10 +92,53 @@ function tcpReachable(address: string, timeoutMs = 1_500): Promise<number | null
   });
 }
 
-async function checkKafka(brokers: string[] | undefined): Promise<ComponentHealth> {
+/** Events the relay has yet to publish, read from the outbox itself. */
+export async function relayBacklog(q: Queryable): Promise<{ waiting: number; oldestSeconds: number }> {
+  const { rows } = await q.query<{ waiting: number; oldest: number | null }>(
+    `SELECT count(*)::int AS waiting,
+            EXTRACT(EPOCH FROM ((now() at time zone 'utc') - min(created_at)))::float AS oldest
+       FROM events WHERE published_at IS NULL`,
+  );
+  return { waiting: rows[0]?.waiting ?? 0, oldestSeconds: Math.max(0, Math.round(rows[0]?.oldest ?? 0)) };
+}
+
+/** The relay publishes within a second; a minute behind means it is not running. */
+const RELAY_STALE_SECONDS = 60;
+
+function ago(seconds: number): string {
+  if (seconds < 120) return `${seconds}s`;
+  if (seconds < 7_200) return `${Math.round(seconds / 60)} min`;
+  return `${Math.round(seconds / 3_600)} h`;
+}
+
+/**
+ * Kafka is healthy when the broker answers, the relay keeps up, and this
+ * server is actually streaming from it (it falls back to Postgres if Kafka
+ * was down when it started).
+ */
+async function checkKafka(deps: Deps): Promise<ComponentHealth> {
+  const brokers = deps.env.KAFKA_BROKERS;
   if (!brokers?.length) return { state: "unconfigured", detail: "KAFKA_BROKERS not set — events stream from Postgres" };
-  const latency = await tcpReachable(brokers[0]!);
-  return latency == null ? { state: "down", detail: `${brokers[0]} not reachable` } : { state: "ok", latencyMs: latency };
+  const [latency, backlog] = await Promise.all([tcpReachable(brokers[0]!), relayBacklog(deps.db)]);
+  const meta = { ...backlog, liveEvents: deps.liveEvents };
+  if (latency == null) return { state: "down", detail: `${brokers[0]} not reachable`, meta };
+  if (backlog.waiting > 0 && backlog.oldestSeconds > RELAY_STALE_SECONDS) {
+    return {
+      state: "degraded",
+      latencyMs: latency,
+      detail: `${backlog.waiting} event(s) not relayed, oldest ${ago(backlog.oldestSeconds)} — is the worker running with KAFKA_BROKERS set?`,
+      meta,
+    };
+  }
+  if (deps.liveEvents !== "kafka") {
+    return {
+      state: "degraded",
+      latencyMs: latency,
+      detail: "reachable, but this server fell back to Postgres at startup — restart it to stream from Kafka",
+      meta,
+    };
+  }
+  return { state: "ok", latencyMs: latency, detail: "streaming live events", meta };
 }
 
 async function checkFlink(url: string | undefined): Promise<ComponentHealth> {
@@ -123,7 +166,7 @@ export async function systemHealth(deps: Deps): Promise<SystemHealth> {
     checkRedis(deps),
     checkWorker(deps.db).catch((): ComponentHealth => ({ state: "down", detail: "unknown" })),
     checkOllama(deps.env.OLLAMA_HOST, deps.env.OLLAMA_MODEL),
-    checkKafka(deps.env.KAFKA_BROKERS),
+    checkKafka(deps).catch((): ComponentHealth => ({ state: "down", detail: "check failed" })),
     checkFlink(deps.env.FLINK_URL),
   ]);
   const components = { api: { state: "ok" as HealthState }, database, redis, worker, ollama, kafka, flink };

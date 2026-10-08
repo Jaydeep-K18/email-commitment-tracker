@@ -28,6 +28,7 @@ google-api-python-client>=2.130 # Gmail and Calendar clients
 alembic>=1.13           # owns the schema the Node server shares
 psycopg[binary]>=3.2    # PostgreSQL driver
 redis>=5.0              # job dispatch, delayed retries, locks
+confluent-kafka>=2.5    # the outbox relay publishes events to Kafka (optional at runtime)
 
 # --- Dev / test ---
 pytest>=8.0

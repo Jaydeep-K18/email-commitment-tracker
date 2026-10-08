@@ -59,6 +59,9 @@ extracting and publishing as background jobs.
                                     ▲                     ▲
                                     └──── Redis ──────────┘
                                    job dispatch and delayed retries
+
+  Optional: Kafka. The worker relays every committed event from Postgres to a
+  topic, and the server streams that topic to browsers (and Flink reads it).
 ```
 
 | Part | What it does | Where |
@@ -84,7 +87,10 @@ reach the model at all**. On the author's mailbox that meant 6 of 120 emails wer
 running inference on.
 
 Every step is recorded in an event log, which is the activity timeline, the source of
-notifications, and what the live dashboard streams. A [Gmail side panel](extension/)
+notifications, and what the live dashboard streams. The log doubles as a transactional
+outbox: an event is written in the same transaction as the change it describes, and a
+relay publishes it to Kafka only after that commits, so the stream can never announce a
+change the database rolled back, or miss one it kept. A [Gmail side panel](extension/)
 offers *Add to calendar* on the message you are reading.
 
 ## The parts that fought back
@@ -161,6 +167,10 @@ npm run dev:server                 # the API on http://127.0.0.1:4000
 npm run dev:web                    # the app on http://localhost:5173
 ```
 
+To stream events through Kafka as well, start it with `docker compose --profile events up -d`
+and set `KAFKA_BROKERS=127.0.0.1:9092` in `.env` before starting the worker and server.
+Without it, live events come straight from Postgres.
+
 The first visit creates your owner account, then walks through four steps: install the
 model, sign in with Google (optional), connect a mailbox, and choose where events should
 go. Mail is read **read-only**, and the mailbox password is stored in your OS keyring —
@@ -188,7 +198,7 @@ work left.
 ## Built with
 
 **Front end** React 18 · TypeScript · Vite · TanStack Query · React Router · Tailwind CSS ·
-Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · WebSockets · Zod · argon2**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
+Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · Kafka · WebSockets · Zod · argon2**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
 Calendar & Gmail APIs**Extension** Chrome Manifest V3**Tests** pytest · Vitest · Testing Library · MSW · PGlite
 
 About 900 tests across both languages — including the 400 tier-policy cases that the

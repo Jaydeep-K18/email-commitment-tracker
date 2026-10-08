@@ -3,8 +3,9 @@
     python -m scripts.export_contracts
 
 Two languages share one database, so a handful of things must be identical on
-both sides: the event types, the categories and tiers, the job types, and — the
-subtle one — the tier policy that decides which commitments go on the calendar.
+both sides: the event types, the categories and tiers, the job types, the shape
+of an event on Kafka, and — the subtle one — the tier policy that decides which
+commitments go on the calendar.
 Python is the source of truth for all of them. This writes them to
 ``packages/shared/contracts/``; the TypeScript tests then check the shared
 package against those files, and a Python test checks the files are current.
@@ -112,6 +113,31 @@ def postgres_schema() -> str:
     return buffer.getvalue()
 
 
+def event_message() -> dict:
+    """One event exactly as the outbox relay puts it on Kafka.
+
+    The server's tests parse this file with the function its Kafka feed uses,
+    so a change to the message on either side fails a test on that side.
+    """
+    from src.events.relay import message_for
+    from src.storage.models import Event
+
+    return message_for(
+        Event(
+            id=4101,
+            type="email.received",
+            entity_type="email",
+            entity_id="42",
+            correlation_id="email:42",
+            severity="info",
+            message="Email from Priya Nair: Q3 report",
+            payload={"subject": "Q3 report", "vip_tier": "CRITICAL"},
+            source="worker",
+            created_at=datetime(2026, 10, 8, 9, 30, 0, 123456),
+        )
+    )
+
+
 def render() -> dict[str, str]:
     """File name -> exact contents. Deterministic, so it can be diffed."""
     def dump(value) -> str:
@@ -120,6 +146,7 @@ def render() -> dict[str, str]:
     return {
         "catalogue.json": dump(catalogue()),
         "sync-decisions.json": dump(sync_decisions()),
+        "event-message.json": dump(event_message()),
         "schema.sql": postgres_schema(),
     }
 

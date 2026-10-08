@@ -245,6 +245,16 @@ SERVER_PORT = _get_int("SERVER_PORT", 8765)
 # /internal routes refuse to run without it; see src/server/internal_api.py.
 INTERNAL_API_TOKEN = os.getenv("INTERNAL_API_TOKEN", "")
 
+# --- Event streaming (v2) ---
+# Kafka brokers the outbox relay publishes to, comma-separated host:port.
+# Empty means no Kafka: events stay in Postgres, which the server then streams
+# from directly, so nothing is lost either way.
+KAFKA_BROKERS = [b.strip() for b in os.getenv("KAFKA_BROKERS", "").split(",") if b.strip()]
+KAFKA_EVENTS_TOPIC = os.getenv("KAFKA_EVENTS_TOPIC", "").strip() or "commitmail.events"
+# How long the relay waits between looks for new events when it is idle. The
+# delay a browser sees before an event appears is at most about this long.
+KAFKA_RELAY_INTERVAL_MS = _get_int("KAFKA_RELAY_INTERVAL_MS", 300)
+
 # --- Background jobs (v2) ---
 # Redis dispatches job ids to the worker. Optional: without it the worker polls
 # the jobs table instead, which is slower to react but loses nothing, because

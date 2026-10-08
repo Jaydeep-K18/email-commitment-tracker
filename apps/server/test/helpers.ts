@@ -117,6 +117,7 @@ export function buildApp(db: Db, envOverrides: Record<string, string> = {}): Tes
     jobs: new JobQueue(db, null, env.REDIS_KEY_PREFIX, env.JOB_MAX_ATTEMPTS, log),
     worker,
     hub: null,
+    liveEvents: "postgres",
   };
   return { app: createApp(deps), deps, db, worker };
 }

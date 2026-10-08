@@ -26,6 +26,16 @@ interface Live {
 
 const LiveContext = createContext<Live>({ status: "offline", events: [] });
 const FEED_LIMIT = 60;
+
+/**
+ * The live list with one more event at the top. Delivery is at least once
+ * (Kafka redelivers after a restart), so an id already listed is a repeat,
+ * not a second event, and leaves the list as it was.
+ */
+export function withLiveEvent(current: ActivityEvent[], event: ActivityEvent, limit = FEED_LIMIT): ActivityEvent[] {
+  if (current.some((existing) => existing.id === event.id)) return current;
+  return [event, ...current].slice(0, limit);
+}
 export const CLOSE_SESSION_ENDED = 4001;
 
 /** Which cached data an event makes stale. */
@@ -106,7 +116,7 @@ export function LiveProvider({ children, enabled }: { children: ReactNode; enabl
           return;
         }
         if (data.type === "event") {
-          setEvents((current) => [data.event, ...current].slice(0, FEED_LIMIT));
+          setEvents((current) => withLiveEvent(current, data.event));
           invalidate([...affected(data.event), keys.activity()]);
         } else if (data.type === "notification") {
           onNotification(data.notification);

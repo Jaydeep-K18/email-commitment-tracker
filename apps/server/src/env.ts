@@ -67,7 +67,10 @@ export const envSchema = z.object({
 
   JOB_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(50).default(5),
 
+  /** Set to stream live events from Kafka; otherwise they come from Postgres. */
   KAFKA_BROKERS: list.optional(),
+  KAFKA_EVENTS_TOPIC: z.string().default("commitmail.events"),
+  KAFKA_GROUP_ID: z.string().default("commitmail-server"),
   FLINK_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
 
   /** Built React app to serve. Unset in development, where Vite serves it. */

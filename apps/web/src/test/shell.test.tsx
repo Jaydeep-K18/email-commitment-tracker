@@ -1,6 +1,9 @@
 import { act, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import type { ActivityEvent } from "@commitmail/shared";
+
+import { withLiveEvent } from "../lib/realtime";
 import { renderApp } from "./render";
 import { lastRequest, liveClients } from "./server";
 
@@ -42,5 +45,22 @@ describe("live updates", () => {
       ),
     );
     expect(await screen.findByText("Retry worked")).toBeInTheDocument();
+  });
+});
+
+describe("the live event list", () => {
+  const event = (id: number): ActivityEvent => ({
+    id, type: "email.received", entityType: "email", entityId: String(id), correlationId: `email:${id}`,
+    severity: "info", message: `event ${id}`, payload: {}, source: "worker", createdAt: "2026-10-08T09:30:00Z",
+  });
+
+  it("puts the newest event first and keeps a bounded list", () => {
+    const list = [event(3), event(2), event(1)].reduceRight<ActivityEvent[]>((acc, e) => withLiveEvent(acc, e, 2), []);
+    expect(list.map((e) => e.id)).toEqual([3, 2]);
+  });
+
+  it("ignores an event it already has, as Kafka can deliver one twice", () => {
+    const once = withLiveEvent([], event(1));
+    expect(withLiveEvent(once, event(1))).toBe(once);
   });
 });
