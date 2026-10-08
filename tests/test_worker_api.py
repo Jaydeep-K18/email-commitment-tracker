@@ -15,7 +15,9 @@ from src.jobs import handlers
 from src.jobs.handlers import JobContext, Services
 from src.server.calendar_server import app
 from src.storage import database, user_settings
-from src.storage.models import Commitment, Event, Job, RawEmail, Setting, VipContact, utcnow_naive
+from src.storage.models import (
+    Commitment, Event, Job, MetricSnapshot, RawEmail, Setting, VipContact, utcnow_naive,
+)
 
 TOKEN = "internal-test-token"
 
@@ -179,6 +181,20 @@ def test_retention_deletes_old_mail_but_never_an_upcoming_commitments_source():
         assert purged.payload["emails"] == 1
 
 
+def test_retention_drops_metric_windows_the_system_page_no_longer_reads():
+    now = utcnow_naive()
+    with database.session_scope() as s:
+        for days_ago in (3, 1):
+            end = now - timedelta(days=days_ago)
+            s.add(MetricSnapshot(source="flink", window="1m", window_start=end - timedelta(minutes=1),
+                                 window_end=end, metrics={}))
+
+    assert handlers.enforce_retention({}, ctx())["metrics"] == 1
+    with database.session_scope() as s:
+        [kept] = s.scalars(select(MetricSnapshot)).all()
+        assert kept.window_end > now - timedelta(days=2)
+
+
 def test_not_keeping_bodies_clears_them_once_analysed_and_only_then():
     save_setting("privacy", {"retentionDays": 0, "keepEmailBodies": False})
     analysed = old_email("done", days_ago=1, processed=True)
@@ -193,4 +209,4 @@ def test_not_keeping_bodies_clears_them_once_analysed_and_only_then():
 
 def test_the_default_settings_delete_nothing():
     old_email("ancient", days_ago=3650, processed=True)
-    assert handlers.enforce_retention({}, ctx()) == {"emails": 0, "events": 0, "bodies": 0}
+    assert handlers.enforce_retention({}, ctx()) == {"emails": 0, "events": 0, "bodies": 0, "metrics": 0}

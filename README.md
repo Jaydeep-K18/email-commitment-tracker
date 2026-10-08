@@ -60,8 +60,9 @@ extracting and publishing as background jobs.
                                     └──── Redis ──────────┘
                                    job dispatch and delayed retries
 
-  Optional: Kafka. The worker relays every committed event from Postgres to a
-  topic, and the server streams that topic to browsers (and Flink reads it).
+  Optional: Kafka and Flink. The worker relays every committed event from
+  Postgres to a topic; the server streams it to browsers, and a Flink job turns
+  it into one-minute metrics for the System page.
 ```
 
 | Part | What it does | Where |
@@ -127,6 +128,15 @@ outright. The `.ics` path had worked for weeks, so the bug only surfaced on the 
 API sync — and the unit test covering it had asserted the *absence* of a timezone, encoding
 the bug rather than catching it.
 
+**An idle stream never closes a window.** Flink's event-time windows close when a later
+event pushes the watermark past them. This stream is quiet most of the time, so the newest
+minute would sit open until the next mail check, and an empty minute would never be written
+at all — which reads exactly like Flink being down. The job therefore closes minutes by the
+wall clock, fifteen seconds after they end, writes empty ones too, and rewrites a minute if
+a straggler arrives later. The server's fallback computes the same metrics from the events
+table when Flink is not running; both follow one set of rules, written in Python and
+TypeScript and held together by a shared test file, so the page cannot tell them apart.
+
 **`127.0.0.1` is not a security boundary.** The Gmail extension talks to a local API, and it
 is tempting to treat loopback as private. It is not — any page your browser has open can
 issue `fetch("http://127.0.0.1:4000/ext/...")` in the background. Every `/ext/*` route
@@ -171,6 +181,11 @@ To stream events through Kafka as well, start it with `docker compose --profile 
 and set `KAFKA_BROKERS=127.0.0.1:9092` in `.env` before starting the worker and server.
 Without it, live events come straight from Postgres.
 
+For the Flink metrics, use `docker compose --profile streaming up -d --build` instead (Kafka
+plus a Flink cluster that submits its own job), and also set `FLINK_URL=http://127.0.0.1:8081`
+for the server. Flink's dashboard is then at that address. Without Flink, the System page
+computes the same metrics from the database and says so.
+
 The first visit creates your owner account, then walks through four steps: install the
 model, sign in with Google (optional), connect a mailbox, and choose where events should
 go. Mail is read **read-only**, and the mailbox password is stored in your OS keyring —
@@ -187,7 +202,7 @@ For one Node process instead of two, set `WEB_DIST=apps/web/dist` in `.env`, the
 ## Built with
 
 **Front end** React 18 · TypeScript · Vite · TanStack Query · React Router · Tailwind CSS ·
-Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · Kafka · WebSockets · Zod · argon2**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
+Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · Kafka · WebSockets · Zod · argon2**Streaming** Apache Flink 1.20 (PyFlink)**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
 Calendar & Gmail APIs**Extension** Chrome Manifest V3**Tests** pytest · Vitest · Testing Library · MSW · PGlite
 
 About 900 tests across both languages — including the 400 tier-policy cases that the

@@ -7,11 +7,13 @@
  * without Docker) reads "unconfigured", which is not a failure.
  *
  * Metrics come from Flink when it is running (it writes metric_snapshots); when
- * it is not, the same measures are computed here from the events and job tables,
- * and the response says which source produced them.
+ * it is not, the same measures are computed here from the events table — the
+ * stream Flink reads, at rest — by the same rules, and the response says which
+ * source produced them.
  */
 import { connect } from "node:net";
 
+import { BASELINE_MINUTES, windowMetrics } from "@commitmail/shared";
 import type { ComponentHealth, HealthState, MetricWindow, SystemHealth } from "@commitmail/shared";
 import { Router } from "express";
 import { z } from "zod";
@@ -24,6 +26,8 @@ import { toActivityEvent } from "./mappers";
 
 const WORKER_FRESH_MS = 30_000;
 const WORKER_STALE_MS = 120_000;
+/** Flink writes each minute 15 s after it ends; older than this and it has stopped. */
+const FLINK_FRESH_MS = 3 * 60_000;
 
 async function timed<T>(fn: () => Promise<T>): Promise<{ value: T; ms: number }> {
   const started = performance.now();
@@ -141,21 +145,31 @@ async function checkKafka(deps: Deps): Promise<ComponentHealth> {
   return { state: "ok", latencyMs: latency, detail: "streaming live events", meta };
 }
 
-async function checkFlink(url: string | undefined): Promise<ComponentHealth> {
+async function checkFlink(deps: Deps): Promise<ComponentHealth> {
+  const url = deps.env.FLINK_URL;
   if (!url) return { state: "unconfigured", detail: "FLINK_URL not set — metrics computed from the database" };
+  let overview: { value: Response; ms: number };
   try {
-    const { value: response, ms } = await timed(() => fetch(`${url.replace(/\/$/, "")}/overview`, { signal: AbortSignal.timeout(2_500) }));
-    const body = (await response.json()) as { "jobs-running"?: number; taskmanagers?: number };
-    const running = body["jobs-running"] ?? 0;
-    return {
-      state: running > 0 ? "ok" : "degraded",
-      latencyMs: ms,
-      detail: running > 0 ? `${running} job(s) running` : "cluster up, but no job running",
-      meta: { taskManagers: body.taskmanagers ?? 0, jobsRunning: running },
-    };
+    overview = await timed(() => fetch(`${url.replace(/\/$/, "")}/overview`, { signal: AbortSignal.timeout(2_500) }));
   } catch {
     return { state: "down", detail: `not reachable at ${url}` };
   }
+  const body = (await overview.value.json()) as { "jobs-running"?: number; taskmanagers?: number };
+  const running = body["jobs-running"] ?? 0;
+  const meta = { taskManagers: body.taskmanagers ?? 0, jobsRunning: running };
+  if (running === 0) return { state: "degraded", latencyMs: overview.ms, detail: "cluster up, but no job running", meta };
+
+  // Running is not the same as working: a job that cannot reach Postgres runs on.
+  const { rows } = await deps.db.query<{ newest: string | null }>(
+    "SELECT max(window_end) AS newest FROM metric_snapshots WHERE source = 'flink'",
+  );
+  const newest = rows[0]?.newest;
+  const age = newest ? Date.now() - Date.parse(utc(newest)!) : null;
+  if (age === null || age > FLINK_FRESH_MS) {
+    const since = age === null ? "yet" : `for ${Math.round(age / 60_000)} min`;
+    return { state: "degraded", latencyMs: overview.ms, detail: `job running, but no metrics written ${since}`, meta };
+  }
+  return { state: "ok", latencyMs: overview.ms, detail: `${running} job(s) running`, meta };
 }
 
 const SEVERITY: Record<HealthState, number> = { ok: 0, unconfigured: 0, degraded: 1, down: 2 };
@@ -167,7 +181,7 @@ export async function systemHealth(deps: Deps): Promise<SystemHealth> {
     checkWorker(deps.db).catch((): ComponentHealth => ({ state: "down", detail: "unknown" })),
     checkOllama(deps.env.OLLAMA_HOST, deps.env.OLLAMA_MODEL),
     checkKafka(deps).catch((): ComponentHealth => ({ state: "down", detail: "check failed" })),
-    checkFlink(deps.env.FLINK_URL),
+    checkFlink(deps).catch((): ComponentHealth => ({ state: "down", detail: "check failed" })),
   ]);
   const components = { api: { state: "ok" as HealthState }, database, redis, worker, ollama, kafka, flink };
   const worst = Math.max(...Object.values(components).map((c) => SEVERITY[c.state]));
@@ -181,17 +195,18 @@ interface MinuteRow {
   minute: string;
   events: number;
   processed: number;
-  failures: number;
   succeeded: number;
-  avg_ms: number | null;
-  p95_ms: number | null;
+  failures: number;
+  durations: number[];
 }
 
 /**
- * One-minute windows over the last `minutes`, computed from the tables. The
- * same definitions the Flink job uses, so the two sources are interchangeable.
+ * One-minute windows over the last `minutes`, computed from the events table by
+ * the rules the Flink job uses (packages/shared/src/metrics.ts). An extra hour
+ * is read in front, so the oldest minute shown has its full baseline too.
  */
 export async function fallbackMetrics(q: Queryable, minutes: number): Promise<MetricWindow[]> {
+  const span = minutes + BASELINE_MINUTES - 1;
   const { rows } = await q.query<MinuteRow>(
     `WITH buckets AS (
        SELECT generate_series(
@@ -199,56 +214,40 @@ export async function fallbackMetrics(q: Queryable, minutes: number): Promise<Me
          date_trunc('minute', (now() at time zone 'utc')), interval '1 minute') AS minute
      ),
      ev AS (
-       SELECT date_trunc('minute', created_at) AS minute, count(*) AS events,
-              count(*) FILTER (WHERE type = 'email.analyzed') AS processed
+       SELECT date_trunc('minute', created_at) AS minute,
+              count(*)::int AS events,
+              (count(*) FILTER (WHERE type = 'email.analyzed'))::int AS processed,
+              (count(*) FILTER (WHERE type = 'job.completed'))::int AS succeeded,
+              (count(*) FILTER (WHERE type IN ('job.retrying', 'job.failed')))::int AS failures,
+              array_agg((payload->>'duration_ms')::float8)
+                FILTER (WHERE type = 'job.completed' AND jsonb_typeof(payload->'duration_ms') = 'number') AS durations
          FROM events
-        WHERE created_at >= (now() at time zone 'utc') - $1::int * interval '1 minute'
-        GROUP BY 1
-     ),
-     att AS (
-       SELECT date_trunc('minute', finished_at) AS minute,
-              count(*) FILTER (WHERE status = 'failed') AS failures,
-              count(*) FILTER (WHERE status = 'succeeded') AS succeeded,
-              avg(duration_ms) FILTER (WHERE status = 'succeeded') AS avg_ms,
-              percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms)
-                FILTER (WHERE status = 'succeeded') AS p95_ms
-         FROM job_attempts
-        WHERE finished_at >= (now() at time zone 'utc') - $1::int * interval '1 minute'
+        WHERE created_at >= date_trunc('minute', (now() at time zone 'utc')) - ($1::int - 1) * interval '1 minute'
         GROUP BY 1
      )
      SELECT b.minute::text AS minute, coalesce(ev.events, 0) AS events, coalesce(ev.processed, 0) AS processed,
-            coalesce(att.failures, 0) AS failures, coalesce(att.succeeded, 0) AS succeeded,
-            att.avg_ms, att.p95_ms
-       FROM buckets b LEFT JOIN ev USING (minute) LEFT JOIN att USING (minute)
+            coalesce(ev.succeeded, 0) AS succeeded, coalesce(ev.failures, 0) AS failures,
+            coalesce(ev.durations, '{}') AS durations
+       FROM buckets b LEFT JOIN ev USING (minute)
       ORDER BY b.minute`,
-    [minutes],
+    [span],
   );
 
-  // An error spike: a minute with at least 3 failures and three times the
-  // window's average. Deliberately simple and explainable.
-  const meanFailures = rows.reduce((sum, r) => sum + r.failures, 0) / Math.max(rows.length, 1);
-  const meanEvents = rows.reduce((sum, r) => sum + r.events, 0) / Math.max(rows.length, 1);
-  const sd = Math.sqrt(rows.reduce((sum, r) => sum + (r.events - meanEvents) ** 2, 0) / Math.max(rows.length, 1));
-
-  return rows.map((row) => {
+  const metrics = windowMetrics(rows.map((r) => ({
+    events: r.events,
+    processed: r.processed,
+    succeeded: r.succeeded,
+    failures: r.failures,
+    durationsMs: r.durations.map(Number),
+  })));
+  return rows.slice(BASELINE_MINUTES - 1).map((row, i) => {
     const start = utc(row.minute)!;
-    const attempts = row.succeeded + row.failures;
     return {
       source: "fallback",
       window: "1m",
       windowStart: start,
       windowEnd: new Date(Date.parse(start) + 60_000).toISOString(),
-      metrics: {
-        events: row.events,
-        emailsProcessed: row.processed,
-        throughputPerMinute: row.processed,
-        avgLatencyMs: row.avg_ms == null ? null : Math.round(Number(row.avg_ms)),
-        p95LatencyMs: row.p95_ms == null ? null : Math.round(Number(row.p95_ms)),
-        successRate: attempts ? Math.round((row.succeeded / attempts) * 1000) / 10 : null,
-        failures: row.failures,
-        errorSpike: row.failures >= 3 && row.failures >= 3 * meanFailures,
-        volumeAnomaly: sd > 0 && row.events >= 10 && (row.events - meanEvents) / sd > 3,
-      },
+      metrics: metrics[i + BASELINE_MINUTES - 1]!,
     };
   });
 }
@@ -263,7 +262,7 @@ export async function liveMetrics(q: Queryable, minutes: number): Promise<{ sour
     [minutes],
   );
   const newest = rows[rows.length - 1];
-  if (newest && Date.now() - Date.parse(utc(newest.window_end)!) < 3 * 60_000) {
+  if (newest && Date.now() - Date.parse(utc(newest.window_end)!) < FLINK_FRESH_MS) {
     return {
       source: "flink",
       windows: rows.map((r) => ({

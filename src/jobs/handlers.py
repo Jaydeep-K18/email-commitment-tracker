@@ -409,9 +409,16 @@ def apply_vip_rules(payload: dict, ctx: JobContext) -> dict:
     return {"retagged": counts["total"], "reclassified": reclassified, "queued_for_analysis": queued}
 
 
+# The System page reads four hours of metric windows at most.
+METRIC_SNAPSHOT_DAYS = 2
+
+
 @handler("enforce_retention")
 def enforce_retention(payload: dict, ctx: JobContext) -> dict:
     """Apply the privacy settings: delete old mail, blank analysed bodies.
+
+    Also drops metric windows older than METRIC_SNAPSHOT_DAYS, which Flink
+    writes one a minute whatever the privacy settings.
 
     An email is kept past its retention date while it still has a pending
     commitment with a deadline ahead of it — deleting it would silently remove
@@ -423,7 +430,7 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
 
     from src.events.recorder import DATA_PURGED, record_event
     from src.storage import user_settings
-    from src.storage.models import Event, utcnow_naive
+    from src.storage.models import Event, MetricSnapshot, utcnow_naive
 
     with session_scope() as session:
         privacy = user_settings.section(session, "privacy")
@@ -446,6 +453,12 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
                 delete(Event).where(Event.created_at < cutoff)
             ).rowcount
 
+        pruned_metrics = session.execute(
+            delete(MetricSnapshot).where(
+                MetricSnapshot.window_end < now - timedelta(days=METRIC_SNAPSHOT_DAYS)
+            )
+        ).rowcount
+
         if not keep_bodies:
             blanked = session.execute(
                 update(RawEmail)
@@ -467,7 +480,7 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
                     "bodies": blanked,
                 },
             )
-    return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked}
+    return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked, "metrics": pruned_metrics}
 
 
 @handler("classify_emails")

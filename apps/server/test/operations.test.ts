@@ -1,3 +1,6 @@
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import type { Db } from "../src/db/types";
@@ -156,6 +159,38 @@ describe("system health", () => {
     expect(res.body.windows[0].metrics).toMatchObject({ events: expect.any(Number), errorSpike: false });
   });
 
+  it("counts the minute from the events table, as Flink counts it from the topic", async () => {
+    await db.query("DELETE FROM events");
+    const rows: Array<[string, string]> = [
+      ["email.analyzed", "{}"],
+      ["job.completed", '{"duration_ms": 100}'],
+      ["job.completed", '{"duration_ms": 300}'],
+      ["job.completed", '{"duration_ms": "n/a"}'],
+      ["job.retrying", "{}"],
+      ["job.failed", "{}"],
+      ["job.failed", "{}"],
+    ];
+    for (const [type, payload] of rows) {
+      await db.query(
+        `INSERT INTO events (type, severity, message, payload, source, created_at)
+         VALUES ($1, 'info', 'x', $2::jsonb, 'worker', date_trunc('minute', now() at time zone 'utc') + interval '1 second')`,
+        [type, payload],
+      );
+    }
+    const { windows } = (await session.get("/api/system/metrics").query({ minutes: 5 })).body;
+    expect(windows.at(-1).metrics).toEqual({
+      events: 7,
+      emailsProcessed: 1,
+      throughputPerMinute: 1,
+      avgLatencyMs: 200,
+      p95LatencyMs: 290,
+      successRate: 50,
+      failures: 3,
+      errorSpike: true,      // three failures in an otherwise quiet hour
+      volumeAnomaly: false,
+    });
+  });
+
   it("prefers Flink's windows while they are fresh", async () => {
     const now = new Date();
     const fmt = (d: Date) => d.toISOString().replace("T", " ").slice(0, 19);
@@ -167,6 +202,58 @@ describe("system health", () => {
     const res = await session.get("/api/system/metrics");
     expect(res.body.source).toBe("flink");
     expect(res.body.windows[0].metrics.events).toBe(7);
+  });
+});
+
+describe("Flink in system health", () => {
+  let flink: Server;
+  let jobsRunning = 1;
+
+  beforeAll(async () => {
+    flink = createServer((_req, res) => {
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ "jobs-running": jobsRunning, taskmanagers: 1 }));
+    });
+    await new Promise<void>((resolve) => flink.listen(0, "127.0.0.1", resolve));
+  });
+  afterAll(() => new Promise<void>((resolve) => flink.close(() => resolve())));
+
+  async function flinkHealth(url = `http://127.0.0.1:${(flink.address() as AddressInfo).port}`) {
+    await resetDb(db);
+    const flinkSession = await signedIn(buildApp(db, { FLINK_URL: url }).app);
+    return async () => (await flinkSession.get("/api/system/health")).body.components.flink;
+  }
+
+  async function snapshotEnding(minutesAgo: number) {
+    await db.query(
+      `INSERT INTO metric_snapshots (source, "window", window_start, window_end, metrics)
+       VALUES ('flink', '1m', (now() at time zone 'utc') - make_interval(mins => $1::int + 1),
+               (now() at time zone 'utc') - make_interval(mins => $1::int), '{}')`,
+      [minutesAgo],
+    );
+  }
+
+  it("is healthy while the job keeps writing windows", async () => {
+    jobsRunning = 1;
+    const health = await flinkHealth();
+    await snapshotEnding(1);
+    expect((await health()).state).toBe("ok");
+  });
+
+  it("notices a job that runs but has stopped writing", async () => {
+    jobsRunning = 1;
+    const health = await flinkHealth();
+    await snapshotEnding(10);
+    expect(await health()).toMatchObject({ state: "degraded", detail: "job running, but no metrics written for 10 min" });
+  });
+
+  it("says so when the cluster has no job", async () => {
+    jobsRunning = 0;
+    expect(await (await flinkHealth())()).toMatchObject({ state: "degraded", detail: "cluster up, but no job running" });
+  });
+
+  it("is down when the cluster does not answer", async () => {
+    expect((await (await flinkHealth("http://127.0.0.1:9"))()).state).toBe("down");
   });
 });
 

@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import catalogue from "../contracts/catalogue.json";
+import metricWindows from "../contracts/metric-windows.json";
 import decisions from "../contracts/sync-decisions.json";
 import {
   CATEGORIES,
@@ -20,7 +21,9 @@ import {
   REDIS_KEYS,
   SEVERITIES,
   TIERS,
+  BASELINE_MINUTES,
   decide,
+  windowMetrics,
   type PolicyInput,
 } from "../src";
 
@@ -62,4 +65,14 @@ describe("the calendar policy agrees with Python's decide()", () => {
       expect(decide(testCase.input as PolicyInput)).toEqual(testCase.output);
     },
   );
+});
+
+describe("metric windows match the Flink job's rules", () => {
+  it("uses the same baseline", () => {
+    expect(BASELINE_MINUTES).toBe(metricWindows.baselineMinutes);
+  });
+
+  it.each(metricWindows.cases.map((c) => [c.name, c] as const))("%s", (_name, c) => {
+    expect(windowMetrics(c.series)).toEqual(c.metrics);
+  });
 });

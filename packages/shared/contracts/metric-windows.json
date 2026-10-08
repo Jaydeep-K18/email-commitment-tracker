@@ -1,0 +1,4171 @@
+{
+  "baselineMinutes": 60,
+  "cases": [
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        }
+      ],
+      "name": "an empty minute",
+      "series": [
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        }
+      ]
+    },
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": 400,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 880,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 2,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 0,
+          "p95LatencyMs": 2,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        }
+      ],
+      "name": "latency: the mean, and the 95th percentile interpolated like percentile_cont",
+      "series": [
+        {
+          "durationsMs": [
+            400,
+            100,
+            1000,
+            300,
+            200
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 5
+        },
+        {
+          "durationsMs": [
+            0.5,
+            2.5
+          ],
+          "events": 2,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        }
+      ]
+    },
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 66.7,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 8,
+          "failures": 7,
+          "p95LatencyMs": null,
+          "successRate": 12.5,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 0.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        }
+      ],
+      "name": "success rate: one decimal, halves rounded up",
+      "series": [
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [],
+          "events": 8,
+          "failures": 7,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 0
+        }
+      ]
+    },
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": true,
+          "events": 3,
+          "failures": 3,
+          "p95LatencyMs": null,
+          "successRate": 0.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        }
+      ],
+      "name": "an error spike in a quiet hour",
+      "series": [
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 3,
+          "processed": 0,
+          "succeeded": 0
+        }
+      ]
+    },
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 3,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 30,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": true
+        }
+      ],
+      "name": "a volume anomaly against a steady hour",
+      "series": [
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 3,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 30,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        }
+      ]
+    },
+    {
+      "metrics": [
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 33.3,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 253,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 415,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 415,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 650,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 52,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 52,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 558,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 1,
+          "p95LatencyMs": 558,
+          "successRate": 66.7,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 110,
+          "emailsProcessed": 2,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 110,
+          "successRate": 33.3,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 0.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 536,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 4,
+          "p95LatencyMs": 768,
+          "successRate": 42.9,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 818,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 818,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 430,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 537,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 33.3,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": true
+        },
+        {
+          "avgLatencyMs": 333,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 488,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 584,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 4,
+          "p95LatencyMs": 838,
+          "successRate": 0.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 347,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 4,
+          "p95LatencyMs": 788,
+          "successRate": 42.9,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 632,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": 663,
+          "successRate": null,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 253,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 1,
+          "p95LatencyMs": 455,
+          "successRate": 66.7,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 0.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 605,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 859,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 431,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 1,
+          "p95LatencyMs": 783,
+          "successRate": 75.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 163,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 233,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 82,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 0,
+          "p95LatencyMs": 147,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 515,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 4,
+          "p95LatencyMs": 858,
+          "successRate": 33.3,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 410,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 1,
+          "p95LatencyMs": 413,
+          "successRate": 0.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 73,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 73,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 339,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 592,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 20.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 633,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": 633,
+          "successRate": null,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 280,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 0,
+          "p95LatencyMs": 473,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 122,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 1,
+          "p95LatencyMs": 149,
+          "successRate": 75.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 579,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 839,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 433,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 4,
+          "p95LatencyMs": 683,
+          "successRate": 20.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 458,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 527,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 580,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 780,
+          "successRate": 20.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 609,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 821,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 714,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 714,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 159,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 223,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 357,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 485,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 743,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 1,
+          "p95LatencyMs": 815,
+          "successRate": 0.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 494,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 1,
+          "p95LatencyMs": 494,
+          "successRate": 0.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 554,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 737,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 33,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 33,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 659,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 825,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 449,
+          "emailsProcessed": 2,
+          "errorSpike": true,
+          "events": 40,
+          "failures": 4,
+          "p95LatencyMs": 449,
+          "successRate": 0.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": true
+        },
+        {
+          "avgLatencyMs": 304,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 304,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 375,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": 795,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 486,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 40,
+          "failures": 4,
+          "p95LatencyMs": 801,
+          "successRate": 42.9,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 628,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 1,
+          "p95LatencyMs": 628,
+          "successRate": 0.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 504,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 736,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 670,
+          "emailsProcessed": 0,
+          "errorSpike": true,
+          "events": 5,
+          "failures": 4,
+          "p95LatencyMs": 807,
+          "successRate": 33.3,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 288,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 288,
+          "successRate": null,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 42.9,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 519,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 701,
+          "successRate": 33.3,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 720,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 1,
+          "failures": 4,
+          "p95LatencyMs": 720,
+          "successRate": 42.9,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 431,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 1,
+          "p95LatencyMs": 431,
+          "successRate": 50.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 690,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 0,
+          "p95LatencyMs": 690,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 264,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": 264,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 454,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 670,
+          "successRate": 100.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 331,
+          "emailsProcessed": 0,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 428,
+          "successRate": 42.9,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 75.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 2,
+          "failures": 4,
+          "p95LatencyMs": null,
+          "successRate": 33.3,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 164,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 271,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 289,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 1,
+          "p95LatencyMs": 407,
+          "successRate": 50.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 50.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 5,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 352,
+          "emailsProcessed": 0,
+          "errorSpike": true,
+          "events": 2,
+          "failures": 4,
+          "p95LatencyMs": 605,
+          "successRate": 33.3,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 273,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 273,
+          "successRate": 100.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 665,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 770,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 282,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 282,
+          "successRate": 42.9,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": null,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 277,
+          "emailsProcessed": 2,
+          "errorSpike": true,
+          "events": 0,
+          "failures": 4,
+          "p95LatencyMs": 441,
+          "successRate": 20.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 527,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 1,
+          "p95LatencyMs": 809,
+          "successRate": 75.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": true
+        },
+        {
+          "avgLatencyMs": 857,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 0,
+          "p95LatencyMs": 857,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": true
+        },
+        {
+          "avgLatencyMs": 461,
+          "emailsProcessed": 2,
+          "errorSpike": false,
+          "events": 40,
+          "failures": 1,
+          "p95LatencyMs": 822,
+          "successRate": 50.0,
+          "throughputPerMinute": 2,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 108,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 164,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 714,
+          "emailsProcessed": 1,
+          "errorSpike": true,
+          "events": 40,
+          "failures": 4,
+          "p95LatencyMs": 714,
+          "successRate": 33.3,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 280,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 0,
+          "p95LatencyMs": 280,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 451,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 2,
+          "failures": 0,
+          "p95LatencyMs": 554,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 99,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 183,
+          "successRate": 100.0,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 598,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 1,
+          "failures": 1,
+          "p95LatencyMs": 668,
+          "successRate": 0.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": 469,
+          "emailsProcessed": 0,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 0,
+          "p95LatencyMs": 804,
+          "successRate": null,
+          "throughputPerMinute": 0,
+          "volumeAnomaly": false
+        },
+        {
+          "avgLatencyMs": null,
+          "emailsProcessed": 1,
+          "errorSpike": false,
+          "events": 0,
+          "failures": 1,
+          "p95LatencyMs": null,
+          "successRate": 0.0,
+          "throughputPerMinute": 1,
+          "volumeAnomaly": false
+        }
+      ],
+      "name": "ninety random minutes, so the baseline slides",
+      "series": [
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 5,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            433,
+            76,
+            251
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            131,
+            233,
+            650,
+            647
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            52
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            558
+          ],
+          "events": 5,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            110
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 2,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [],
+          "events": 5,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 5,
+          "failures": 4,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            800,
+            326,
+            481
+          ],
+          "events": 5,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            818
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            312,
+            542,
+            511,
+            356
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 40,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            160,
+            505
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            813,
+            842,
+            326,
+            353
+          ],
+          "events": 2,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            75,
+            865,
+            100
+          ],
+          "events": 40,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            667,
+            596
+          ],
+          "events": 1,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            28,
+            477
+          ],
+          "events": 40,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            405,
+            897,
+            513
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            289,
+            145,
+            843,
+            445
+          ],
+          "events": 0,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            241,
+            159,
+            89
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            9,
+            154
+          ],
+          "events": 2,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            331,
+            133,
+            712,
+            884
+          ],
+          "events": 2,
+          "failures": 4,
+          "processed": 2,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            406,
+            412,
+            413,
+            408
+          ],
+          "events": 5,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            73
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            620,
+            58
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            633
+          ],
+          "events": 1,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            377,
+            490,
+            130,
+            123
+          ],
+          "events": 2,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            92,
+            152
+          ],
+          "events": 2,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            853,
+            713,
+            170
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            155,
+            711
+          ],
+          "events": 5,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            535,
+            380
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            802,
+            519,
+            342,
+            656
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            762,
+            827,
+            237
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            714
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            87,
+            230
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            214,
+            499
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            823,
+            663
+          ],
+          "events": 5,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            494
+          ],
+          "events": 0,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            479,
+            416,
+            766
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            33
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            851,
+            615,
+            490,
+            678
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            449
+          ],
+          "events": 40,
+          "failures": 4,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            304
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            434,
+            859,
+            139,
+            67
+          ],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            435,
+            851,
+            518,
+            138
+          ],
+          "events": 40,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            628
+          ],
+          "events": 5,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            638,
+            747,
+            128
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            573,
+            499,
+            808,
+            800
+          ],
+          "events": 5,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            288
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            625,
+            529,
+            209,
+            714
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            720
+          ],
+          "events": 1,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            431
+          ],
+          "events": 5,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            690
+          ],
+          "events": 40,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            264
+          ],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            503,
+            171,
+            688
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            352,
+            436,
+            205
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 0,
+          "processed": 1,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 2,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            283,
+            45
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            420,
+            157
+          ],
+          "events": 0,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 5,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 1,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 5,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            279,
+            641,
+            137
+          ],
+          "events": 2,
+          "failures": 4,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            273
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            548,
+            782
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            282
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            256,
+            462,
+            113
+          ],
+          "events": 0,
+          "failures": 4,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            859,
+            407,
+            523,
+            320
+          ],
+          "events": 40,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            857
+          ],
+          "events": 40,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            60,
+            862
+          ],
+          "events": 40,
+          "failures": 1,
+          "processed": 2,
+          "succeeded": 1
+        },
+        {
+          "durationsMs": [
+            172,
+            61,
+            91
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            714
+          ],
+          "events": 40,
+          "failures": 4,
+          "processed": 1,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            280
+          ],
+          "events": 1,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 3
+        },
+        {
+          "durationsMs": [
+            565,
+            336
+          ],
+          "events": 2,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            192,
+            6
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 2
+        },
+        {
+          "durationsMs": [
+            519,
+            676
+          ],
+          "events": 1,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [
+            841,
+            96
+          ],
+          "events": 0,
+          "failures": 0,
+          "processed": 0,
+          "succeeded": 0
+        },
+        {
+          "durationsMs": [],
+          "events": 0,
+          "failures": 1,
+          "processed": 1,
+          "succeeded": 0
+        }
+      ]
+    }
+  ]
+}
