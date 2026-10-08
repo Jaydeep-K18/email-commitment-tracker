@@ -55,6 +55,8 @@ class GoogleAccount:
 
     email: str
     scopes: tuple[str, ...]
+    #: Google refused to renew the sign-in; only signing in again fixes it.
+    expired: bool = False
 
     @property
     def has_calendar(self) -> bool:
@@ -71,6 +73,40 @@ class GoogleAccount:
 #: reliable address field, and the setup screen should be able to say which
 #: account is connected without a network round trip on every rerun.
 EMAIL_KEY = "ect_email"
+#: Set beside the credentials once Google refuses to renew them, so the setup
+#: screen can say "sign in again" without asking Google on every view, and jobs
+#: fail at once instead of each asking Google again. Signing in stores a fresh
+#: token, which does not carry it.
+EXPIRED_KEY = "ect_needs_sign_in"
+
+#: Where the user signs in again. Every message about an expired sign-in ends
+#: with this, so it always says what to do.
+SIGN_IN_AGAIN = "Sign in again under Settings → Integrations."
+
+
+def needs_sign_in(exc: BaseException) -> bool:
+    """Whether a failure means the user has to sign in again.
+
+    Google refusing to renew a sign-in — revoked, or expired: a Cloud project
+    in "Testing" mode has its sign-ins expire after seven days — fails the same
+    way however often it is retried. A network failure on the way to Google
+    does not, so it is not counted.
+    """
+    from google.auth.exceptions import RefreshError, TransportError
+
+    if isinstance(exc, RefreshError):
+        return True
+    if isinstance(exc, GoogleAuthError):
+        return not isinstance(exc.__cause__, TransportError)
+    return False
+
+
+def _mark_expired() -> None:
+    data = stored_token()
+    if data is not None and not data.get(EXPIRED_KEY):
+        data[EXPIRED_KEY] = True
+        keyring.set_password(config.KEYRING_SERVICE, KEYRING_ACCOUNT, json.dumps(data))
+        log.warning("Google refused to renew the sign-in. %s", SIGN_IN_AGAIN)
 
 
 def store_token(credentials, email: str | None = None) -> None:
@@ -147,9 +183,10 @@ def credentials(*, refresh: bool = True):
     data = stored_token()
     if data is None:
         raise GoogleAuthError(
-            "Not signed in to Google. Open the dashboard and use "
-            "'Sign in with Google' on the setup page."
+            "Not signed in to Google. Use 'Sign in with Google' under Settings → Integrations."
         )
+    if data.get(EXPIRED_KEY):
+        raise GoogleAuthError(f"The Google sign-in has expired. {SIGN_IN_AGAIN}")
 
     # The scopes come from the token, not from config. Passing a fixed list here
     # made every identity-only or calendar-only sign-in look invalid, because the
@@ -159,17 +196,19 @@ def credentials(*, refresh: bool = True):
 
     if refresh and not creds.valid:
         if not creds.refresh_token:
+            _mark_expired()
             raise GoogleAuthError(
-                "The Google sign-in has expired and cannot renew itself. "
-                "Sign in again from the setup page."
+                f"The Google sign-in has expired and cannot renew itself. {SIGN_IN_AGAIN}"
             )
         try:
             creds.refresh(Request())
         except Exception as exc:  # noqa: BLE001 - surfaced to the user as text
-            raise GoogleAuthError(
-                f"Could not refresh the Google sign-in: {exc}. "
-                "Sign in again from the setup page."
-            ) from exc
+            if needs_sign_in(exc):
+                _mark_expired()
+                raise GoogleAuthError(
+                    f"Google would not renew the sign-in ({exc}). {SIGN_IN_AGAIN}"
+                ) from exc
+            raise GoogleAuthError(f"Could not reach Google to renew the sign-in: {exc}") from exc
         store_token(creds)
         log.info("Refreshed the Google access token.")
 
@@ -184,6 +223,7 @@ def account() -> GoogleAccount | None:
     return GoogleAccount(
         email=data.get(EMAIL_KEY, ""),
         scopes=tuple(data.get("scopes") or ()),
+        expired=bool(data.get(EXPIRED_KEY)),
     )
 
 

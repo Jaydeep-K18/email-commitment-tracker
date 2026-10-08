@@ -165,12 +165,7 @@ def is_retryable(exc: BaseException) -> bool:
     """
     from googleapiclient.errors import HttpError
 
-    try:
-        from google.auth.exceptions import RefreshError
-    except ImportError:  # pragma: no cover - google-auth is a hard dependency
-        RefreshError = ()  # noqa: N806
-
-    if isinstance(exc, RefreshError):
+    if google_auth.needs_sign_in(exc):
         return False
     if isinstance(exc, HttpError):
         status = exc.resp.status

@@ -69,3 +69,27 @@ describe("settings", () => {
     await waitFor(() => expect(lastRequest("POST", "/api/privacy/purge")?.body).toEqual({ scope: "activity", confirm: "DELETE" }));
   });
 });
+
+describe("an expired Google sign-in", () => {
+  it("says so and signs in again, instead of showing a connected account", async () => {
+    server.use(
+      http.get("/api/setup/status", () =>
+        HttpResponse.json({
+          ollama: { running: true, modelPresent: true, model: "llama3.2:latest", problem: "" },
+          mailbox: { address: null, connected: true, viaGmailApi: true },
+          google: { signedIn: true, expired: true, email: "me@example.com", calendar: true, clientConfigured: true },
+          complete: true,
+          missing: "",
+        })),
+      http.post("/api/setup/google/sign-in", () => HttpResponse.json({ email: "me@example.com", calendar: true, resumed: true })),
+    );
+    const { user } = renderApp("/settings?tab=integrations");
+
+    expect(await screen.findByText(/Google ended the sign-in for/, {}, LAZY)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Disconnect" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Sign in again" }));
+    await waitFor(() => expect(lastRequest("POST", "/api/setup/google/sign-in")).toBeDefined());
+    expect(await screen.findByText(/catching up on mail and your calendar/)).toBeInTheDocument();
+  });
+});
+

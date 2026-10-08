@@ -122,9 +122,16 @@ def fetch_mailbox(payload: dict, ctx: JobContext) -> dict:
     """
     from src.storage.user_settings import apply_fetch_settings
 
+    from src.auth.google_auth import needs_sign_in
+
     with session_scope() as session:
         apply_fetch_settings(session)
-    fetched = ctx.services.fetch()
+    try:
+        fetched = ctx.services.fetch()
+    except Exception as exc:
+        if needs_sign_in(exc):
+            raise PermanentJobError(str(exc)) from exc   # retrying cannot help
+        raise
     with session_scope() as session:
         backlog = emails_awaiting_extraction(session, limit=BACKLOG_BATCH)
         queued = sum(
@@ -259,8 +266,12 @@ def publish_calendar(payload: dict, ctx: JobContext) -> dict:
 def _google_failure(exc: BaseException) -> BaseException:
     from src.sync import google_calendar
 
+    from src.auth.google_auth import needs_sign_in
+
     if google_calendar.is_retryable(exc):
         return exc
+    if needs_sign_in(exc):
+        return PermanentJobError(str(exc))   # already says what to do
     return PermanentJobError(f"Google rejected it: {exc}")
 
 

@@ -101,6 +101,7 @@ def collect_raw_messages() -> list[bytes]:
     """
     from src.collection import gmail_fetcher
 
+    gmail_error: Exception | None = None
     if gmail_fetcher.is_available():
         try:
             return gmail_fetcher.fetch_recent()
@@ -108,8 +109,16 @@ def collect_raw_messages() -> list[bytes]:
             # A Google outage or a revoked token should not strand a user who
             # still has a working app password configured.
             log.warning("Gmail API fetch failed (%s); trying IMAP.", exc)
+            gmail_error = exc
 
-    imap = connect()
+    try:
+        imap = connect()
+    except config.ConfigError:
+        # IMAP was never set up as a fallback, so its complaint ("no password
+        # for you@example.com") would only hide the real problem: Gmail's.
+        if gmail_error is not None:
+            raise gmail_error from None
+        raise
     try:
         return fetch_recent(imap)
     finally:

@@ -125,18 +125,47 @@ export function OllamaStep({ status, number, onRecheck, rechecking }: { status: 
 }
 
 export function GoogleStep({ status, number }: { status: SetupStatus; number?: number }) {
-  const signIn = useSetupAction<{ email: string }>("post", "/setup/google/sign-in");
+  const signIn = useSetupAction<{ email: string; resumed: boolean }>("post", "/setup/google/sign-in");
   const disconnect = useSetupAction("del", "/setup/google");
   const { google } = status;
+  const signInButton = (label: string) => (
+    <div className="space-y-2">
+      <Button
+        variant="primary"
+        size="sm"
+        loading={signIn.isPending}
+        onClick={() =>
+          signIn.mutate(undefined, {
+            onSuccess: (result) =>
+              toast.success(
+                result.resumed ? `Signed in again as ${result.email} — catching up on mail and your calendar` : `Signed in as ${result.email}`,
+              ),
+            onError: (error) => toast.error(errorMessage(error)),
+          })
+        }
+      >
+        {label}
+      </Button>
+      {signIn.isPending && <p className="text-[12.5px] text-muted">Finish signing in from the browser tab that just opened…</p>}
+    </div>
+  );
   return (
     <StepCard
       number={number}
       icon={<ShieldCheck />}
-      done={google.signedIn}
+      done={google.signedIn && !google.expired}
       title="Sign in with Google"
       description="Optional. Identifies you to Google — it does not read your mail. Needed only for the Google Calendar option."
     >
-      {google.signedIn ? (
+      {google.signedIn && google.expired ? (
+        <div className="space-y-3">
+          <p role="alert" className="rounded-lg bg-warning-soft px-3 py-2 text-[13px] text-text">
+            Google ended the sign-in for <span className="font-medium">{google.email ?? "your account"}</span>, so mail checks and
+            Google Calendar updates are paused. Sign in again to pick up where they left off.
+          </p>
+          {signInButton("Sign in again")}
+        </div>
+      ) : google.signedIn ? (
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-[13px] text-muted">
             Signed in as <span className="font-medium text-text">{google.email ?? "your Google account"}</span>
@@ -151,22 +180,7 @@ export function GoogleStep({ status, number }: { status: SetupStatus; number?: n
           No Google client is configured for this install. Follow <span className="font-mono">docs/google-setup.md</span> to add one, or skip this step.
         </p>
       ) : (
-        <div className="space-y-2">
-          <Button
-            variant="primary"
-            size="sm"
-            loading={signIn.isPending}
-            onClick={() =>
-              signIn.mutate(undefined, {
-                onSuccess: (result) => toast.success(`Signed in as ${result.email}`),
-                onError: (error) => toast.error(errorMessage(error)),
-              })
-            }
-          >
-            Sign in with Google
-          </Button>
-          {signIn.isPending && <p className="text-[12.5px] text-muted">Finish signing in from the browser tab that just opened…</p>}
-        </div>
+        signInButton("Sign in with Google")
       )}
     </StepCard>
   );

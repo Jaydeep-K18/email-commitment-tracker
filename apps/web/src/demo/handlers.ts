@@ -444,7 +444,7 @@ export const handlers = [
     json({
       ollama: { running: true, modelPresent: true, model: "llama3.2:latest", problem: "" },
       mailbox: { address: "demo@commitmail.dev", connected: true, viaGmailApi: false },
-      google: { signedIn: true, email: "demo@commitmail.dev", calendar: true, clientConfigured: true },
+      google: { signedIn: true, expired: false, email: "demo@commitmail.dev", calendar: true, clientConfigured: true },
       complete: true,
       missing: "",
     })),

@@ -130,7 +130,7 @@ export const handlers = [
     json({
       ollama: { running: true, modelPresent: true, model: "qwen2.5:7b", problem: "" },
       mailbox: { address: "owner@example.com", connected: true, viaGmailApi: false },
-      google: { signedIn: false, email: null, calendar: false, clientConfigured: false },
+      google: { signedIn: false, expired: false, email: null, calendar: false, clientConfigured: false },
       complete: true,
       missing: "",
     })),

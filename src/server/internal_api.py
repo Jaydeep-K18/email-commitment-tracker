@@ -75,6 +75,7 @@ def setup_status() -> dict:
         },
         "google": {
             "signedIn": account is not None,
+            "expired": bool(account and account.expired),
             "email": account.email if account else None,
             "calendar": bool(account and account.has_calendar),
             "clientConfigured": google_auth.client_secrets_present(),
@@ -106,12 +107,25 @@ def google_sign_in() -> dict:
 
     Blocks until the user finishes or abandons it. FastAPI runs a plain ``def``
     route in a worker thread, so this does not hold up other requests.
+
+    Signing in again after Google ended a sign-in also catches up: the mail
+    check and calendar update that failed meanwhile are queued straight away,
+    rather than waiting for the user to think of pressing Sync now.
     """
+    previous = google_auth.account()
     try:
         account = google_auth.sign_in()
     except Exception as exc:  # noqa: BLE001 - surfaced to the user verbatim
         raise HTTPException(400, f"Sign-in did not complete: {exc}") from exc
-    return {"email": account.email, "calendar": account.has_calendar}
+    resumed = bool(previous and previous.expired)
+    if resumed:
+        from src.jobs.queue import enqueue_unless_active
+        from src.storage.database import session_scope
+
+        with session_scope() as session:
+            enqueue_unless_active(session, "fetch_mailbox")
+            enqueue_unless_active(session, "publish_calendar")
+    return {"email": account.email, "calendar": account.has_calendar, "resumed": resumed}
 
 
 @router.post("/setup/google/calendar")

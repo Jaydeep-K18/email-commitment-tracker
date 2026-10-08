@@ -283,7 +283,8 @@ export interface MetricWindow {
 export interface SetupStatus {
   ollama: { running: boolean; modelPresent: boolean; model: string; problem: string };
   mailbox: { address: string | null; connected: boolean; viaGmailApi: boolean };
-  google: { signedIn: boolean; email: string | null; calendar: boolean; clientConfigured: boolean };
+  /** `expired`: Google refused to renew the sign-in; only signing in again fixes it. */
+  google: { signedIn: boolean; expired: boolean; email: string | null; calendar: boolean; clientConfigured: boolean };
   complete: boolean;
   missing: string;
 }
