@@ -48,10 +48,12 @@ Click **Enable** on each.
 > mail checks and calendar updates stop until you sign in again; the app says so
 > under **Settings → Integrations** and catches up once you have.
 >
-> To stop the weekly expiry, press **Publish app** on this page to move it to
-> *In production*. You do not need to submit it for verification for your own
-> use: Google shows an "unverified app" warning when you sign in, which you click
-> through as in step 6, and sign-ins then stay valid until you revoke them.
+> To stop the weekly expiry, move the app to *In production* with **Publish
+> app** under **Audience**. Google first asks for an application home page and a
+> privacy policy link on the **Branding** page (the button stays greyed out until
+> both are filled in). You do not need to submit it for verification for your
+> own use: Google shows an "unverified app" warning when you sign in, which you
+> click through as in step 6, and sign-ins then stay valid until you revoke them.
 
 ## 4. Create the credentials
 
