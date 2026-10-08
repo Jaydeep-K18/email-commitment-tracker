@@ -6,6 +6,7 @@
  *   npm start   -w @commitmail/server     (after npm run build)
  */
 import { createServer } from "node:http";
+import { initializeKafkaConsumer, type KafkaEventConsumer } from "./events/kafka-consumer";
 
 import { Redis } from "ioredis";
 import { pino } from "pino";
@@ -67,6 +68,24 @@ async function main(): Promise<void> {
   hub.attach(server);
   deps.hub = hub;
 
+  let kafkaConsumer: KafkaEventConsumer | null = null;
+  if (env.KAFKA_BROKERS && env.KAFKA_BROKERS.length > 0) {
+    kafkaConsumer = await initializeKafkaConsumer(env, log);
+    if (kafkaConsumer) {
+      const unregister = kafkaConsumer.registerClient((event) => {
+        // Transform Kafka event to ActivityEvent format if needed
+        // Events from the Python worker are already in the event log structure
+        if (event.value && typeof event.value === "object") {
+          hub.broadcast({
+            type: "event",
+            event: event.value as any, // ActivityEvent from the worker
+          });
+        }
+      });
+      log.info("Kafka event consumer registered with hub");
+    }
+  }
+
   const notifier = new Notifier(db, log, (notification) => hub.broadcast({ type: "notification", notification }));
   const feed: EventSource = new PostgresEventFeed(db, log, async (events) => {
     for (const event of events) hub.broadcast({ type: "event", event });
@@ -87,7 +106,8 @@ async function main(): Promise<void> {
     server.close();
     await feed.stop();
     notifier.stop();
-    await hub.close();
+kafkaConsumer && await kafkaConsumer.disconnect();
+await hub.close();
     redis?.disconnect();
     await db.close();
     process.exit(0);
@@ -100,3 +120,4 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 });
+
