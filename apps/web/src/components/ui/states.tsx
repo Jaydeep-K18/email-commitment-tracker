@@ -1,13 +1,13 @@
 /** Loading, empty and error states — every list and page uses these three. */
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { errorMessage } from "../../lib/api";
 import { cn } from "../../lib/cn";
 import { Button } from "./button";
 
-export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("skeleton rounded-md", className)} aria-hidden />;
+export function Skeleton({ className, style }: { className?: string; style?: CSSProperties }) {
+  return <div className={cn("skeleton rounded-md", className)} style={style} aria-hidden />;
 }
 
 export function SkeletonRows({ rows = 6, className }: { rows?: number; className?: string }) {

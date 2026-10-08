@@ -35,12 +35,18 @@
   --info: oklch(0.62 0.13 235);
   --info-soft: oklch(0.95 0.03 235);
 
-  /* Inbox categories. */
+  /*
+   * Inbox categories — the one categorical palette, used for marks only
+   * (chart fills, dots), never for text. Validated with the dataviz palette
+   * checker in this stacking order (action, meeting, important, update, low):
+   * light worst adjacent CVD ΔE 21.7, normal-vision 22.8; dark 21.3 / 22.0.
+   * Light amber is 2.75:1 on white, so every chart also offers a table view.
+   */
   --cat-action: oklch(0.6 0.2 22);
   --cat-meeting: oklch(0.58 0.18 300);
   --cat-important: oklch(0.7 0.15 70);
   --cat-update: oklch(0.62 0.12 235);
-  --cat-low: oklch(0.66 0.02 270);
+  --cat-low: oklch(0.5 0.14 140);
 
   --dot: oklch(0.86 0.008 270);
   --dot-glow: oklch(0.58 0.19 277);
@@ -73,11 +79,11 @@
   --info: oklch(0.74 0.12 235);
   --info-soft: oklch(0.3 0.05 235);
 
-  --cat-action: oklch(0.7 0.18 22);
-  --cat-meeting: oklch(0.72 0.15 300);
-  --cat-important: oklch(0.8 0.14 75);
-  --cat-update: oklch(0.74 0.11 235);
-  --cat-low: oklch(0.6 0.02 270);
+  --cat-action: oklch(0.6 0.19 22);
+  --cat-meeting: oklch(0.62 0.16 300);
+  --cat-important: oklch(0.62 0.14 70);
+  --cat-update: oklch(0.66 0.12 235);
+  --cat-low: oklch(0.52 0.11 140);
 
   --dot: oklch(0.3 0.012 270);
   --dot-glow: oklch(0.72 0.16 277);
@@ -209,3 +215,16 @@
 }
 html[data-reduced-motion="true"] .dot-field-glow { display: none; }
 html[data-reduced-motion="true"] .skeleton { animation: none; }
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Compact density: every Tailwind spacing step is derived from --spacing, so
+   one change tightens padding and gaps everywhere while text stays the same size. */
+html[data-density="compact"] {
+  --spacing: 0.21rem;
+}

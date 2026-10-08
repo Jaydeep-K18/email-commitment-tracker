@@ -32,6 +32,7 @@ Thumbs.db
 # Node / the full-stack app
 node_modules/
 apps/*/dist/
+apps/*/dist-demo/
 packages/*/dist/
 coverage/
 .vite/

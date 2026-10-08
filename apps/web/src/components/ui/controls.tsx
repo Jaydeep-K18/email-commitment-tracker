@@ -68,13 +68,14 @@ export function Tabs({
 }) {
   return (
     <TabsPrimitive.Root value={value} onValueChange={onValueChange}>
-      <TabsPrimitive.List className="flex gap-1 overflow-x-auto border-b border-border">
+      {/* The baseline is an inset shadow so the active underline can sit on it without overflowing. */}
+      <TabsPrimitive.List className="flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--border)]">
         {tabs.map((tab) => (
           <TabsPrimitive.Trigger
             key={tab.value}
             value={tab.value}
             className={cn(
-              "-mb-px border-b-2 border-transparent px-3 py-2 text-[13.5px] font-medium whitespace-nowrap text-muted transition-colors",
+              "border-b-2 border-transparent px-3 py-2 text-[13.5px] font-medium whitespace-nowrap text-muted transition-colors",
               "hover:text-text data-[state=active]:border-accent data-[state=active]:text-text",
             )}
           >

@@ -8,5 +8,8 @@
   ],
   "engines": {
     "node": ">=20.11"
+  },
+  "devDependencies": {
+    "vite": "^6.4.4"
   }
 }

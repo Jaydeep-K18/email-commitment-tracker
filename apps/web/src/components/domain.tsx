@@ -9,13 +9,29 @@ import { initials } from "../lib/format";
 import { Badge, type BadgeTone } from "./ui/badge";
 import { Card } from "./ui/card";
 
-export const CATEGORY_STYLE: Record<Category, { dot: string; text: string; soft: string }> = {
-  action_required: { dot: "bg-cat-action", text: "text-cat-action", soft: "bg-[color-mix(in_oklch,var(--cat-action)_12%,transparent)]" },
-  meeting: { dot: "bg-cat-meeting", text: "text-cat-meeting", soft: "bg-[color-mix(in_oklch,var(--cat-meeting)_12%,transparent)]" },
-  important: { dot: "bg-cat-important", text: "text-[color-mix(in_oklch,var(--cat-important)_75%,var(--text))]", soft: "bg-[color-mix(in_oklch,var(--cat-important)_16%,transparent)]" },
-  update: { dot: "bg-cat-update", text: "text-cat-update", soft: "bg-[color-mix(in_oklch,var(--cat-update)_12%,transparent)]" },
-  low_priority: { dot: "bg-cat-low", text: "text-muted", soft: "bg-surface-3" },
+/**
+ * Category identity is carried by the coloured dot; the label stays in text ink,
+ * because several category hues are too light to read as text.
+ */
+export const CATEGORY_STYLE: Record<Category, { dot: string; soft: string }> = {
+  action_required: { dot: "bg-cat-action", soft: "bg-[color-mix(in_oklch,var(--cat-action)_12%,transparent)]" },
+  meeting: { dot: "bg-cat-meeting", soft: "bg-[color-mix(in_oklch,var(--cat-meeting)_12%,transparent)]" },
+  important: { dot: "bg-cat-important", soft: "bg-[color-mix(in_oklch,var(--cat-important)_14%,transparent)]" },
+  update: { dot: "bg-cat-update", soft: "bg-[color-mix(in_oklch,var(--cat-update)_12%,transparent)]" },
+  low_priority: { dot: "bg-cat-low", soft: "bg-[color-mix(in_oklch,var(--cat-low)_12%,transparent)]" },
 };
+
+/**
+ * Categories as chart series, in the order the palette was validated in —
+ * adjacent stacked segments rely on this order to stay distinguishable.
+ */
+export const CATEGORY_SERIES = [
+  { key: "action_required", label: "Action required", color: "var(--cat-action)" },
+  { key: "meeting", label: "Meetings", color: "var(--cat-meeting)" },
+  { key: "important", label: "Important", color: "var(--cat-important)" },
+  { key: "update", label: "Updates", color: "var(--cat-update)" },
+  { key: "low_priority", label: "Low priority", color: "var(--cat-low)" },
+] as const;
 
 /** The same colours as CSS variables, for charts (which need real values). */
 export const CATEGORY_CHART_COLOR: Record<Category, string> = {
@@ -30,7 +46,7 @@ export function CategoryBadge({ category, className }: { category: Category | nu
   if (!category) return null;
   const style = CATEGORY_STYLE[category];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11.5px] font-medium whitespace-nowrap", style.soft, style.text, className)}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11.5px] font-medium whitespace-nowrap text-text", style.soft, className)}>
       <span className={cn("size-1.5 rounded-full", style.dot)} aria-hidden />
       {CATEGORY_LABELS[category]}
     </span>
@@ -83,7 +99,7 @@ export function CountUp({ value, format = (n: number) => Math.round(n).toLocaleS
     const controls = animate(0, value, { duration: 0.9, ease: [0.16, 1, 0.3, 1], onUpdate: setShown });
     return () => controls.stop();
   }, [value, inView, reduced]);
-  return <span ref={ref} className="tabular-nums">{format(shown)}</span>;
+  return <span ref={ref}>{format(shown)}</span>;
 }
 
 export function StatCard({

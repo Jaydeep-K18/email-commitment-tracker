@@ -1,4 +1,4 @@
-import { CATEGORIES, CATEGORY_LABELS, type ActivityEvent, type Commitment } from "@commitmail/shared";
+import type { ActivityEvent, Category, Commitment } from "@commitmail/shared";
 import {
   AlarmClock,
   ArrowRight,
@@ -13,18 +13,19 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 
 import { ActivityList } from "../components/activity";
-import { CATEGORY_CHART_COLOR, PageHeader, StatCard, StatusDot } from "../components/domain";
+import { AXIS, ChartCard, ChartTooltip, GRID, SEGMENT, stackedShapes } from "../components/charts";
+import { CATEGORY_SERIES, PageHeader, StatCard, StatusDot } from "../components/domain";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardBody, CardHeader } from "../components/ui/card";
-import { EmptyState, ErrorState, Skeleton, SkeletonRows } from "../components/ui/states";
+import { EmptyState, ErrorState, SkeletonRows } from "../components/ui/states";
 import { errorMessage } from "../lib/api";
 import { cn } from "../lib/cn";
-import { browserTimeZone, deadline, deadlineRelative, isOverdue, percent } from "../lib/format";
+import { browserTimeZone, deadline, deadlineRelative, isOverdue, percent, wallClockDate } from "../lib/format";
 import {
   useActivity,
   useAnalytics,
@@ -157,7 +158,7 @@ function UpcomingCard({ query }: { query: ReturnType<typeof useCommitments> }) {
 }
 
 function UpcomingRow({ commitment: c, onDone }: { commitment: Commitment; onDone: () => void }) {
-  const soon = c.deadline && new Date(c.deadline).getTime() - Date.now() < 48 * 3600_000;
+  const soon = !!c.deadline && wallClockDate(c.deadline).getTime() - Date.now() < 48 * 3600_000;
   return (
     <li className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-2">
       <div
@@ -169,9 +170,9 @@ function UpcomingRow({ commitment: c, onDone }: { commitment: Commitment; onDone
         {c.deadline ? (
           <>
             <span className="text-[10px] font-semibold text-muted uppercase">
-              {new Intl.DateTimeFormat(undefined, { month: "short" }).format(new Date(c.deadline))}
+              {new Intl.DateTimeFormat(undefined, { month: "short" }).format(wallClockDate(c.deadline))}
             </span>
-            <span className={cn("text-base font-semibold", soon ? "text-danger" : "text-text")}>{new Date(c.deadline).getDate()}</span>
+            <span className={cn("text-base font-semibold", soon ? "text-danger" : "text-text")}>{wallClockDate(c.deadline).getDate()}</span>
           </>
         ) : (
           <AlarmClock className="size-4 text-faint" />
@@ -194,46 +195,55 @@ function UpcomingRow({ commitment: c, onDone }: { commitment: Commitment; onDone
 
 function VolumeCard({ analytics }: { analytics: ReturnType<typeof useAnalytics> }) {
   const data = useMemo(() => analytics.data?.volume.slice(-14) ?? [], [analytics.data]);
+  const segment = stackedShapes(data, CATEGORY_SERIES.map((s) => s.key));
+  const dayLabel = (date: unknown) =>
+    new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" }).format(wallClockDate(String(date)));
   return (
-    <Card>
-      <CardHeader
-        title="Incoming mail"
-        description="The last two weeks, by category."
-        action={<Link to="/analytics" className="text-[13px] font-medium text-accent-text hover:underline">Analytics</Link>}
-      />
-      <CardBody>
-        {analytics.isPending ? (
-          <Skeleton className="h-52" />
-        ) : analytics.error ? (
-          <ErrorState error={analytics.error} />
-        ) : (
-          <div className="h-52" role="img" aria-label="Email volume over the last 14 days">
-            <ResponsiveContainer>
-              <AreaChart data={data} margin={{ left: -24, right: 4, top: 4, bottom: 0 }}>
-                <defs>
-                  {CATEGORIES.map((c) => (
-                    <linearGradient key={c} id={`g-${c}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CATEGORY_CHART_COLOR[c]} stopOpacity={0.35} />
-                      <stop offset="100%" stopColor={CATEGORY_CHART_COLOR[c]} stopOpacity={0.02} />
-                    </linearGradient>
-                  ))}
-                </defs>
-                <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
-                <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(8)} stroke="var(--text-faint)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} stroke="var(--text-faint)" fontSize={11} tickLine={false} axisLine={false} />
-                <ChartTooltip
-                  contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
-                  labelStyle={{ color: "var(--text)" }}
-                />
-                {CATEGORIES.map((c) => (
-                  <Area key={c} type="monotone" dataKey={c} name={CATEGORY_LABELS[c]} stackId="1" stroke={CATEGORY_CHART_COLOR[c]} fill={`url(#g-${c})`} strokeWidth={1.5} />
-                ))}
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardBody>
-    </Card>
+    <ChartCard
+      title="Incoming mail"
+      description="The last two weeks, by category."
+      action={<Link to="/analytics" className="text-[13px] font-medium text-accent-text hover:underline">Analytics</Link>}
+      series={[...CATEGORY_SERIES]}
+      loading={analytics.isPending}
+      error={analytics.error}
+      onRetry={() => void analytics.refetch()}
+      stale={analytics.isPlaceholderData}
+      height={220}
+      table={{
+        caption: "Emails received per day by category, last 14 days",
+        columns: [
+          { key: "date", label: "Day" },
+          ...CATEGORY_SERIES.map((s) => ({ key: s.key, label: s.label, align: "right" as const })),
+          { key: "total", label: "Total", align: "right" as const },
+        ],
+        rows: data.map((day) => ({
+          date: dayLabel(day.date),
+          total: day.total,
+          ...Object.fromEntries(CATEGORY_SERIES.map((s) => [s.key, day[s.key as Category] ?? 0])),
+        })),
+      }}
+    >
+      <ResponsiveContainer>
+        <BarChart data={data} margin={{ left: -20, right: 4, top: 4, bottom: 0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="date" tickFormatter={(d: string) => String(Number(d.slice(8)))} {...AXIS} />
+          <YAxis allowDecimals={false} {...AXIS} />
+          <RechartsTooltip cursor={{ fill: "var(--surface-2)" }} content={<ChartTooltip labelFormat={dayLabel} />} />
+          {CATEGORY_SERIES.map((s) => (
+            <Bar
+              key={s.key}
+              dataKey={s.key}
+              name={s.label}
+              stackId="volume"
+              fill={s.color}
+              {...SEGMENT}
+              shape={segment(s.key)}
+              isAnimationActive={false}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartCard>
   );
 }
 

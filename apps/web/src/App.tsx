@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import { MotionConfig } from "motion/react";
 import { lazy, Suspense, type ReactNode } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 
@@ -37,8 +38,10 @@ function PageFallback() {
 /** Settings-driven theme, once signed in (the settings API needs a session). */
 function ThemeFromSettings({ children }: { children: ReactNode }) {
   const settings = useSettings();
-  useThemeSync(settings.data?.appearance.theme, settings.data?.appearance.reducedMotion);
-  return <>{children}</>;
+  const appearance = settings.data?.appearance;
+  useThemeSync(appearance?.theme, appearance?.reducedMotion, appearance?.density);
+  // The account setting can turn motion off even where the OS setting doesn't.
+  return <MotionConfig reducedMotion={appearance?.reducedMotion ? "always" : "user"}>{children}</MotionConfig>;
 }
 
 /** Protected routes: set up first, then signed in, then the app. */

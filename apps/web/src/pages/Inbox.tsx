@@ -421,7 +421,9 @@ function BulkActions({
   );
 }
 
-function FiltersPopover({ query, update }: { query: Partial<InboxQuery>; update: (c: Record<string, unknown>) => void }) {
+type UpdateQuery = ReturnType<typeof useInboxQuery>["update"];
+
+function FiltersPopover({ query, update }: { query: Partial<InboxQuery>; update: UpdateQuery }) {
   const tags = useTags();
   const active = [query.unread, query.starred, query.hasCommitments, query.tier?.length, query.tag?.length].filter(Boolean).length;
   const toggleIn = (list: Array<string | number> | undefined, value: string | number) =>

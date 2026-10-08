@@ -32,7 +32,11 @@ export function applyTheme(preference: ThemePreference): void {
 }
 
 /** Keep the page in step with the preference, and with the OS when it is "system". */
-export function useThemeSync(preference: ThemePreference | undefined, reducedMotion: boolean | undefined): void {
+export function useThemeSync(
+  preference: ThemePreference | undefined,
+  reducedMotion: boolean | undefined,
+  density: "comfortable" | "compact" = "comfortable",
+): void {
   useEffect(() => {
     if (!preference) return;
     applyTheme(preference);
@@ -46,4 +50,8 @@ export function useThemeSync(preference: ThemePreference | undefined, reducedMot
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = reducedMotion ? "true" : "false";
   }, [reducedMotion]);
+
+  useEffect(() => {
+    document.documentElement.dataset.density = density;
+  }, [density]);
 }

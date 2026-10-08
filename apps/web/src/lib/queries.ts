@@ -104,6 +104,50 @@ export function useLogout() {
   });
 }
 
+export function useUpdateProfile() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { displayName?: string; email?: string }) => api.patch<SessionInfo>("/auth/profile", body),
+    onSuccess: (session) => client.setQueryData(keys.session, session),
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (body: { currentPassword: string; newPassword: string }) =>
+      api.post<{ ok: true; otherSessionsSignedOut: number }>("/auth/password", body),
+  });
+}
+
+// --- Privacy ----------------------------------------------------------------------
+
+/** Downloads everything the app holds as one JSON file. */
+export function useExportData() {
+  return useMutation({
+    mutationFn: async () => {
+      const data = await api.get<unknown>("/privacy/export");
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `commitmail-export-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    },
+  });
+}
+
+export type PurgeScope = "email_bodies" | "activity" | "everything";
+
+export function usePurge() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (scope: PurgeScope) =>
+      api.post<{ scope: PurgeScope } & Record<string, number>>("/privacy/purge", { scope, confirm: "DELETE" }),
+    // A purge can touch nearly every cached list; start clean.
+    onSuccess: () => void client.invalidateQueries({ predicate: (query) => query.queryKey[0] !== "session" }),
+  });
+}
+
 // --- Inbox ------------------------------------------------------------------------
 
 export function useEmails(query: Partial<InboxQuery>) {
@@ -341,11 +385,13 @@ export function useSettings() {
   return useQuery({ queryKey: keys.settings, queryFn: () => api.get<Settings>("/settings"), staleTime: 5 * 60_000 });
 }
 
+/** One section and its full new value, paired so the value must match the section. */
+export type SettingsUpdate = { [S in SettingsSection]: { section: S; value: Settings[S] } }[SettingsSection];
+
 export function useSaveSettings() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: <S extends SettingsSection>({ section, value }: { section: S; value: Settings[S] }) =>
-      api.put<Settings>(`/settings/${section}`, value),
+    mutationFn: ({ section, value }: SettingsUpdate) => api.put<Settings>(`/settings/${section}`, value),
     onSuccess: (settings) => client.setQueryData(keys.settings, settings),
   });
 }
