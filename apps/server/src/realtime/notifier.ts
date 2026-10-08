@@ -82,6 +82,18 @@ export function notificationFor(event: ActivityEvent, prefs: Prefs): Draft | nul
         link: emailId ? `/inbox/${emailId}` : "/calendar",
       };
     }
+    case "calendar.conflict_detected":
+    case "calendar.duplicate_detected": {
+      if (!prefs.calendarIssues) return null;
+      const conflict = event.type === "calendar.conflict_detected";
+      return {
+        kind: conflict ? "calendar_conflict" : "calendar_duplicate",
+        title: conflict ? "A meeting clashes with your calendar" : "Possibly on your calendar twice",
+        body: event.message,
+        severity: "warning",
+        link: "/calendar",
+      };
+    }
     case "system.error":
       return { kind: "system", title: "System problem", body: event.message, severity: "error", link: "/system" };
     default:

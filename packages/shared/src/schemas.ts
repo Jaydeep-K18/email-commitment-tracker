@@ -169,6 +169,15 @@ export const commitmentBulkSchema = z
 
 export const calendarRangeSchema = z.object({ from: isoDate, to: isoDate });
 
+export const calendarFlagQuerySchema = z.object({ status: z.enum(["open", "all"]).default("open") });
+
+/** Settle a possible duplicate: keep one side, dismiss the other. "external" keeps the user's own event. */
+export const calendarFlagResolveSchema = z
+  .object({ keep: z.union([z.number().int().positive(), z.literal("external")]) })
+  .strict();
+
+export const calendarInsightsQuerySchema = z.object({ days: z.coerce.number().int().min(1).max(60).default(14) });
+
 // --- Contacts (VIP rules) ----------------------------------------------------
 
 const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -238,6 +247,7 @@ export const notificationSettingsSchema = z
     jobFailed: z.boolean().default(true),
     retrySucceeded: z.boolean().default(true),
     calendarFailed: z.boolean().default(true),
+    calendarIssues: z.boolean().default(true),
     /** Also show the operating system's own notification, when permitted. */
     browser: z.boolean().default(false),
   })

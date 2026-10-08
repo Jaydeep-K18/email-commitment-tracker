@@ -35,6 +35,10 @@ CALENDAR_EVENT_UPDATED = "calendar.event_updated"
 CALENDAR_EVENT_FAILED = "calendar.event_failed"
 CALENDAR_EVENT_REMOVED = "calendar.event_removed"
 CALENDAR_SYNCED = "calendar.synced"
+CALENDAR_CONFLICT_DETECTED = "calendar.conflict_detected"
+CALENDAR_DUPLICATE_DETECTED = "calendar.duplicate_detected"
+# By the worker when the problem goes away; by the server when the user settles it.
+CALENDAR_FLAG_RESOLVED = "calendar.flag_resolved"
 JOB_QUEUED = "job.queued"
 JOB_STARTED = "job.started"
 JOB_COMPLETED = "job.completed"
@@ -75,6 +79,9 @@ EVENT_TYPES: tuple[str, ...] = (
     CALENDAR_EVENT_FAILED,
     CALENDAR_EVENT_REMOVED,
     CALENDAR_SYNCED,
+    CALENDAR_CONFLICT_DETECTED,
+    CALENDAR_DUPLICATE_DETECTED,
+    CALENDAR_FLAG_RESOLVED,
     JOB_QUEUED,
     JOB_STARTED,
     JOB_COMPLETED,

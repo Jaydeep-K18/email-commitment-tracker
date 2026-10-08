@@ -12,9 +12,11 @@ from src.storage import database
 from src.storage.models import Base, Commitment, RawEmail, SyncLog
 from src.sync import ics_builder
 from src.sync.ics_builder import (
+    build_description,
     build_event,
     build_summary,
     event_uid,
+    gmail_link,
     is_all_day,
     render_ics,
 )
@@ -269,3 +271,38 @@ def test_log_sync_can_record_a_failure(session):
     assert entry.status == "failed"
     assert entry.error_message == "disk full"
     assert session.query(SyncLog).count() == 1
+
+
+# --- v2 phase 8: back to the source email -----------------------------------------
+
+def _with_source(recipient, message_id="CAF+abc@mail.gmail.com", thread_id=None):
+
+    commitment = Commitment(id=1, email_id=7, type="deadline_on_you", subject="Send the report",
+                            deadline=datetime(2026, 10, 12, 17), evidence_quote="by 5pm", confidence=0.9)
+    commitment.source_email = RawEmail(id=7, message_id=message_id, recipient_email=recipient, thread_id=thread_id)
+    return commitment
+
+
+def test_the_event_links_back_to_the_email_in_gmail():
+
+    link = gmail_link(_with_source("Me@Gmail.com"))
+    assert link == "https://mail.google.com/mail/?authuser=me%40gmail.com#search/rfc822msgid%3ACAF%2Babc%40mail.gmail.com"
+    assert f"Open the email: {link}" in build_description(_with_source("Me@Gmail.com"))
+
+
+def test_no_gmail_link_for_mail_that_did_not_go_to_gmail():
+
+    assert gmail_link(_with_source("me@outlook.com")) is None
+    assert gmail_link(_with_source(None)) is None
+    assert "Open the email" not in build_description(_with_source("me@outlook.com"))
+
+
+def test_mail_from_the_gmail_panel_opens_its_conversation():
+    """The panel stores Gmail's conversation token; a Message-ID search would find nothing."""
+    panel = _with_source("me@gmail.com", message_id="panel:FMfcgzQ", thread_id="FMfcgzQ")
+    assert gmail_link(panel) == "https://mail.google.com/mail/?authuser=me%40gmail.com#all/FMfcgzQ"
+    # The panel only runs inside Gmail, so it is Gmail even without a known address.
+    placeholder = _with_source("you@example.com", message_id="panel:FMfcgzQ", thread_id="FMfcgzQ")
+    assert gmail_link(placeholder) == "https://mail.google.com/mail/#all/FMfcgzQ"
+    assert gmail_link(_with_source("me@gmail.com", message_id="panel:x", thread_id=None)) is None
+

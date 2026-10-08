@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 from datetime import date, datetime, time, timedelta, timezone
+from urllib.parse import quote
 
 from icalendar import Alarm, Calendar, Event
 from icalendar.prop import vDuration
@@ -77,6 +78,29 @@ def build_summary(commitment: Commitment) -> str:
     return f"{prefix}{subject}"
 
 
+GMAIL_DOMAINS = ("@gmail.com", "@googlemail.com")
+
+
+def gmail_link(commitment: Commitment) -> str | None:
+    """A link that opens the source email in Gmail, from any device.
+
+    Mail picked in the Gmail panel carries Gmail's own conversation token, so
+    the link opens that conversation. Other mail that went to a Gmail address
+    is found by its Message-ID. ``authuser`` picks the right account when
+    several are signed in.
+    """
+    email = commitment.source_email
+    if email is None or not email.message_id:
+        return None
+    mailbox = (email.recipient_email or "").strip().lower()
+    account = f"?authuser={quote(mailbox)}" if mailbox.endswith(GMAIL_DOMAINS) else ""
+    if email.message_id.startswith("panel:"):
+        return f"https://mail.google.com/mail/{account}#all/{quote(email.thread_id, safe='')}" if email.thread_id else None
+    if not account:
+        return None
+    return f"https://mail.google.com/mail/{account}#search/rfc822msgid%3A{quote(email.message_id, safe='')}"
+
+
 def build_description(commitment: Commitment) -> str:
     """Human-readable body carrying the traceability the plan requires."""
     lines: list[str] = []
@@ -99,6 +123,9 @@ def build_description(commitment: Commitment) -> str:
     lines.append(f"Confidence: {commitment.confidence:.0%}")
     if commitment.email_id:
         lines.append(f"Source email: #{commitment.email_id}")
+    link = gmail_link(commitment)
+    if link:
+        lines.append(f"Open the email: {link}")
 
     lines.append("")
     lines.append("Extracted locally by Email Commitment Tracker.")

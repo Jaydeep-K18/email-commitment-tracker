@@ -314,6 +314,7 @@ const NOTIFICATION_OPTIONS: Array<{ key: Exclude<keyof Settings["notifications"]
   { key: "jobFailed", label: "Background work fails for good", description: "After every retry has been used, so you can look into it." },
   { key: "retrySucceeded", label: "A retry succeeds", description: "When something that failed earlier goes through." },
   { key: "calendarFailed", label: "A calendar update fails", description: "When an event couldn't be added to or removed from your calendar." },
+  { key: "calendarIssues", label: "A clash or a possible duplicate", description: "When a meeting overlaps something else, or something looks like it's on your calendar twice." },
 ];
 
 function NotificationsTab() {

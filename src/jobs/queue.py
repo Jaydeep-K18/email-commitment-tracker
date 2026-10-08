@@ -415,6 +415,7 @@ _DESCRIPTIONS = {
     "fetch_mailbox": "check the mailbox for new email",
     "process_email": "analyze email #{email_id}",
     "publish_calendar": "publish the calendar",
+    "scan_calendar": "check the calendar for clashes and duplicates",
     "push_google_event": "send commitment #{commitment_id} to Google Calendar",
     "remove_google_event": "remove commitment #{commitment_id} from Google Calendar",
     "apply_vip_rules": "re-apply your contact rules to stored email",

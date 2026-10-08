@@ -1,8 +1,9 @@
 import type { Commitment } from "@commitmail/shared";
-import { CalendarCheck, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { AlertTriangle, CalendarCheck, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { FlagsPanel, InsightsPanel, ScanButton } from "../components/calendar";
 import { PageHeader } from "../components/domain";
 import { CommitmentCard } from "../components/email";
 import { Button } from "../components/ui/button";
@@ -12,7 +13,7 @@ import { Dialog } from "../components/ui/overlay";
 import { EmptyState, ErrorState, Skeleton } from "../components/ui/states";
 import { cn } from "../lib/cn";
 import { deadline, wallClockDate } from "../lib/format";
-import { useCalendar } from "../lib/queries";
+import { useCalendar, useCalendarFlags } from "../lib/queries";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -38,6 +39,11 @@ export default function CalendarPage() {
   const [openDay, setOpenDay] = useState<string | null>(null);
   const days = useMemo(() => monthGrid(month), [month]);
   const calendar = useCalendar(isoDay(days[0]!), isoDay(days[41]!));
+  const flags = useCalendarFlags();
+  const flagged = useMemo(
+    () => new Set((flags.data?.items ?? []).flatMap((f) => [f.commitment.id, ...(f.other ? [f.other.id] : [])])),
+    [flags.data],
+  );
 
   const byDay = useMemo(() => {
     const map = new Map<string, Commitment[]>();
@@ -60,11 +66,16 @@ export default function CalendarPage() {
         title="Calendar"
         description="Every dated commitment, and whether it's on your calendar. Times are shown exactly as the email wrote them."
         actions={
-          <a href="/calendar.ics" download="email-commitments.ics">
-            <Button><Download className="size-4" /> Download .ics</Button>
-          </a>
+          <>
+            <ScanButton />
+            <a href="/calendar.ics" download="email-commitments.ics">
+              <Button><Download className="size-4" /> Download .ics</Button>
+            </a>
+          </>
         }
       />
+
+      <FlagsPanel />
 
       <Card>
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
@@ -108,7 +119,11 @@ export default function CalendarPage() {
                     {calendar.isPending && inMonth && index % 5 === 0 && <Skeleton className="h-4" />}
                     {items.slice(0, 3).map((c) => (
                       <div key={c.id} className={cn("flex items-center gap-1 truncate rounded px-1 py-0.5 text-[11px]", c.decision.shouldSync ? "bg-surface-3 text-text" : "text-muted")}>
-                        <span className={cn("size-1.5 shrink-0 rounded-full", TYPE_DOT[c.type])} />
+                        {flagged.has(c.id) ? (
+                          <AlertTriangle className="size-3 shrink-0 text-warning" aria-label="Needs attention" />
+                        ) : (
+                          <span className={cn("size-1.5 shrink-0 rounded-full", TYPE_DOT[c.type])} />
+                        )}
                         <span className="truncate">{!c.allDay && c.deadline ? `${c.deadline.slice(11, 16)} ` : ""}{c.subject}</span>
                       </div>
                     ))}
@@ -131,6 +146,10 @@ export default function CalendarPage() {
         )}
       </Card>
 
+      <div className="mt-4">
+        <InsightsPanel />
+      </div>
+
       <Legend />
 
       <Dialog open={!!openDay} onOpenChange={(open) => !open && setOpenDay(null)} title={openDay ? deadline(openDay, true) : ""} className="w-[min(94vw,560px)]">
@@ -152,6 +171,7 @@ function Legend() {
         <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-cat-update" /> Owed to you</span>
         <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-cat-meeting" /> Meeting</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded bg-surface-3" /> Shaded = on your calendar</span>
+        <span className="flex items-center gap-1.5"><AlertTriangle className="size-3 text-warning" /> A clash or possible duplicate</span>
       </CardBody>
     </Card>
   );

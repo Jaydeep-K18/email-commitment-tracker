@@ -250,6 +250,9 @@ def publish_calendar(payload: dict, ctx: JobContext) -> dict:
                     correlation_id=email_correlation(commitment.email_id),
                 ).created
 
+        # What is on the calendar may have changed; look again for clashes.
+        enqueue_unless_active(session, "scan_calendar")
+
     # Raised after the transaction above committed, so the failure's sync-log
     # rows and event survive; the job then retries with backoff.
     if report.errors:
@@ -261,6 +264,40 @@ def publish_calendar(payload: dict, ctx: JobContext) -> dict:
         "google_pushes_queued": pushes,
         "google_removals_queued": removals,
     }
+
+
+@handler("scan_calendar")
+def scan_calendar(payload: dict, ctx: JobContext) -> dict:
+    """Flag possible duplicates and clashes among upcoming events.
+
+    The user's own Google events are read when Google Calendar is connected.
+    If it cannot be read, the commitments are still checked against each
+    other, and flags about Google events are left as they were.
+    """
+    from datetime import datetime, timedelta
+
+    from src.storage import user_settings
+    from src.sync import calendar_intel, google_calendar
+
+    now = datetime.now()   # wall clock, as deadlines are stored
+    external: list[dict] = []
+    google = "not connected"
+    if ctx.services.google_available():
+        try:
+            external = google_calendar.list_user_events(
+                ctx.services.google_service(),
+                datetime.combine(now.date(), datetime.min.time()),
+                now + timedelta(days=calendar_intel.HORIZON_DAYS),
+            )
+            google = "checked"
+        except Exception as exc:  # noqa: BLE001 - any failure: check without it
+            log.warning("Could not read Google Calendar for the clash check: %s", exc)
+            google = f"unavailable: {exc}"
+
+    with session_scope() as session:
+        hours = calendar_intel.WorkingHours.from_settings(user_settings.section(session, "calendar"))
+        result = calendar_intel.scan(session, external, hours, now, external_checked=google == "checked")
+    return {"found": result.found, "new": result.new, "cleared": result.cleared, "google": google}
 
 
 def _google_failure(exc: BaseException) -> BaseException:

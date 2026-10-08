@@ -7,6 +7,8 @@ import type {
   ActivityEvent,
   Analytics,
   AnalyticsQuery,
+  CalendarFlag,
+  CalendarInsights,
   Commitment,
   CommitmentQuery,
   Contact,
@@ -47,6 +49,9 @@ export const keys = {
   views: ["views"] as const,
   commitments: (query?: Partial<CommitmentQuery>) => (query ? (["commitments", query] as const) : (["commitments"] as const)),
   calendar: (from?: string, to?: string) => (from ? (["calendar", from, to] as const) : (["calendar"] as const)),
+  // Under "calendar", so every commitment or calendar event refreshes them too.
+  calendarFlags: ["calendar", "flags"] as const,
+  calendarInsights: (days: number) => ["calendar", "insights", days] as const,
   relationships: ["relationships"] as const,
   contacts: ["contacts"] as const,
   activity: (filters?: object) => (filters ? (["activity", filters] as const) : (["activity"] as const)),
@@ -271,6 +276,43 @@ export function useCalendar(from: string, to: string) {
     queryKey: keys.calendar(from, to),
     queryFn: () => api.get<{ items: Commitment[] }>("/calendar", { from, to }),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useCalendarFlags() {
+  return useQuery({
+    queryKey: keys.calendarFlags,
+    queryFn: () => api.get<{ items: CalendarFlag[] }>("/calendar/flags"),
+  });
+}
+
+export function useCalendarInsights(days = 14) {
+  return useQuery({
+    queryKey: keys.calendarInsights(days),
+    queryFn: () => api.get<CalendarInsights>("/calendar/insights", { days }),
+  });
+}
+
+export function useDismissFlag() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.post<CalendarFlag>(`/calendar/flags/${id}/dismiss`),
+    onSuccess: () => void client.invalidateQueries({ queryKey: keys.calendar() }),
+  });
+}
+
+export function useResolveFlag() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, keep }: { id: number; keep: number | "external" }) =>
+      api.post<CalendarFlag>(`/calendar/flags/${id}/resolve`, { keep }),
+    onSuccess: () => invalidateCommitments(client),
+  });
+}
+
+export function useScanCalendar() {
+  return useMutation({
+    mutationFn: () => api.post<{ jobId: number; queued: boolean }>("/calendar/scan"),
   });
 }
 

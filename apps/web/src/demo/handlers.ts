@@ -20,6 +20,8 @@ import { http, HttpResponse, ws, type JsonBodyType } from "msw";
 
 import {
   addEvent,
+  calendarFlags,
+  calendarInsights,
   categoriesInOrder,
   commitments,
   contacts,
@@ -353,6 +355,28 @@ export const handlers = [
     const to = url.searchParams.get("to")!;
     return json({ items: commitments.filter((c) => c.deadline && c.deadline.slice(0, 10) >= from && c.deadline.slice(0, 10) <= to && c.status !== "dismissed") });
   }),
+  http.get("/api/calendar/flags", ({ request }) => {
+    const all = new URL(request.url).searchParams.get("status") === "all";
+    return json({ items: calendarFlags.filter((f) => all || f.status === "open") });
+  }),
+  http.post("/api/calendar/flags/:id/dismiss", ({ params }) => {
+    const flag = calendarFlags.find((f) => f.id === Number(params.id))!;
+    Object.assign(flag, { status: "dismissed", resolvedAt: new Date().toISOString() });
+    return json(flag);
+  }),
+  http.post("/api/calendar/flags/:id/resolve", async ({ params, request }) => {
+    const flag = calendarFlags.find((f) => f.id === Number(params.id))!;
+    const { keep } = (await request.json()) as { keep: number | "external" };
+    const drop = keep === "external" || keep === flag.other?.id ? flag.commitment : flag.other;
+    if (drop) {
+      drop.status = "dismissed";
+      refreshDecision(drop);
+    }
+    Object.assign(flag, { status: "resolved", resolvedAt: new Date().toISOString() });
+    return json(flag);
+  }),
+  http.post("/api/calendar/scan", () => json({ jobId: 1, queued: true }, 202)),
+  http.get("/api/calendar/insights", () => json(calendarInsights())),
   http.get("/api/relationships", () => json({ people: relationships() })),
 
   // --- Contacts

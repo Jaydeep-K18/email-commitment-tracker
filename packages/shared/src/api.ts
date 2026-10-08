@@ -123,6 +123,51 @@ export interface Commitment {
   source: { emailId: number; subject: string | null; senderName: string | null; senderEmail: string | null };
 }
 
+/** A span of wall-clock time, like a deadline: no zone. */
+export interface CalendarSpan {
+  start: string;
+  end: string;
+}
+
+/** Something already on the user's own Google Calendar. */
+export interface ExternalEvent extends CalendarSpan {
+  id: string;
+  title: string;
+  allDay: boolean;
+  link: string | null;
+}
+
+/**
+ * A possible duplicate or clash the worker found, for the user to settle.
+ * `commitment` is the one to act on (for a clash, the one from the later email);
+ * the other side is another commitment or an event on their own calendar.
+ */
+export interface CalendarFlag {
+  id: number;
+  kind: "duplicate" | "conflict";
+  status: "open" | "resolved" | "dismissed";
+  commitment: Commitment;
+  other: Commitment | null;
+  external: ExternalEvent | null;
+  /** Duplicates: how alike the two subjects are, 0–1. */
+  similarity: number | null;
+  /** Clashes: when the two overlap, and free times in working hours instead. */
+  overlap: CalendarSpan | null;
+  suggestions: CalendarSpan[];
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface CalendarInsights {
+  from: string;
+  to: string;
+  days: Array<{ date: string; deadlines: number; meetings: number }>;
+  busiestDay: { date: string; count: number } | null;
+  /** Timed commitments outside the working hours set in Settings. */
+  outsideHours: Array<{ id: number; type: CommitmentType; subject: string; deadline: string }>;
+  openFlags: { conflicts: number; duplicates: number };
+}
+
 export interface RelationshipPerson {
   key: string;
   label: string;

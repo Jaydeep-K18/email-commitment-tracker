@@ -122,6 +122,12 @@ export const handlers = [
   http.get("/api/views", () => json([])),
   http.get("/api/commitments", () => json(page([]))),
   http.get("/api/calendar", () => json({ items: [] })),
+  http.get("/api/calendar/flags", () => json({ items: [] })),
+  http.post("/api/calendar/flags/:id/resolve", ({ params }) => json({ id: Number(params.id), status: "resolved" })),
+  http.post("/api/calendar/flags/:id/dismiss", ({ params }) => json({ id: Number(params.id), status: "dismissed" })),
+  http.post("/api/calendar/scan", () => json({ jobId: 1, queued: true })),
+  http.get("/api/calendar/insights", () =>
+    json({ from: "2026-10-12", to: "2026-10-25", days: [], busiestDay: null, outsideHours: [], openFlags: { conflicts: 0, duplicates: 0 } })),
   http.get("/api/activity", () => json({ items: events, nextBefore: null } as unknown as JsonBodyType)),
   http.get("/api/jobs/stats", () =>
     json({ byStatus: { queued: 0, running: 0, retrying: 0, succeeded: 4, failed: 0, cancelled: 0 }, queue: { ready: 0, delayed: 0 }, dispatcher: "redis" })),

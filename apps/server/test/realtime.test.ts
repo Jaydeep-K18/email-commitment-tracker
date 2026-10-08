@@ -117,6 +117,15 @@ describe("notification rules", () => {
   it("respects the preferences", () => {
     expect(notificationFor(event("job.failed"), { ...prefs, jobFailed: false })).toBeNull();
   });
+
+  it("warns about a clash or a possible duplicate on the calendar, unless turned off", () => {
+    expect(notificationFor(event("calendar.conflict_detected"), prefs)).toMatchObject({
+      kind: "calendar_conflict", severity: "warning", link: "/calendar",
+    });
+    expect(notificationFor(event("calendar.duplicate_detected"), prefs)?.kind).toBe("calendar_duplicate");
+    expect(notificationFor(event("calendar.conflict_detected"), { ...prefs, calendarIssues: false })).toBeNull();
+    expect(notificationFor(event("calendar.flag_resolved"), prefs)).toBeNull();
+  });
 });
 
 describe("the notifier", () => {

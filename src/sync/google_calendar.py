@@ -311,6 +311,34 @@ def remove(session, commitments: list[Commitment], service=None) -> int:
     return removed
 
 
+def list_user_events(service, start: datetime, end: datetime) -> list[dict]:
+    """Every event between two wall-clock times on the calendars the app uses.
+
+    Recurring events come back as their single occurrences. Our own events are
+    included; calendar_intel recognises and skips them by their private tag.
+    Reading needs no scope beyond the one that lets the app write events.
+    """
+    events: dict[str, dict] = {}
+    for calendar_id in dict.fromkeys(("primary", config.GOOGLE_CALENDAR_ID)):
+        token = None
+        while True:
+            page = service.events().list(
+                calendarId=calendar_id,
+                timeMin=_local_rfc3339(start),
+                timeMax=_local_rfc3339(end),
+                singleEvents=True,
+                orderBy="startTime",
+                maxResults=250,
+                pageToken=token,
+            ).execute()
+            for event in page.get("items", []):
+                events.setdefault(event["id"], event)
+            token = page.get("nextPageToken")
+            if not token:
+                break
+    return list(events.values())
+
+
 def is_available() -> bool:
     """Whether a Google push can even be attempted, without doing one.
 

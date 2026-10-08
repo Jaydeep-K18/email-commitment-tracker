@@ -92,7 +92,7 @@ export function settingsRouter(deps: Deps): Router {
   router.put("/:section", async (req, res) => {
     const { section } = parse(sectionParam, req.params);
     const value = parse(SETTINGS_SCHEMAS[section], req.body);
-    await deps.db.transaction(async (q) => {
+    await deps.jobs.withJobs(async (q, jobs) => {
       await q.query(
         `INSERT INTO settings (section, value) VALUES ($1, $2)
          ON CONFLICT (section) DO UPDATE SET value = EXCLUDED.value, updated_at = (now() at time zone 'utc')`,
@@ -105,6 +105,8 @@ export function settingsRouter(deps: Deps): Router {
         entityId: section,
         payload: { section },
       });
+      // Working hours decide which times are suggested instead of a clash.
+      if (section === "calendar") await jobs.enqueueUnlessActive("scan_calendar");
     });
     res.json(await loadSettings(deps.db));
   });

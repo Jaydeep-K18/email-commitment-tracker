@@ -73,7 +73,7 @@ extracting and publishing as background jobs.
 | **Shared contracts** | Types, the tier policy and the schema both languages are tested against | [`packages/shared/`](packages/shared/) |
 
 The worker's pipeline has five layers, each deciding how much of its input deserves to
-reach the next:
+reach the next, and a check over what ends up on the calendar:
 
 | Layer | What it does | Where |
 |---|---|---|
@@ -82,6 +82,7 @@ reach the next:
 | **Extract** | Prompts the local model, validates and grounds what comes back | [`src/extraction/pipeline.py`](src/extraction/pipeline.py) |
 | **Decide** | Applies tier policy: what actually belongs on a calendar | [`src/sync/sync_engine.py`](src/sync/sync_engine.py) |
 | **Publish** | Writes `.ics`, pushes to Google Calendar, serves a feed | [`src/sync/`](src/sync/), [`src/server/`](src/server/) |
+| **Check** | Flags possible duplicates and clashes, including with events already on your Google Calendar, and finds free times to propose instead | [`src/sync/calendar_intel.py`](src/sync/calendar_intel.py) |
 
 The filter is a cost control, not a nicety: unknown senders default to `SKIP` and **never
 reach the model at all**. On the author's mailbox that meant 6 of 120 emails were worth

@@ -40,7 +40,7 @@ export const SHOULD_SYNC_SQL = `(${ELIGIBLE} AND (${TIER} IN ('CRITICAL', 'IMPOR
 export const AWAITING_APPROVAL_SQL = `(${ELIGIBLE} AND ${TIER} NOT IN ('CRITICAL', 'IMPORTANT') AND NOT c.sync_approved)`;
 
 /** The user's local "now", for deadlines, which are wall-clock times. */
-async function localNow(q: Queryable): Promise<string> {
+export async function localNow(q: Queryable): Promise<string> {
   const { rows } = await q.query<{ zone: string | null }>(
     "SELECT value->>'timeZone' AS zone FROM settings WHERE section = 'calendar'",
   );

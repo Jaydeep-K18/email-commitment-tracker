@@ -10,6 +10,8 @@ import {
   decide,
   defaultSettings,
   type ActivityEvent,
+  type CalendarFlag,
+  type CalendarInsights,
   type Category,
   type Commitment,
   type CommitmentType,
@@ -310,6 +312,95 @@ export const commitments = buildCommitments();
 export function refreshDecision(c: Commitment): void {
   c.decision = decide({ type: c.type, hasDeadline: !!c.deadline, status: c.status, vipTier: c.vipTier, manuallyAdded: c.manuallyAdded, syncApproved: c.syncApproved });
   c.calendarSynced = c.decision.shouldSync;
+}
+
+// --- Calendar flags -------------------------------------------------------------------
+
+/** A wall-clock time moved by `minutes`, still without a zone. */
+const shift = (wall: string, minutes: number) => new Date(Date.parse(`${wall}Z`) + minutes * MINUTE).toISOString().slice(0, 19);
+
+/** One of each thing the worker's scan finds: a clash, an invite already on the calendar, a forwarded copy. */
+function buildFlags(): CalendarFlag[] {
+  const flags: CalendarFlag[] = [];
+  const now = new Date(NOW);
+  const nowWall = `${wallClock(0, now.getHours()).slice(0, 14)}${String(now.getMinutes()).padStart(2, "0")}:00`;
+  const upcoming = commitments.filter((c) => c.status === "pending" && c.deadline && c.deadline > nowWall && !c.allDay && c.decision.shouldSync);
+  const base = { status: "open" as const, other: null, external: null, similarity: null, overlap: null, suggestions: [], resolvedAt: null };
+
+  const meetings = upcoming.filter((c) => c.type === "meeting");
+  const clash = meetings[0];
+  if (clash) {
+    const day = clash.deadline!.slice(0, 10);
+    const dentist = { start: shift(clash.deadline!, -30), end: shift(clash.deadline!, 30) };
+    flags.push({
+      ...base, id: 1, kind: "conflict", commitment: clash, createdAt: iso(NOW - 40 * MINUTE),
+      external: { id: "demo-dentist", title: "Dentist appointment", ...dentist, allDay: false, link: null },
+      overlap: { start: clash.deadline!, end: dentist.end },
+      suggestions: [`${day}T14:00:00`, `${day}T16:30:00`, shift(`${day}T${clash.deadline!.slice(11, 19)}`, 24 * 60)]
+        .map((start) => ({ start, end: shift(start, 60) })),
+    });
+  }
+
+  const invited = meetings.find((m) => clash && m.subject !== clash.subject) ?? meetings[1];
+  if (invited) {
+    flags.push({
+      ...base, id: 2, kind: "duplicate", commitment: invited, similarity: 0.67, createdAt: iso(NOW - 35 * MINUTE),
+      external: {
+        id: "demo-invite", title: invited.subject.split(/ with |,/)[0]!, start: invited.deadline!,
+        end: shift(invited.deadline!, 60), allDay: false, link: null,
+      },
+    });
+  }
+
+  const original = upcoming.find((c) => c.type === "deadline_on_you");
+  const forwarder = emails.find((e) => e.senderName === "Ben Carter");
+  if (original && forwarder) {
+    const copy: Commitment = {
+      ...original,
+      id: Math.max(...commitments.map((c) => c.id)) + 1,
+      emailId: forwarder.id,
+      deadline: `${original.deadline!.slice(0, 10)}T12:00:00`,
+      counterpartyName: forwarder.senderName,
+      counterpartyEmail: forwarder.senderEmail,
+      source: { emailId: forwarder.id, subject: `Fwd: ${original.source.subject}`, senderName: forwarder.senderName, senderEmail: forwarder.senderEmail },
+    };
+    commitments.push(copy);
+    flags.push({ ...base, id: 3, kind: "duplicate", commitment: copy, other: original, similarity: 1, createdAt: iso(NOW - 30 * MINUTE) });
+  }
+  return flags;
+}
+
+export const calendarFlags = buildFlags();
+
+/** The server's /calendar/insights, over the demo commitments, with default working hours. */
+export function calendarInsights(): CalendarInsights {
+  const days = Array.from({ length: 14 }, (_, i) => ({ date: wallClock(i, 0).slice(0, 10), deadlines: 0, meetings: 0 }));
+  const outsideHours: CalendarInsights["outsideHours"] = [];
+  for (const c of commitments) {
+    if (!c.deadline || !c.decision.shouldSync || !["pending", "overdue"].includes(c.status)) continue;
+    const day = days.find((d) => d.date === c.deadline!.slice(0, 10));
+    if (!day) continue;
+    if (c.type === "meeting") day.meetings += 1;
+    else day.deadlines += 1;
+    const time = c.deadline.slice(11, 16);
+    const weekday = new Date(`${day.date}T00:00:00Z`).getUTCDay();
+    if (!c.allDay && (weekday === 0 || weekday === 6 || time < "09:00" || time > "18:00")) {
+      outsideHours.push({ id: c.id, type: c.type, subject: c.subject, deadline: c.deadline });
+    }
+  }
+  const busiest = days.reduce<CalendarInsights["busiestDay"]>((best, d) => {
+    const count = d.deadlines + d.meetings;
+    return count >= 3 && count > (best?.count ?? 0) ? { date: d.date, count } : best;
+  }, null);
+  const open = calendarFlags.filter((f) => f.status === "open");
+  return {
+    from: days[0]!.date,
+    to: days[13]!.date,
+    days,
+    busiestDay: busiest,
+    outsideHours,
+    openFlags: { conflicts: open.filter((f) => f.kind === "conflict").length, duplicates: open.filter((f) => f.kind === "duplicate").length },
+  };
 }
 
 // --- Jobs and events ----------------------------------------------------------------

@@ -62,6 +62,16 @@ class FakeEvents:
         self.owner.store.pop(eventId, None)
         return _Execute({})
 
+    def list(self, calendarId, pageToken=None, **query):  # noqa: N803
+        """Our own events plus the user's, two to a page, as Google pages them."""
+        self.owner.listed.append((calendarId, pageToken))
+        items = [{"id": k, **v} for k, v in self.owner.store.items()] + self.owner.user_events
+        start = int(pageToken or 0)
+        page = {"items": items[start:start + 2]}
+        if start + 2 < len(items):
+            page["nextPageToken"] = str(start + 2)
+        return _Execute(page)
+
 
 class _Execute:
     def __init__(self, result=None, error=None):
@@ -84,6 +94,9 @@ class FakeCalendar:
         self.deleted: list[str] = []
         #: Event ids the server should claim no longer exist.
         self.missing = missing or set()
+        #: The user's own events, which events().list() returns beside ours.
+        self.user_events: list[dict] = []
+        self.listed: list[tuple[str, str | None]] = []
 
     def events(self):
         return FakeEvents(self)

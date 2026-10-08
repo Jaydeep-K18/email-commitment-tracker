@@ -28,6 +28,7 @@ import { buildLimits } from "./http/rateLimit";
 import { notificationsRouter, privacyRouter, settingsRouter } from "./modules/account";
 import { activityRouter, jobsRouter, syncRouter } from "./modules/activity";
 import { analyticsRouter } from "./modules/analytics";
+import { calendarIntelRouter } from "./modules/calendarIntel";
 import { calendarRouter, commitmentsRouter, relationshipsRouter } from "./modules/commitments";
 import { contactsRouter } from "./modules/contacts";
 import { inboxRouter } from "./modules/inbox";
@@ -108,6 +109,7 @@ export function createApp(deps: Deps): Express {
   owner.use("/views", viewsRouter(deps));
   owner.use("/commitments", commitmentsRouter(deps));
   owner.use("/calendar", calendarRouter(deps));
+  owner.use("/calendar", calendarIntelRouter(deps));
   owner.use("/relationships", relationshipsRouter(deps));
   owner.use("/contacts", contactsRouter(deps));
   owner.use("/activity", activityRouter(deps));

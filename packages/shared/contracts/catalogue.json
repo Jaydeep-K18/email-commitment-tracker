@@ -38,6 +38,9 @@
     "calendar.event_failed",
     "calendar.event_removed",
     "calendar.synced",
+    "calendar.conflict_detected",
+    "calendar.duplicate_detected",
+    "calendar.flag_resolved",
     "job.queued",
     "job.started",
     "job.completed",
@@ -78,7 +81,8 @@
     "process_email",
     "publish_calendar",
     "push_google_event",
-    "remove_google_event"
+    "remove_google_event",
+    "scan_calendar"
   ],
   "matchTypes": [
     "exact_email",
