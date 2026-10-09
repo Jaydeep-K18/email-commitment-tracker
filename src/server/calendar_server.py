@@ -24,6 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src import config
 from src.server import api, api_token, internal_api
+from src.server.acting_user import ActAsUser
 from src.storage.database import init_db, session_scope
 from src.sync.ics_builder import render_ics
 from src.sync.sync_engine import calendar_commitments, review_queue
@@ -61,6 +62,7 @@ app.add_middleware(
     allow_headers=["Content-Type", api_token.TOKEN_HEADER],
 )
 
+app.add_middleware(ActAsUser)
 app.include_router(api.router)
 app.include_router(internal_api.router)
 

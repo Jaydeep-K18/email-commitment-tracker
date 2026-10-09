@@ -6,10 +6,10 @@ import { pino } from "pino";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
 
-import { createSession } from "../src/auth/sessions";
+import { createSession, type SessionUser } from "../src/auth/sessions";
 import type { Db } from "../src/db/types";
 import { recordEvent } from "../src/events/record";
-import { PostgresEventFeed } from "../src/realtime/feed";
+import { PostgresEventFeed, type LiveEvent } from "../src/realtime/feed";
 import { CLOSE_SESSION_ENDED, Hub } from "../src/realtime/hub";
 import { Notifier, notificationFor } from "../src/realtime/notifier";
 import { buildApp, createTestDb, ORIGIN, resetDb, signedIn, type TestApp } from "./helpers";
@@ -37,11 +37,20 @@ const waitFor = async (predicate: () => boolean, ms = 3_000) => {
 
 async function insertJob(status: string, attempts = 5) {
   const { rows } = await db.query<{ id: number }>(
-    `INSERT INTO jobs (type, idempotency_key, status, attempts, max_attempts, last_error)
-     VALUES ('process_email', 'process_email:' || floor(random() * 1e9)::text, $1, $2, 5, 'Ollama is down') RETURNING id`,
+    `INSERT INTO jobs (user_id, type, idempotency_key, status, attempts, max_attempts, last_error)
+     VALUES ((SELECT min(id) FROM users), 'process_email', 'process_email:' || floor(random() * 1e9)::text,
+             $1, $2, 5, 'Ollama is down') RETURNING id`,
     [status, attempts],
   );
   return rows[0]!.id;
+}
+
+async function addUser(email: string, isAdmin = false): Promise<SessionUser> {
+  const { rows } = await db.query<{ id: number }>(
+    "INSERT INTO users (email, is_admin) VALUES ($1, $2) RETURNING id",
+    [email, isAdmin],
+  );
+  return { id: rows[0]!.id, email, displayName: null, isAdmin };
 }
 
 describe("jobs from the dashboard", () => {
@@ -85,8 +94,9 @@ describe("jobs from the dashboard", () => {
     const session = await signedIn(t.app);
     const id = await insertJob("failed", 2);
     await db.query(
-      `INSERT INTO job_attempts (job_id, attempt, status, error, duration_ms) VALUES
-       ($1, 1, 'failed', 'timeout', 1200), ($1, 2, 'failed', 'timeout', 1300)`,
+      `INSERT INTO job_attempts (user_id, job_id, attempt, status, error, duration_ms) VALUES
+       ((SELECT min(id) FROM users), $1, 1, 'failed', 'timeout', 1200),
+       ((SELECT min(id) FROM users), $1, 2, 'failed', 'timeout', 1300)`,
       [id],
     );
     const res = await session.get(`/api/jobs/${id}`);
@@ -142,7 +152,8 @@ describe("the notifier", () => {
     const announced: Notification[] = [];
     const notifier = new Notifier(db, log, (n) => announced.push(n), 60_000);
     await notifier.start();
-    await recordEvent(db, { type: "job.failed", message: "Failed: analyze email #3", entityType: "job", entityId: 9 });
+    const owner = await addUser("owner@example.com");
+    await recordEvent(db, { type: "job.failed", message: "Failed: analyze email #3", entityType: "job", entityId: 9, userId: owner.id });
 
     await Promise.all([notifier.wake(), notifier.wake(), notifier.wake()]);
     await notifier.wake();
@@ -156,7 +167,8 @@ describe("the notifier", () => {
     const first = new Notifier(db, log, () => undefined, 60_000);
     await first.start();
     first.stop();
-    await recordEvent(db, { type: "job.failed", message: "while down", entityType: "job", entityId: 4 });
+    const owner = await addUser("owner@example.com");
+    await recordEvent(db, { type: "job.failed", message: "while down", entityType: "job", entityId: 4, userId: owner.id });
 
     const announced: Notification[] = [];
     const second = new Notifier(db, log, (n) => announced.push(n), 60_000);
@@ -167,16 +179,18 @@ describe("the notifier", () => {
 });
 
 describe("the live event feed", () => {
-  it("delivers new events as Postgres announces them", async () => {
-    const received: ActivityEvent[] = [];
+  it("delivers new events as Postgres announces them, with whose they are", async () => {
+    const owner = await addUser("owner@example.com");
+    const received: LiveEvent[] = [];
     const feed = new PostgresEventFeed(db, log, (events) => void received.push(...events), 60_000);
     await feed.start();
 
-    await recordEvent(db, { type: "email.received", message: "Email from Priya: hello" });
+    await recordEvent(db, { type: "email.received", message: "Email from Priya: hello", userId: owner.id });
     await waitFor(() => received.length === 1);
     await feed.stop();
 
-    expect(received[0]).toMatchObject({ type: "email.received", source: "server" });
+    expect(received[0]!.userId).toBe(owner.id);
+    expect(received[0]!.event).toMatchObject({ type: "email.received", source: "server" });
   });
 });
 
@@ -207,10 +221,15 @@ describe("the WebSocket hub", () => {
       ws.once("error", () => undefined);
     });
 
-  async function sessionCookie() {
-    const { token, session } = await createSession(db, 24, {});
-    return { cookie: `cm_session=${token}`, sessionId: session.id };
+  async function sessionCookie(user?: SessionUser) {
+    const { token, session } = await createSession(db, user ?? (await addUser(`u${Math.random()}@example.com`)), 24, {});
+    return { cookie: `cm_session=${token}`, sessionId: session.id, user: session.user };
   }
+
+  const note = (title: string) => ({
+    type: "notification" as const,
+    notification: { id: 1, kind: "system", title, body: null, severity: "info" as const, link: null, readAt: null, createdAt: "2026-01-01T00:00:00Z" },
+  });
 
   it("refuses a connection without a session", async () => {
     expect((await open({ Origin: ORIGIN })).status).toBe(401);
@@ -221,15 +240,34 @@ describe("the WebSocket hub", () => {
     expect((await open({ Origin: "https://evil.example", Cookie: cookie })).status).toBe(403);
   });
 
-  it("streams broadcasts to a signed-in browser", async () => {
-    const { cookie } = await sessionCookie();
+  it("streams a user's messages to that user's browser", async () => {
+    const { cookie, user } = await sessionCookie();
     const client = await open({ Origin: ORIGIN, Cookie: cookie });
     await waitFor(() => client.messages.length === 1);   // hello
 
-    hub.broadcast({ type: "notification", notification: { id: 1, kind: "system", title: "Hi", body: null, severity: "info", link: null, readAt: null, createdAt: "2026-01-01T00:00:00Z" } });
+    hub.sendTo(user.id, note("Hi"));
     await waitFor(() => client.messages.length === 2);
     expect(client.messages[1]).toMatchObject({ type: "notification" });
     client.ws.close();
+  });
+
+  it("never sends one user's messages to another, and system ones only to admins", async () => {
+    const alice = await sessionCookie(await addUser("alice@example.com"));
+    const bob = await sessionCookie(await addUser("bob@example.com"));
+    const admin = await sessionCookie(await addUser("admin@example.com", true));
+    const [a, b, c] = await Promise.all([alice, bob, admin].map((s) => open({ Origin: ORIGIN, Cookie: s.cookie })));
+    await waitFor(() => [a, b, c].every((x) => x!.messages.length === 1));
+
+    hub.sendTo(alice.user.id, note("for alice"));
+    hub.sendTo(null, note("for admins"));
+    await waitFor(() => a!.messages.length === 2 && c!.messages.length === 2);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const titles = (x: typeof a) => x!.messages.slice(1).map((m) => (m as ReturnType<typeof note>).notification.title);
+    expect(titles(a)).toEqual(["for alice"]);
+    expect(titles(b)).toEqual([]);
+    expect(titles(c)).toEqual(["for admins"]);
+    for (const x of [a, b, c]) x!.ws.close();
   });
 
   it("closes the socket the moment its session signs out", async () => {

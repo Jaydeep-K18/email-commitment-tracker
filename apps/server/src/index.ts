@@ -7,18 +7,18 @@
  */
 import { createServer } from "node:http";
 
-import type { ActivityEvent } from "@commitmail/shared";
 import { Redis } from "ioredis";
 import { pino, type Logger } from "pino";
 
 import { createApp } from "./app";
 import { deleteExpiredSessions } from "./auth/sessions";
 import { createPgDb } from "./db/pg";
+import { tenantDb } from "./db/tenant";
 import type { Db } from "./db/types";
 import type { Deps } from "./deps";
 import { loadEnv, type Env } from "./env";
 import { JobQueue } from "./jobs/queue";
-import { PostgresEventFeed, type EventSource } from "./realtime/feed";
+import { PostgresEventFeed, type EventSource, type LiveEvent } from "./realtime/feed";
 import { Hub } from "./realtime/hub";
 import { KafkaEventFeed } from "./realtime/kafkaFeed";
 import { Notifier } from "./realtime/notifier";
@@ -31,9 +31,14 @@ async function main(): Promise<void> {
     transport: env.NODE_ENV === "development" ? { target: "pino/file", options: { destination: 1 } } : undefined,
   });
 
-  const db = createPgDb(env.DATABASE_URL, log);
+  // Two connections with different reach (db/tenant.ts): requests act as their
+  // user; sign-in and background work see everyone. In production the system
+  // one logs in as a role allowed past row-level security, and the request one
+  // as a role that is not.
+  const systemDb = createPgDb(env.DATABASE_SYSTEM_URL ?? env.DATABASE_URL, log);
+  const db = tenantDb(env.DATABASE_SYSTEM_URL ? createPgDb(env.DATABASE_URL, log) : systemDb);
   try {
-    await db.query("SELECT 1");
+    await systemDb.query("SELECT 1");
   } catch (error) {
     const where = env.DATABASE_URL.replace(/\/\/[^@]*@/, "//");   // never print the password
     throw new Error(
@@ -58,6 +63,7 @@ async function main(): Promise<void> {
   const deps: Deps = {
     env,
     db,
+    systemDb,
     log,
     redis,
     jobs: new JobQueue(db, redis, env.REDIS_KEY_PREFIX, env.JOB_MAX_ATTEMPTS, log),
@@ -67,20 +73,20 @@ async function main(): Promise<void> {
   };
 
   const server = createServer(createApp(deps));
-  const hub = new Hub(db, env.APP_ORIGINS, env.SESSION_TTL_HOURS, log);
+  const hub = new Hub(systemDb, env.APP_ORIGINS, env.SESSION_TTL_HOURS, log);
   hub.attach(server);
   deps.hub = hub;
 
-  const notifier = new Notifier(db, log, (notification) => hub.broadcast({ type: "notification", notification }));
-  const deliver = async (events: ActivityEvent[]) => {
-    for (const event of events) hub.broadcast({ type: "event", event });
+  const notifier = new Notifier(systemDb, log, (notification, userId) => hub.sendTo(userId, { type: "notification", notification }));
+  const deliver = async (events: LiveEvent[]) => {
+    for (const { event, userId } of events) hub.sendTo(userId, { type: "event", event });
     void notifier.wake();
   };
   await notifier.start();
-  const feed = await startEventFeed(env, db, log, deliver);
+  const feed = await startEventFeed(env, systemDb, log, deliver);
   deps.liveEvents = feed instanceof KafkaEventFeed ? "kafka" : "postgres";
 
-  const sweep = setInterval(() => void deleteExpiredSessions(db).catch(() => undefined), 60 * 60_000);
+  const sweep = setInterval(() => void deleteExpiredSessions(systemDb).catch(() => undefined), 60 * 60_000);
   sweep.unref();
 
   server.listen(env.PORT, env.HOST, () => {
@@ -97,6 +103,7 @@ async function main(): Promise<void> {
     await hub.close();
     redis?.disconnect();
     await db.close();
+    if (env.DATABASE_SYSTEM_URL) await systemDb.close();
     process.exit(0);
   };
   process.on("SIGINT", () => void shutdown("SIGINT"));
@@ -112,7 +119,7 @@ async function startEventFeed(
   env: Env,
   db: Db,
   log: Logger,
-  deliver: (events: ActivityEvent[]) => Promise<void>,
+  deliver: (events: LiveEvent[]) => Promise<void>,
 ): Promise<EventSource> {
   if (env.KAFKA_BROKERS?.length) {
     const brokers = env.KAFKA_BROKERS;

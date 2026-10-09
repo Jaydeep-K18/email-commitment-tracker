@@ -29,6 +29,9 @@ from pydantic import BaseModel, Field
 from src import config, first_run
 from src.auth import google_auth
 from src.server import api_token
+from src.storage.accounts import mailbox_owner_id
+from src.storage.database import session_scope
+from src.storage.tenancy import acting_as, current_user_id
 
 log = logging.getLogger(__name__)
 
@@ -45,6 +48,30 @@ def require_internal_token(
         raise HTTPException(401, "invalid internal token")
 
 
+def require_user() -> int:
+    """The account the Express server is acting for (see acting_user.py)."""
+    user_id = current_user_id()
+    if user_id is None:
+        raise HTTPException(400, "X-User-Id must name an active account")
+    return user_id
+
+
+def holds_local_credentials(user_id: int) -> bool:
+    with acting_as(None), session_scope() as session:
+        return user_id == mailbox_owner_id(session)
+
+
+def require_credentials_owner(user_id: int = Depends(require_user)) -> int:
+    """Mail and Google sign-ins on this machine are one account's, for now.
+
+    Letting anyone else change them would replace that person's sign-in with
+    theirs; letting anyone else read them would show that person's address.
+    """
+    if not holds_local_credentials(user_id):
+        raise HTTPException(403, "Connecting a mailbox is not available for this account yet.")
+    return user_id
+
+
 router = APIRouter(prefix="/internal", dependencies=[Depends(require_internal_token)])
 
 
@@ -54,20 +81,31 @@ class Mailbox(BaseModel):
 
 
 @router.get("/setup/status")
-def setup_status() -> dict:
+def setup_status(user_id: int = Depends(require_user)) -> dict:
     """Everything the first-run screen shows, in one call."""
     from src.extraction.ollama_client import OllamaClient
 
-    state = first_run.setup_state()
     health = OllamaClient().health()
+    ollama = {
+        "running": health.running,
+        "modelPresent": health.model_present,
+        "model": config.OLLAMA_MODEL,
+        "problem": health.problem,
+    }
+    if not holds_local_credentials(user_id):
+        return {
+            "ollama": ollama,
+            "mailbox": {"address": None, "connected": False, "viaGmailApi": False},
+            "google": {"signedIn": False, "expired": False, "email": None, "calendar": False,
+                       "clientConfigured": google_auth.client_secrets_present()},
+            "complete": False,
+            "missing": "mailbox",
+        }
+
+    state = first_run.setup_state()
     account = google_auth.account()
     return {
-        "ollama": {
-            "running": health.running,
-            "modelPresent": health.model_present,
-            "model": config.OLLAMA_MODEL,
-            "problem": health.problem,
-        },
+        "ollama": ollama,
         "mailbox": {
             "address": config.IMAP_USER or None,
             "connected": state.mailbox_ready,
@@ -85,13 +123,13 @@ def setup_status() -> dict:
     }
 
 
-@router.post("/setup/mailbox/test")
+@router.post("/setup/mailbox/test", dependencies=[Depends(require_credentials_owner)])
 def test_mailbox(mailbox: Mailbox) -> dict:
     ok, message = first_run.check_connection(mailbox.address, mailbox.password)
     return {"ok": ok, "message": message}
 
 
-@router.post("/setup/mailbox")
+@router.post("/setup/mailbox", dependencies=[Depends(require_credentials_owner)])
 def save_mailbox(mailbox: Mailbox) -> dict:
     """Test, and only if the login works, store the address and the password."""
     ok, message = first_run.check_connection(mailbox.address, mailbox.password)
@@ -101,7 +139,7 @@ def save_mailbox(mailbox: Mailbox) -> dict:
     return {"ok": ok, "message": message}
 
 
-@router.post("/setup/google/sign-in")
+@router.post("/setup/google/sign-in", dependencies=[Depends(require_credentials_owner)])
 def google_sign_in() -> dict:
     """Run Google's consent flow in a browser tab on this machine.
 
@@ -120,7 +158,6 @@ def google_sign_in() -> dict:
     resumed = bool(previous and previous.expired)
     if resumed:
         from src.jobs.queue import enqueue_unless_active
-        from src.storage.database import session_scope
 
         with session_scope() as session:
             enqueue_unless_active(session, "fetch_mailbox")
@@ -128,7 +165,7 @@ def google_sign_in() -> dict:
     return {"email": account.email, "calendar": account.has_calendar, "resumed": resumed}
 
 
-@router.post("/setup/google/calendar")
+@router.post("/setup/google/calendar", dependencies=[Depends(require_credentials_owner)])
 def google_calendar_access() -> dict:
     try:
         account = google_auth.grant_calendar_access()
@@ -137,18 +174,18 @@ def google_calendar_access() -> dict:
     return {"email": account.email, "calendar": account.has_calendar}
 
 
-@router.delete("/setup/google")
+@router.delete("/setup/google", dependencies=[Depends(require_credentials_owner)])
 def google_disconnect() -> dict:
     google_auth.clear_token()
     return {"signedIn": False}
 
 
-@router.get("/extension-token")
+@router.get("/extension-token", dependencies=[Depends(require_credentials_owner)])
 def extension_token() -> dict:
     """The Gmail panel's token, shown in Settings → Integrations to paste in."""
     return {"token": api_token.get_or_create_token()}
 
 
-@router.post("/extension-token/rotate")
+@router.post("/extension-token/rotate", dependencies=[Depends(require_credentials_owner)])
 def rotate_extension_token() -> dict:
     return {"token": api_token.rotate_token()}

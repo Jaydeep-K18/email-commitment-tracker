@@ -20,7 +20,7 @@ import { setupServer } from "msw/node";
 export const owner: SessionInfo = {
   authenticated: true,
   setupRequired: false,
-  user: { email: "owner@example.com", displayName: "Test Owner" },
+  user: { email: "owner@example.com", displayName: "Test Owner", isAdmin: true },
   csrfToken: "csrf-test-token",
 };
 

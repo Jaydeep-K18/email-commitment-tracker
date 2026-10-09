@@ -1,4 +1,4 @@
-"""Small facts about this installation, stored in the ``settings`` table."""
+"""Small facts about a user's installation, stored in their ``settings``."""
 from __future__ import annotations
 
 import secrets
@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.storage.models import Setting
+from src.storage.user_settings import key
 
 SYSTEM_SECTION = "system"
 
@@ -20,7 +21,7 @@ def install_id(session: Session) -> str:
     belong to commitments the new database has never heard of. It lives in the
     database rather than a file so that migrating the data carries it along.
     """
-    row = session.get(Setting, SYSTEM_SECTION)
+    row = session.get(Setting, key(SYSTEM_SECTION))
     if row is not None and row.value.get("install_id"):
         return row.value["install_id"]
 
@@ -35,5 +36,5 @@ def install_id(session: Session) -> str:
     except IntegrityError:
         # Another process created the row first; theirs wins, so read it back.
         session.expire_all()
-        return session.get(Setting, SYSTEM_SECTION).value["install_id"]
+        return session.get(Setting, key(SYSTEM_SECTION)).value["install_id"]
     return new_id

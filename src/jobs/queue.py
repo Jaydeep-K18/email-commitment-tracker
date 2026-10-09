@@ -58,6 +58,7 @@ from src.events.recorder import (
 )
 from src.jobs.backoff import backoff_seconds
 from src.jobs.dispatch import RUNNABLE, get_dispatcher
+from src.storage.tenancy import current_user_id
 from src.storage.models import Job, JobAttempt, utcnow_naive
 
 log = logging.getLogger(__name__)
@@ -114,14 +115,24 @@ def _dispatch_after_commit(session: Session, job_id: int, run_at: datetime | Non
 
 # --- Enqueueing ---------------------------------------------------------------
 
+def _owned_by_this_context():
+    """Jobs of the user this work is for, or the system's own (no user)."""
+    user_id = current_user_id()
+    return Job.user_id == user_id if user_id is not None else Job.user_id.is_(None)
+
+
 def _insert_ignoring_conflict(session: Session, values: dict) -> bool:
-    """INSERT … ON CONFLICT (idempotency_key) DO NOTHING. True if inserted."""
+    """INSERT … ON CONFLICT (user_id, idempotency_key) DO NOTHING. True if inserted.
+
+    A Core insert bypasses the ORM's flush, so the owner is set here rather
+    than by src.storage.tenancy.
+    """
     if session.get_bind().dialect.name == "postgresql":
         from sqlalchemy.dialects.postgresql import insert
     else:
         from sqlalchemy.dialects.sqlite import insert
-    statement = insert(Job).values(**values).on_conflict_do_nothing(
-        index_elements=["idempotency_key"]
+    statement = insert(Job).values(user_id=current_user_id(), **values).on_conflict_do_nothing(
+        index_elements=["user_id", "idempotency_key"]
     )
     return session.execute(statement).rowcount == 1
 
@@ -156,7 +167,7 @@ def enqueue(
             "updated_at": now,
         },
     )
-    job_id = session.scalar(select(Job.id).where(Job.idempotency_key == key))
+    job_id = session.scalar(select(Job.id).where(Job.idempotency_key == key, _owned_by_this_context()))
     if created:
         record_event(
             session,
@@ -197,7 +208,11 @@ def enqueue_unless_active(
     literal = scope.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     active = session.scalar(
         select(Job.id)
-        .where(Job.idempotency_key.like(f"{literal}:%", escape="\\"), Job.status.in_(ACTIVE))
+        .where(
+            Job.idempotency_key.like(f"{literal}:%", escape="\\"),
+            Job.status.in_(ACTIVE),
+            _owned_by_this_context(),
+        )
         .limit(1)
     )
     if active is not None:
@@ -232,7 +247,8 @@ def claim(session: Session, job_id: int, worker: str) -> tuple[Job, JobAttempt] 
 
     job = session.get(Job, job_id, populate_existing=True)
     attempt = JobAttempt(
-        job_id=job.id, attempt=job.attempts, status="running", worker=worker, started_at=now
+        job_id=job.id, user_id=job.user_id, attempt=job.attempts, status="running",
+        worker=worker, started_at=now,
     )
     session.add(attempt)
     record_event(
@@ -242,6 +258,7 @@ def claim(session: Session, job_id: int, worker: str) -> tuple[Job, JobAttempt] 
         + (f" (attempt {job.attempts} of {job.max_attempts})" if job.attempts > 1 else ""),
         entity_type="job",
         entity_id=job.id,
+        user_id=job.user_id,
         correlation_id=job.correlation_id,
         payload={"job_type": job.type, "attempt": job.attempts, "worker": worker},
     )
@@ -267,6 +284,7 @@ def complete(session: Session, job_id: int, attempt_id: int, result: dict | None
         + (f" — succeeded on attempt {job.attempts}" if job.attempts > 1 else ""),
         entity_type="job",
         entity_id=job.id,
+        user_id=job.user_id,
         correlation_id=job.correlation_id,
         severity="success",
         payload={
@@ -306,6 +324,7 @@ def fail(
             f"Retrying in {_human_delay(delay)}: {describe(job.type, job.payload)} — {exc}",
             entity_type="job",
             entity_id=job.id,
+            user_id=job.user_id,
             correlation_id=job.correlation_id,
             severity="warning",
             payload={
@@ -326,6 +345,7 @@ def fail(
         f"Failed: {describe(job.type, job.payload)} — {exc}",
         entity_type="job",
         entity_id=job.id,
+        user_id=job.user_id,
         correlation_id=job.correlation_id,
         severity="error",
         payload={
@@ -336,6 +356,24 @@ def fail(
         },
     )
     return None
+
+
+# --- Housekeeping ---------------------------------------------------------------
+
+#: The System page reads four hours of metric windows at most.
+METRIC_SNAPSHOT_DAYS = 2
+
+
+def prune_metric_snapshots(session: Session) -> int:
+    """Drop metric windows older than METRIC_SNAPSHOT_DAYS. System context only."""
+    from datetime import timedelta
+
+    from sqlalchemy import delete
+
+    from src.storage.models import MetricSnapshot
+
+    cutoff = utcnow_naive() - timedelta(days=METRIC_SNAPSHOT_DAYS)
+    return session.execute(delete(MetricSnapshot).where(MetricSnapshot.window_end < cutoff)).rowcount
 
 
 # --- Recovery ------------------------------------------------------------------
@@ -360,6 +398,7 @@ def retry_job(session: Session, job_id: int, *, extra_attempts: int = 3, source:
         f"Retry requested: {describe(job.type, job.payload)}",
         entity_type="job",
         entity_id=job.id,
+        user_id=job.user_id,
         correlation_id=job.correlation_id,
         payload={"job_type": job.type, "previous_attempts": job.attempts},
         source=source,

@@ -125,6 +125,7 @@ def event_message() -> dict:
     return message_for(
         Event(
             id=4101,
+            user_id=7,
             type="email.received",
             entity_type="email",
             entity_id="42",

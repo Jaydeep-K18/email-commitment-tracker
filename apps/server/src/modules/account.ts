@@ -95,7 +95,7 @@ export function settingsRouter(deps: Deps): Router {
     await deps.jobs.withJobs(async (q, jobs) => {
       await q.query(
         `INSERT INTO settings (section, value) VALUES ($1, $2)
-         ON CONFLICT (section) DO UPDATE SET value = EXCLUDED.value, updated_at = (now() at time zone 'utc')`,
+         ON CONFLICT (user_id, section) DO UPDATE SET value = EXCLUDED.value, updated_at = (now() at time zone 'utc')`,
         [section, JSON.stringify(value)],
       );
       await recordEvent(q, {
@@ -163,9 +163,9 @@ export function privacyRouter(deps: Deps, limits: Limits): Router {
           "SELECT id, gcal_event_id FROM commitments WHERE gcal_event_id IS NOT NULL",
         );
         const counts: Record<string, number> = {};
+        // Row-level security confines each DELETE to this user's rows.
         for (const table of ["notifications", "job_attempts", "jobs", "calendar_flags", "sync_log",
-                             "commitments", "email_tags", "raw_emails", "sent_messages", "events",
-                             "metric_snapshots"]) {
+                             "commitments", "email_tags", "raw_emails", "sent_messages", "events"]) {
           counts[table] = (await q.query(`DELETE FROM ${table}`)).rowCount;
         }
         for (const row of published.rows) {

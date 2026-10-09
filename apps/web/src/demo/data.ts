@@ -514,7 +514,7 @@ export const views: SavedView[] = [
 
 export const state = {
   signedIn: true,
-  user: { email: "demo@commitmail.dev", displayName: "Demo Owner" },
+  user: { email: "demo@commitmail.dev", displayName: "Demo Owner", isAdmin: true },
   settings: { ...defaultSettings(), calendar: { ...defaultSettings().calendar, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } } as Settings,
 };
 

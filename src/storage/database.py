@@ -26,6 +26,7 @@ from src.filtering.vip_filter import (
     normalize_tier,
 )
 from src.storage.models import Base, Commitment, RawEmail, SyncLog, VipContact
+from src.storage import tenancy  # noqa: F401 - installs the per-user scoping on every session
 
 if TYPE_CHECKING:  # avoid a runtime import of higher layers from storage
     from src.collection.email_parser import ParsedEmail

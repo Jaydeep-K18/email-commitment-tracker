@@ -358,5 +358,368 @@ ALTER TABLE raw_emails DROP COLUMN notification_seen;
 
 UPDATE alembic_version SET version_num='0004' WHERE alembic_version.version_num = '0003';
 
+-- Running upgrade 0004 -> 0005
+
+CREATE TABLE users (
+    id SERIAL NOT NULL, 
+    email VARCHAR(254) NOT NULL, 
+    display_name VARCHAR(80), 
+    password_hash VARCHAR(255), 
+    google_sub VARCHAR(255), 
+    is_admin BOOLEAN DEFAULT false NOT NULL, 
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc') NOT NULL, 
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc') NOT NULL, 
+    password_changed_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc') NOT NULL, 
+    last_login_at TIMESTAMP WITHOUT TIME ZONE, 
+    disabled_at TIMESTAMP WITHOUT TIME ZONE, 
+    PRIMARY KEY (id), 
+    UNIQUE (email), 
+    UNIQUE (google_sub)
+);
+
+INSERT INTO users (id, email, display_name, password_hash, is_admin,
+                           created_at, updated_at, password_changed_at)
+        SELECT id, lower(email), display_name, password_hash, true,
+               created_at, updated_at, password_changed_at
+          FROM owner_account;
+
+INSERT INTO users (email, is_admin)
+        SELECT 'unclaimed@localhost', true
+         WHERE NOT EXISTS (SELECT 1 FROM users)
+           AND (EXISTS (SELECT 1 FROM raw_emails) OR EXISTS (SELECT 1 FROM vip_contacts)
+                OR EXISTS (SELECT 1 FROM settings WHERE section <> 'server_state'));
+
+SELECT setval(pg_get_serial_sequence('users', 'id'), coalesce(max(id), 1)) FROM users;
+
+DROP TABLE owner_account;
+
+CREATE TABLE system_state (
+    key VARCHAR(64) NOT NULL, 
+    value JSONB DEFAULT '{}'::jsonb NOT NULL, 
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() at time zone 'utc') NOT NULL, 
+    PRIMARY KEY (key)
+);
+
+INSERT INTO system_state (key, value, updated_at) SELECT section, value, updated_at FROM settings WHERE section = 'server_state';
+
+DELETE FROM settings WHERE section = 'server_state';
+
+DELETE FROM sessions;
+
+ALTER TABLE sessions ADD COLUMN user_id INTEGER NOT NULL;
+
+ALTER TABLE sessions ADD CONSTRAINT fk_sessions_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_sessions_user_id ON sessions (user_id);
+
+ALTER TABLE raw_emails ADD COLUMN user_id INTEGER;
+
+ALTER TABLE vip_contacts ADD COLUMN user_id INTEGER;
+
+ALTER TABLE commitments ADD COLUMN user_id INTEGER;
+
+ALTER TABLE sync_log ADD COLUMN user_id INTEGER;
+
+ALTER TABLE tags ADD COLUMN user_id INTEGER;
+
+ALTER TABLE email_tags ADD COLUMN user_id INTEGER;
+
+ALTER TABLE saved_views ADD COLUMN user_id INTEGER;
+
+ALTER TABLE sent_messages ADD COLUMN user_id INTEGER;
+
+ALTER TABLE events ADD COLUMN user_id INTEGER;
+
+ALTER TABLE jobs ADD COLUMN user_id INTEGER;
+
+ALTER TABLE job_attempts ADD COLUMN user_id INTEGER;
+
+ALTER TABLE notifications ADD COLUMN user_id INTEGER;
+
+ALTER TABLE settings ADD COLUMN user_id INTEGER;
+
+ALTER TABLE calendar_flags ADD COLUMN user_id INTEGER;
+
+UPDATE raw_emails SET user_id = (SELECT min(id) FROM users);
+
+UPDATE vip_contacts SET user_id = (SELECT min(id) FROM users);
+
+UPDATE commitments SET user_id = (SELECT min(id) FROM users);
+
+UPDATE sync_log SET user_id = (SELECT min(id) FROM users);
+
+UPDATE tags SET user_id = (SELECT min(id) FROM users);
+
+UPDATE email_tags SET user_id = (SELECT min(id) FROM users);
+
+UPDATE saved_views SET user_id = (SELECT min(id) FROM users);
+
+UPDATE sent_messages SET user_id = (SELECT min(id) FROM users);
+
+UPDATE events SET user_id = (SELECT min(id) FROM users) WHERE type NOT LIKE 'system.%';
+
+UPDATE jobs SET user_id = (SELECT min(id) FROM users);
+
+UPDATE job_attempts SET user_id = (SELECT user_id FROM jobs WHERE jobs.id = job_attempts.job_id);
+
+UPDATE notifications SET user_id = (SELECT min(id) FROM users);
+
+UPDATE settings SET user_id = (SELECT min(id) FROM users);
+
+UPDATE calendar_flags SET user_id = (SELECT min(id) FROM users);
+
+ALTER TABLE raw_emails ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE raw_emails ADD CONSTRAINT fk_raw_emails_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+DROP INDEX ix_raw_emails_message_id;
+
+ALTER TABLE raw_emails ADD CONSTRAINT uq_raw_emails_user_message UNIQUE (user_id, message_id);
+
+ALTER TABLE vip_contacts ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE vip_contacts ADD CONSTRAINT fk_vip_contacts_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE vip_contacts DROP CONSTRAINT uq_vip_value_type;
+
+ALTER TABLE vip_contacts ADD CONSTRAINT uq_vip_value_type UNIQUE (user_id, match_value, match_type);
+
+ALTER TABLE commitments ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE commitments ADD CONSTRAINT fk_commitments_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_commitments_user_id ON commitments (user_id);
+
+ALTER TABLE sync_log ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE sync_log ADD CONSTRAINT fk_sync_log_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_sync_log_user_id ON sync_log (user_id);
+
+ALTER TABLE tags ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE tags ADD CONSTRAINT fk_tags_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE tags DROP CONSTRAINT tags_name_key;
+
+ALTER TABLE tags ADD CONSTRAINT uq_tags_user_name UNIQUE (user_id, name);
+
+ALTER TABLE email_tags ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE email_tags ADD CONSTRAINT fk_email_tags_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_email_tags_user_id ON email_tags (user_id);
+
+ALTER TABLE saved_views ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE saved_views ADD CONSTRAINT fk_saved_views_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE saved_views DROP CONSTRAINT saved_views_name_key;
+
+ALTER TABLE saved_views ADD CONSTRAINT uq_saved_views_user_name UNIQUE (user_id, name);
+
+ALTER TABLE sent_messages ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE sent_messages ADD CONSTRAINT fk_sent_messages_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE sent_messages DROP CONSTRAINT sent_messages_message_id_key;
+
+ALTER TABLE sent_messages ADD CONSTRAINT uq_sent_messages_user_message UNIQUE (user_id, message_id);
+
+ALTER TABLE events ADD CONSTRAINT fk_events_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_events_user_id ON events (user_id);
+
+ALTER TABLE jobs ADD CONSTRAINT fk_jobs_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE jobs DROP CONSTRAINT jobs_idempotency_key_key;
+
+ALTER TABLE jobs ADD CONSTRAINT uq_jobs_user_key UNIQUE NULLS NOT DISTINCT (user_id, idempotency_key);
+
+ALTER TABLE job_attempts ADD CONSTRAINT fk_job_attempts_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_job_attempts_user_id ON job_attempts (user_id);
+
+ALTER TABLE notifications ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE notifications ADD CONSTRAINT fk_notifications_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+CREATE INDEX ix_notifications_user_id ON notifications (user_id);
+
+ALTER TABLE notifications DROP CONSTRAINT uq_notification_event_kind;
+
+ALTER TABLE notifications ADD CONSTRAINT uq_notification_event_kind UNIQUE (user_id, event_id, kind);
+
+ALTER TABLE settings ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE settings ADD CONSTRAINT fk_settings_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE settings DROP CONSTRAINT settings_pkey;
+
+ALTER TABLE settings ADD CONSTRAINT settings_pkey PRIMARY KEY (user_id, section);
+
+ALTER TABLE calendar_flags ALTER COLUMN user_id SET NOT NULL;
+
+ALTER TABLE calendar_flags ADD CONSTRAINT fk_calendar_flags_user_id FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE;
+
+ALTER TABLE calendar_flags DROP CONSTRAINT calendar_flags_dedupe_key_key;
+
+ALTER TABLE calendar_flags ADD CONSTRAINT uq_calendar_flags_user_key UNIQUE (user_id, dedupe_key);
+
+CREATE FUNCTION app_user_id() RETURNS integer LANGUAGE sql STABLE AS
+        $$ SELECT nullif(current_setting('app.user_id', true), '')::integer $$;
+
+DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'commitmail_tenant') THEN
+                CREATE ROLE commitmail_tenant NOLOGIN;
+            END IF;
+        END $$;
+
+GRANT USAGE ON SCHEMA public TO commitmail_tenant;
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON raw_emails TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON vip_contacts TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON commitments TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON sync_log TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON tags TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON email_tags TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON saved_views TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON sent_messages TO commitmail_tenant;
+
+GRANT SELECT, INSERT, DELETE ON events TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON jobs TO commitmail_tenant;
+
+GRANT SELECT, DELETE ON job_attempts TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON notifications TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON settings TO commitmail_tenant;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON calendar_flags TO commitmail_tenant;
+
+ALTER TABLE raw_emails ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE raw_emails ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE raw_emails FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON raw_emails TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE vip_contacts ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE vip_contacts ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE vip_contacts FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON vip_contacts TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE commitments ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE commitments ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE commitments FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON commitments TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE sync_log ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE sync_log ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE sync_log FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON sync_log TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE tags ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE tags FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON tags TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE email_tags ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE email_tags ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE email_tags FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON email_tags TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE saved_views ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE saved_views ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE saved_views FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON saved_views TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE sent_messages ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE sent_messages ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE sent_messages FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON sent_messages TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE events ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE events FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON events TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE jobs ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE jobs FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON jobs TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE job_attempts ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE job_attempts ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE job_attempts FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON job_attempts TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE notifications ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON notifications TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE settings ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE settings FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON settings TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+ALTER TABLE calendar_flags ALTER COLUMN user_id SET DEFAULT app_user_id();
+
+ALTER TABLE calendar_flags ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE calendar_flags FORCE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON calendar_flags TO commitmail_tenant USING (user_id = app_user_id()) WITH CHECK (user_id = app_user_id());
+
+UPDATE alembic_version SET version_num='0005' WHERE alembic_version.version_num = '0004';
+
 COMMIT;
 

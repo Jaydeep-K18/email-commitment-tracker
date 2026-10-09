@@ -35,9 +35,10 @@ export interface ApiError {
 
 export interface SessionInfo {
   authenticated: boolean;
-  /** True until the owner account exists; the app shows first-run setup. */
+  /** True until the first account exists; the app shows first-run setup. */
   setupRequired: boolean;
-  user: { email: string; displayName: string | null } | null;
+  /** isAdmin: runs the deployment, and sees its system health. */
+  user: { email: string; displayName: string | null; isAdmin: boolean } | null;
   /** Echoed on every state-changing request as X-CSRF-Token. */
   csrfToken: string | null;
 }

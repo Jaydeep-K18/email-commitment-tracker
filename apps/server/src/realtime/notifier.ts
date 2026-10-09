@@ -106,10 +106,11 @@ export class Notifier {
   private rerun = false;
   private timer: NodeJS.Timeout | null = null;
 
+  /** `db` is the system connection: the notifier serves every user. */
   constructor(
     private readonly db: Db,
     private readonly log: Logger,
-    private readonly announce: (notification: Notification) => void,
+    private readonly announce: (notification: Notification, userId: number) => void,
     private readonly pollMs = 5_000,
   ) {}
 
@@ -148,15 +149,15 @@ export class Notifier {
     // First start: begin from the newest event, so a fresh install does not
     // announce its entire history at once.
     await this.db.query(
-      `INSERT INTO settings (section, value)
+      `INSERT INTO system_state (key, value)
        SELECT $1, jsonb_build_object('notifierCursor', COALESCE(MAX(id), 0)) FROM events
-       ON CONFLICT (section) DO NOTHING`,
+       ON CONFLICT (key) DO NOTHING`,
       [CURSOR_KEY],
     );
   }
 
   private async processBatch(): Promise<number> {
-    const created: Notification[] = [];
+    const created: Array<{ notification: Notification; userId: number }> = [];
     const count = await this.db.transaction(async (q) => {
       const cursor = await readCursor(q);
       const { rows } = await q.query(
@@ -165,47 +166,58 @@ export class Notifier {
       );
       if (rows.length === 0) return 0;
 
-      const prefs = await readPrefs(q);
+      const prefs = new Map<number, Prefs>();
+      const admins = (await q.query<{ id: number }>(
+        "SELECT id FROM users WHERE is_admin AND disabled_at IS NULL",
+      )).rows.map((r) => r.id);
+
       for (const row of rows) {
         const event = toActivityEvent(row);
-        const draft = notificationFor(event, prefs);
-        if (!draft) continue;
-        const inserted = await q.query(
-          `INSERT INTO notifications (kind, title, body, severity, link, event_id)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           ON CONFLICT (event_id, kind) DO NOTHING
-           RETURNING *`,
-          [draft.kind, draft.title, draft.body, draft.severity, draft.link, event.id],
-        );
-        if (inserted.rows[0]) created.push(toNotification(inserted.rows[0]));
+        // An event is its owner's alone; one that belongs to no one (the
+        // deployment's own) goes to the admins.
+        const recipients: number[] = row.user_id == null ? admins : [row.user_id as number];
+        for (const userId of recipients) {
+          if (!prefs.has(userId)) prefs.set(userId, await readPrefs(q, userId));
+          const draft = notificationFor(event, prefs.get(userId)!);
+          if (!draft) continue;
+          const inserted = await q.query(
+            `INSERT INTO notifications (user_id, kind, title, body, severity, link, event_id)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             ON CONFLICT (user_id, event_id, kind) DO NOTHING
+             RETURNING *`,
+            [userId, draft.kind, draft.title, draft.body, draft.severity, draft.link, event.id],
+          );
+          if (inserted.rows[0]) created.push({ notification: toNotification(inserted.rows[0]), userId });
+        }
       }
       const last = (rows[rows.length - 1] as { id: number }).id;
       await q.query(
-        `UPDATE settings SET value = jsonb_set(value, '{notifierCursor}', to_jsonb($2::bigint)),
-                             updated_at = (now() at time zone 'utc')
-          WHERE section = $1`,
+        `UPDATE system_state SET value = jsonb_set(value, '{notifierCursor}', to_jsonb($2::bigint)),
+                                 updated_at = (now() at time zone 'utc')
+          WHERE key = $1`,
         [CURSOR_KEY, last],
       );
       return rows.length;
     });
     // Announced only after the transaction committed, so the browser is never
     // told about a notification that then rolled back.
-    for (const notification of created) this.announce(notification);
+    for (const { notification, userId } of created) this.announce(notification, userId);
     return count;
   }
 }
 
 async function readCursor(q: Queryable): Promise<number> {
   const { rows } = await q.query<{ cursor: number | null }>(
-    "SELECT (value->>'notifierCursor')::bigint AS cursor FROM settings WHERE section = $1",
+    "SELECT (value->>'notifierCursor')::bigint AS cursor FROM system_state WHERE key = $1",
     [CURSOR_KEY],
   );
   return rows[0]?.cursor ?? 0;
 }
 
-async function readPrefs(q: Queryable): Promise<Prefs> {
+async function readPrefs(q: Queryable, userId: number): Promise<Prefs> {
   const { rows } = await q.query<{ value: unknown }>(
-    "SELECT value FROM settings WHERE section = 'notifications'",
+    "SELECT value FROM settings WHERE user_id = $1 AND section = 'notifications'",
+    [userId],
   );
   const parsed = notificationSettingsSchema.safeParse(rows[0]?.value ?? {});
   return parsed.success ? parsed.data : defaultSettings().notifications;

@@ -89,7 +89,7 @@ describe("analytics", () => {
     await insertCommitment(db, analysed, { calendar_synced: true });
     await insertEmail(db, { category: "update", received_at: stamp(60) });
     await insertEmail(db, { category: "low_priority", vip_tier: "SKIP", received_at: stamp(30) });
-    await db.query("INSERT INTO sent_messages (message_id, in_reply_to, sent_at) VALUES ('r@me', 'a@x', $1)", [stamp(60)]);
+    await db.query("INSERT INTO sent_messages (user_id, message_id, in_reply_to, sent_at) VALUES ((SELECT min(id) FROM users), 'r@me', 'a@x', $1)", [stamp(60)]);
 
     const res = await session.get("/api/analytics").query({ range: "7d", tz: "UTC" });
     expect(res.body.byCategory).toMatchObject({ action_required: 1, update: 1, low_priority: 1 });
@@ -109,7 +109,7 @@ describe("privacy", () => {
     await insertEmail(db);
     const res = await session.get("/api/privacy/export");
     expect(res.headers["content-disposition"]).toMatch(/attachment; filename="commitmail-export-/);
-    expect(Object.keys(res.body.data)).not.toContain("owner_account");
+    expect(Object.keys(res.body.data)).not.toContain("users");
     expect(Object.keys(res.body.data)).not.toContain("sessions");
     expect(JSON.stringify(res.body)).not.toContain("$argon2id$");
     expect(res.body.data.raw_emails).toHaveLength(1);
@@ -127,7 +127,7 @@ describe("privacy", () => {
     const res = await session.post("/api/privacy/purge", { scope: "everything", confirm: "DELETE" });
     expect(res.body.googleRemovalsQueued).toBe(1);
     expect((await db.query("SELECT count(*)::int AS n FROM raw_emails")).rows[0]!.n).toBe(0);
-    expect((await db.query("SELECT count(*)::int AS n FROM owner_account")).rows[0]!.n).toBe(1);
+    expect((await db.query("SELECT count(*)::int AS n FROM users")).rows[0]!.n).toBe(1);
     const jobs = await db.query("SELECT type, payload FROM jobs ORDER BY id");
     expect(jobs.rows[0]).toEqual({ type: "remove_google_event", payload: { commitment_id: expect.any(Number), event_id: "ect123" } });
     expect((await session.get("/api/emails")).status).toBe(200);   // still signed in

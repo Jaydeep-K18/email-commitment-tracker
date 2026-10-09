@@ -1,5 +1,6 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 
+import { runAs } from "../db/tenant";
 import type { Queryable } from "../db/types";
 import { readCookie } from "../http/cookies";
 import { AppError } from "../http/errors";
@@ -25,8 +26,15 @@ export function loadSession(db: Queryable, ttlHours: number): RequestHandler {
   };
 }
 
+/** Signed in, and everything after this runs as that user (db/tenant.ts). */
 export const requireAuth: RequestHandler = (req, _res, next) => {
   if (!req.session) throw new AppError(401, "unauthenticated", "Please sign in.");
+  runAs(req.session.user.id, next);
+};
+
+/** Runs the deployment: system health, and events that belong to no one. */
+export const requireAdmin: RequestHandler = (req, _res, next) => {
+  if (!req.session?.user.isAdmin) throw new AppError(403, "forbidden", "Only an administrator can see this.");
   next();
 };
 

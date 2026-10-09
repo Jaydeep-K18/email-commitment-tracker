@@ -15,12 +15,18 @@ export interface NewEvent {
   correlationId?: string | null;
   severity?: Severity;
   payload?: Record<string, unknown>;
+  /**
+   * Whose event it is. Leave it out inside a user's request: the database
+   * fills in that user. Sign-in code, which runs on the system connection,
+   * names the account the event is about.
+   */
+  userId?: number | null;
 }
 
 export async function recordEvent(q: Queryable, event: NewEvent): Promise<number> {
   const { rows } = await q.query<{ id: number }>(
-    `INSERT INTO events (type, message, entity_type, entity_id, correlation_id, severity, payload, source)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, 'server') RETURNING id`,
+    `INSERT INTO events (type, message, entity_type, entity_id, correlation_id, severity, payload, source, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, 'server', COALESCE($8::int, app_user_id())) RETURNING id`,
     [
       event.type,
       event.message,
@@ -29,6 +35,7 @@ export async function recordEvent(q: Queryable, event: NewEvent): Promise<number
       event.correlationId ?? null,
       event.severity ?? "info",
       JSON.stringify(event.payload ?? {}),
+      event.userId ?? null,
     ],
   );
   return rows[0]!.id;

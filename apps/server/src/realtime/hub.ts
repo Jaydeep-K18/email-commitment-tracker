@@ -29,6 +29,8 @@ export const CLOSE_SESSION_ENDED = 4001;
 
 interface Client {
   sessionId: string;
+  userId: number;
+  isAdmin: boolean;
   alive: boolean;
 }
 
@@ -56,10 +58,15 @@ export class Hub {
     return this.clients.size;
   }
 
-  broadcast(message: ServerMessage): void {
+  /**
+   * Send to one user's open tabs; with no user (the deployment's own events),
+   * to the admins'. Never to everyone: every message is someone's data.
+   */
+  sendTo(userId: number | null, message: ServerMessage): void {
     const data = JSON.stringify(message);
-    for (const socket of this.clients.keys()) {
-      if (socket.readyState === WebSocket.OPEN) socket.send(data);
+    for (const [socket, client] of this.clients) {
+      const recipient = userId === null ? client.isAdmin : client.userId === userId;
+      if (recipient && socket.readyState === WebSocket.OPEN) socket.send(data);
     }
   }
 
@@ -92,7 +99,7 @@ export class Hub {
       if (!session) return reject(401, "Unauthorized");
 
       this.wss.handleUpgrade(req, socket, head, (ws) => {
-        this.clients.set(ws, { sessionId: session.id, alive: true });
+        this.clients.set(ws, { sessionId: session.id, userId: session.user.id, isAdmin: session.user.isAdmin, alive: true });
         ws.on("pong", () => {
           const client = this.clients.get(ws);
           if (client) client.alive = true;

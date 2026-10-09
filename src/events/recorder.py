@@ -126,8 +126,12 @@ def record_event(
     severity: str = "info",
     payload: dict | None = None,
     source: str = "worker",
+    user_id: int | None = None,
 ) -> Event:
     """Add an event to ``session``. It commits when the caller's change does.
+
+    The event belongs to the user the current work is for. System code that
+    records something about one user's job passes ``user_id`` explicitly.
 
     An unknown type or severity raises immediately rather than being stored:
     the consumers dispatch on these strings, and an event no consumer
@@ -147,6 +151,7 @@ def record_event(
         severity=severity,
         payload=payload or {},
         source=source,
+        user_id=user_id,
     )
     session.add(event)
     return event

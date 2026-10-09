@@ -138,12 +138,12 @@ def test_the_message_is_the_row_under_its_own_column_names():
     """The server maps a Kafka message with the function it uses for table
     rows, so the message must look exactly like a row."""
     event = Event(
-        id=12, type=EMAIL_RECEIVED, entity_type="email", entity_id="7", correlation_id="email:7",
+        id=12, user_id=3, type=EMAIL_RECEIVED, entity_type="email", entity_id="7", correlation_id="email:7",
         severity="info", message="Email from Priya", payload={"vip_tier": "CRITICAL"},
         source="worker", created_at=datetime(2026, 10, 8, 9, 30, 0, 123456),
     )
     assert message_for(event) == {
-        "id": 12, "type": "email.received", "entity_type": "email", "entity_id": "7",
+        "id": 12, "user_id": 3, "type": "email.received", "entity_type": "email", "entity_id": "7",
         "correlation_id": "email:7", "severity": "info", "message": "Email from Priya",
         "payload": {"vip_tier": "CRITICAL"}, "source": "worker",
         "created_at": "2026-10-08T09:30:00.123456",

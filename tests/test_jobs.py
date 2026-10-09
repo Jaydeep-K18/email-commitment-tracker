@@ -26,7 +26,7 @@ from src.jobs.dispatch import PollingDispatcher, RedisDispatcher
 from src.jobs.handlers import HANDLERS, JobContext, Services
 from src.jobs.worker import Worker
 from src.storage import database
-from src.storage.models import Base, Commitment, Event, Job, JobAttempt, RawEmail, utcnow_naive
+from src.storage.models import Base, Commitment, Event, Job, JobAttempt, RawEmail, User, utcnow_naive
 from src.sync import google_calendar
 
 
@@ -36,6 +36,8 @@ from src.sync import google_calendar
 def db(tmp_path, monkeypatch):
     engine = create_engine(f"sqlite:///{tmp_path / 'jobs.db'}", future=True)
     Base.metadata.create_all(engine)
+    with engine.begin() as connection:
+        connection.execute(User.__table__.insert().values(id=1, email="owner@example.com", is_admin=True))
     monkeypatch.setattr(database, "engine", engine)
     monkeypatch.setattr(
         database, "SessionLocal", sessionmaker(bind=engine, future=True, expire_on_commit=False)

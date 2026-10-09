@@ -30,7 +30,7 @@ from src.storage.models import (
     Job,
     JobAttempt,
     Notification,
-    OwnerAccount,
+    User,
     RawEmail,
     Tag,
 )
@@ -163,12 +163,27 @@ def test_a_redelivered_event_cannot_notify_twice(session):
         session.commit()
 
 
-def test_there_can_only_ever_be_one_owner(session):
-    session.add(OwnerAccount(id=1, email="me@example.com", password_hash="x"))
+def test_one_account_per_address(session):
+    session.add(User(email="me@example.com"))
     session.commit()
-    session.add(OwnerAccount(id=2, email="intruder@example.com", password_hash="y"))
+    session.add(User(email="me@example.com"))
     with pytest.raises(IntegrityError):
         session.commit()
+
+
+def test_two_people_can_receive_the_same_email_but_one_mailbox_holds_it_once(session):
+    from src.storage.tenancy import acting_as
+
+    session.add_all([User(id=2, email="a@example.com"), User(id=3, email="b@example.com")])
+    session.commit()
+    for user_id in (2, 3):
+        with acting_as(user_id):
+            session.add(RawEmail(message_id="<shared@x>"))
+            session.commit()
+    with acting_as(2):
+        session.add(RawEmail(message_id="<shared@x>"))
+        with pytest.raises(IntegrityError):
+            session.commit()
 
 
 def test_deleting_an_email_removes_its_tags_but_not_the_tag(session):

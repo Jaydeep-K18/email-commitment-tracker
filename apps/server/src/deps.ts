@@ -16,7 +16,10 @@ import type { WorkerClient } from "./worker/client";
 
 export interface Deps {
   env: Env;
+  /** Acts for the signed-in user: every query is confined to their rows (db/tenant.ts). */
   db: Db;
+  /** Sees every user's rows. Only for sign-in and background work, never a user's request. */
+  systemDb: Db;
   log: Logger;
   redis: Redis | null;
   jobs: JobQueue;

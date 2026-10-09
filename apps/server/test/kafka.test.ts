@@ -24,7 +24,8 @@ function message(id: number, extra: Record<string, unknown> = {}) {
 
 describe("reading an event off Kafka", () => {
   it("understands the message the Python relay writes", () => {
-    expect(parseEventMessage(Buffer.from(contract))).toEqual({
+    expect(parseEventMessage(Buffer.from(contract))?.userId).toBe(7);
+    expect(parseEventMessage(Buffer.from(contract))?.event).toEqual({
       id: 4101,
       type: "email.received",
       entityType: "email",
@@ -55,18 +56,18 @@ describe("the Kafka feed", () => {
   };
 
   it("passes on only events newer than when the server started", () => {
-    const ids = feed().accept([message(99), message(100), message(101), message(102)]).map((e) => e.id);
+    const ids = feed().accept([message(99), message(100), message(101), message(102)]).map((e) => e.event.id);
     expect(ids).toEqual([101, 102]);
   });
 
   it("passes each event on once, though Kafka may deliver it twice", () => {
     const f = feed();
-    expect(f.accept([message(101), message(102)]).map((e) => e.id)).toEqual([101, 102]);
-    expect(f.accept([message(102), message(103), message(101)]).map((e) => e.id)).toEqual([103]);
+    expect(f.accept([message(101), message(102)]).map((e) => e.event.id)).toEqual([101, 102]);
+    expect(f.accept([message(102), message(103), message(101)]).map((e) => e.event.id)).toEqual([103]);
   });
 
   it("skips a malformed message and keeps the rest of the batch", () => {
-    expect(feed().accept(["garbage", message(105)]).map((e) => e.id)).toEqual([105]);
+    expect(feed().accept(["garbage", message(105)]).map((e) => e.event.id)).toEqual([105]);
   });
 
   it("forgets the oldest ids once it has remembered enough", () => {

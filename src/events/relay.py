@@ -72,6 +72,8 @@ def message_for(event: Event) -> dict[str, Any]:
     """
     return {
         "id": event.id,
+        # Whose event it is: the server delivers it to that account only.
+        "user_id": event.user_id,
         "type": event.type,
         "entity_type": event.entity_type,
         "entity_id": event.entity_id,

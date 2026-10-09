@@ -4,7 +4,7 @@
  * Same rules as the worker's own queue (src/jobs/queue.py), because both write
  * the same table:
  *
- * - The jobs row is the job. `INSERT ... ON CONFLICT (idempotency_key) DO
+ * - The jobs row is the job. `INSERT ... ON CONFLICT (user_id, idempotency_key) DO
  *   NOTHING` makes asking twice for the same work a no-op.
  * - Redis only carries the id to a worker, and only after the transaction that
  *   created the row has committed. If Redis is down or unset, nothing is lost:
@@ -60,7 +60,7 @@ export class TxJobs {
     const inserted = await this.q.query<{ id: number }>(
       `INSERT INTO jobs (type, idempotency_key, payload, max_attempts, correlation_id)
        VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (idempotency_key) DO NOTHING
+       ON CONFLICT (user_id, idempotency_key) DO NOTHING
        RETURNING id`,
       [type, options.key, JSON.stringify(payload), this.maxAttempts, options.correlationId ?? null],
     );

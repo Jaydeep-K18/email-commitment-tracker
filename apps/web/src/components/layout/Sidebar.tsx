@@ -17,7 +17,7 @@ import {
 import { NavLink } from "react-router-dom";
 
 import { cn } from "../../lib/cn";
-import { useCommitments, useEmails, useJobStats } from "../../lib/queries";
+import { useCommitments, useEmails, useJobStats, useSession } from "../../lib/queries";
 import { Tooltip } from "../ui/overlay";
 
 interface Item {
@@ -33,6 +33,7 @@ export function useNavItems(): Array<{ section: string; items: Item[] }> {
   const inbox = useEmails({ folder: "inbox", pageSize: 1 });
   const review = useCommitments({ view: "review", pageSize: 1 });
   const jobs = useJobStats();
+  const isAdmin = useSession().data?.user?.isAdmin ?? false;
 
   return [
     {
@@ -57,7 +58,7 @@ export function useNavItems(): Array<{ section: string; items: Item[] }> {
       section: "System",
       items: [
         { to: "/jobs", label: "Jobs", icon: Workflow, badge: jobs.data?.byStatus.failed, badgeTone: "danger" },
-        { to: "/system", label: "System health", icon: HeartPulse },
+        ...(isAdmin ? [{ to: "/system", label: "System health", icon: HeartPulse }] : []),
         { to: "/settings", label: "Settings", icon: Settings },
       ],
     },

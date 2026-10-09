@@ -1,3 +1,7 @@
+/**
+ * Accounts and sessions. These routes run before anyone is known, so they use
+ * the system connection; everything after requireAuth acts as the user.
+ */
 import {
   changePasswordSchema,
   loginSchema,
@@ -7,6 +11,7 @@ import {
 } from "@commitmail/shared";
 import { Router, type Request } from "express";
 
+import type { Queryable } from "../db/types";
 import type { Deps } from "../deps";
 import { recordEvent } from "../events/record";
 import { AppError } from "../http/errors";
@@ -21,26 +26,41 @@ import {
   destroySession,
   setSessionCookie,
   type Session,
+  type SessionUser,
 } from "./sessions";
 
-interface Owner {
+/** Left by migration 0005 for mail imported before anyone signed up. */
+const UNCLAIMED = "unclaimed@localhost";
+
+interface UserRow {
+  id: number;
   email: string;
   display_name: string | null;
-  password_hash: string;
+  password_hash: string | null;
+  is_admin: boolean;
+  disabled_at: string | null;
 }
 
-async function loadOwner(deps: Deps): Promise<Owner | null> {
-  const { rows } = await deps.db.query<Owner>(
-    "SELECT email, display_name, password_hash FROM owner_account WHERE id = 1",
-  );
-  return rows[0] ?? null;
+const asSessionUser = (row: UserRow): SessionUser => ({
+  id: row.id,
+  email: row.email,
+  displayName: row.display_name,
+  isAdmin: row.is_admin,
+});
+
+/** Whether anyone can sign in yet. Until then the app offers to create the first account. */
+async function hasAccount(q: Queryable): Promise<boolean> {
+  const { rows } = await q.query("SELECT 1 FROM users WHERE email <> $1 LIMIT 1", [UNCLAIMED]);
+  return rows.length > 0;
 }
 
-function sessionInfo(owner: Owner | null, session: Session | undefined): SessionInfo {
+function sessionInfo(session: Session | undefined, setupRequired: boolean): SessionInfo {
   return {
-    authenticated: !!session && !!owner,
-    setupRequired: !owner,
-    user: session && owner ? { email: owner.email, displayName: owner.display_name } : null,
+    authenticated: !!session,
+    setupRequired,
+    user: session
+      ? { email: session.user.email, displayName: session.user.displayName, isAdmin: session.user.isAdmin }
+      : null,
     csrfToken: session?.csrfToken ?? null,
   };
 }
@@ -51,84 +71,98 @@ function context(req: Request) {
 
 export function authRouter(deps: Deps, limits: Limits): Router {
   const router = Router();
-  const { env } = deps;
+  const { env, systemDb } = deps;
 
   router.get("/session", async (req, res) => {
-    res.json(sessionInfo(await loadOwner(deps), req.session));
+    res.json(sessionInfo(req.session, !req.session && !(await hasAccount(systemDb))));
   });
 
-  /** First run only: create the single owner account and sign in. */
+  /**
+   * First run only: create the first account, which runs the deployment. It
+   * claims any mail imported before it existed.
+   */
   router.post("/setup", limits.setup, async (req, res) => {
     const body = parse(setupSchema, req.body);
     const passwordHash = await hashPassword(body.password);
 
-    const { token, session } = await deps.db.transaction(async (q) => {
-      // ON CONFLICT plus the CHECK (id = 1) constraint: two racing setup
-      // requests cannot both create an owner, whatever order they land in.
-      const created = await q.query(
-        `INSERT INTO owner_account (id, email, display_name, password_hash)
-         VALUES (1, $1, $2, $3) ON CONFLICT (id) DO NOTHING`,
-        [body.email, body.displayName, passwordHash],
-      );
-      if (created.rowCount !== 1) {
-        throw new AppError(409, "setup_complete", "This app already has an owner. Sign in instead.");
+    const { token, session } = await systemDb.transaction(async (q) => {
+      // Serialises racing setups: the second waits, then finds an account.
+      await q.query("LOCK TABLE users IN SHARE ROW EXCLUSIVE MODE");
+      if (await hasAccount(q)) {
+        throw new AppError(409, "setup_complete", "This app already has an administrator. Sign in instead.");
       }
+      const claimed = await q.query<UserRow>(
+        `UPDATE users SET email = $1, display_name = $2, password_hash = $3, is_admin = true,
+                          updated_at = (now() at time zone 'utc')
+          WHERE email = $4 RETURNING *`,
+        [body.email, body.displayName, passwordHash, UNCLAIMED],
+      );
+      const user = claimed.rows[0] ?? (await q.query<UserRow>(
+        `INSERT INTO users (email, display_name, password_hash, is_admin)
+         VALUES ($1, $2, $3, true) RETURNING *`,
+        [body.email, body.displayName, passwordHash],
+      )).rows[0]!;
       await recordEvent(q, {
         type: "auth.setup",
-        message: `Owner account created for ${body.email}`,
+        message: `Account created for ${body.email}`,
         entityType: "account",
         severity: "success",
+        userId: user.id,
       });
-      return createSession(q, env.SESSION_TTL_HOURS, context(req));
+      return createSession(q, asSessionUser(user), env.SESSION_TTL_HOURS, context(req));
     });
 
     setSessionCookie(res, token, env.COOKIE_SECURE, env.SESSION_TTL_HOURS);
-    res.status(201).json(sessionInfo(await loadOwner(deps), session));
+    res.status(201).json(sessionInfo(session, false));
   });
 
   router.post("/login", limits.login, async (req, res) => {
     const body = parse(loginSchema, req.body);
-    const owner = await loadOwner(deps);
-    if (!owner) throw new AppError(409, "setup_required", "Create the owner account first.");
+    const { rows } = await systemDb.query<UserRow>(
+      "SELECT * FROM users WHERE email = $1 AND disabled_at IS NULL",
+      [body.email],
+    );
+    const user = rows[0];
 
-    // Always run a full verify, even for the wrong email, so the response time
-    // does not reveal whether the email matched.
-    const emailMatches = owner.email.toLowerCase() === body.email;
-    const valid = await verifyPassword(emailMatches ? owner.password_hash : await decoyHash(), body.password);
-
-    if (!emailMatches || !valid) {
-      await recordEvent(deps.db, {
+    // Always run a full verify, even for an unknown email or an account with
+    // no password, so the response time does not reveal which it was.
+    const valid = await verifyPassword(user?.password_hash ?? (await decoyHash()), body.password);
+    if (!user?.password_hash || !valid) {
+      await recordEvent(systemDb, {
         type: "auth.login_failed",
         message: "A sign-in attempt failed",
         entityType: "account",
         severity: "warning",
         payload: { ip: req.ip ?? null },
+        userId: user?.id ?? null,
       });
       throw new AppError(401, "invalid_credentials", "Email or password is incorrect.");
     }
 
-    const { token, session } = await deps.db.transaction(async (q) => {
+    const { token, session } = await systemDb.transaction(async (q) => {
       // Rotate: a session id fixed before login (planted by an attacker) must
       // not survive becoming authenticated.
       if (req.session) await destroySession(q, req.session.id);
+      await q.query("UPDATE users SET last_login_at = (now() at time zone 'utc') WHERE id = $1", [user.id]);
       await recordEvent(q, {
         type: "auth.login",
         message: "Signed in",
         entityType: "account",
         payload: { ip: req.ip ?? null, userAgent: req.headers["user-agent"] ?? null },
+        userId: user.id,
       });
-      return createSession(q, env.SESSION_TTL_HOURS, context(req));
+      return createSession(q, asSessionUser(user), env.SESSION_TTL_HOURS, context(req));
     });
 
     setSessionCookie(res, token, env.COOKIE_SECURE, env.SESSION_TTL_HOURS);
-    res.json(sessionInfo(owner, session));
+    res.json(sessionInfo(session, false));
   });
 
   router.post("/logout", requireAuth, async (req, res) => {
     const session = req.session!;
-    await deps.db.transaction(async (q) => {
+    await systemDb.transaction(async (q) => {
       await destroySession(q, session.id);
-      await recordEvent(q, { type: "auth.logout", message: "Signed out", entityType: "account" });
+      await recordEvent(q, { type: "auth.logout", message: "Signed out", entityType: "account", userId: session.user.id });
     });
     deps.hub?.closeSession(session.id);
     clearSessionCookie(res, env.COOKIE_SECURE);
@@ -137,26 +171,29 @@ export function authRouter(deps: Deps, limits: Limits): Router {
 
   router.post("/password", requireAuth, limits.sensitive, async (req, res) => {
     const body = parse(changePasswordSchema, req.body);
-    const owner = (await loadOwner(deps))!;
-    if (!(await verifyPassword(owner.password_hash, body.currentPassword))) {
+    const session = req.session!;
+    const { rows } = await systemDb.query<UserRow>("SELECT * FROM users WHERE id = $1", [session.user.id]);
+    const current = rows[0]?.password_hash;
+    if (!current || !(await verifyPassword(current, body.currentPassword))) {
       throw new AppError(400, "wrong_password", "Your current password is incorrect.");
     }
     const passwordHash = await hashPassword(body.newPassword);
-    const signedOut = await deps.db.transaction(async (q) => {
+    const signedOut = await systemDb.transaction(async (q) => {
       await q.query(
-        `UPDATE owner_account
+        `UPDATE users
             SET password_hash = $1,
                 password_changed_at = (now() at time zone 'utc'),
                 updated_at = (now() at time zone 'utc')
-          WHERE id = 1`,
-        [passwordHash],
+          WHERE id = $2`,
+        [passwordHash, session.user.id],
       );
-      const others = await destroyOtherSessions(q, req.session!.id);
+      const others = await destroyOtherSessions(q, session.user.id, session.id);
       await recordEvent(q, {
         type: "auth.password_changed",
         message: `Password changed; ${others} other session(s) signed out`,
         entityType: "account",
         severity: "success",
+        userId: session.user.id,
       });
       return others;
     });
@@ -165,14 +202,19 @@ export function authRouter(deps: Deps, limits: Limits): Router {
 
   router.patch("/profile", requireAuth, async (req, res) => {
     const patch = parse(profilePatchSchema, req.body);
-    await deps.db.transaction(async (q) => {
-      await q.query(
-        `UPDATE owner_account
+    const session = req.session!;
+    const updated = await systemDb.transaction(async (q) => {
+      if (patch.email) {
+        const taken = await q.query("SELECT 1 FROM users WHERE email = $1 AND id <> $2", [patch.email, session.user.id]);
+        if (taken.rows.length) throw new AppError(409, "email_taken", "Another account already uses that address.");
+      }
+      const { rows } = await q.query<UserRow>(
+        `UPDATE users
             SET email = COALESCE($1, email),
                 display_name = COALESCE($2, display_name),
                 updated_at = (now() at time zone 'utc')
-          WHERE id = 1`,
-        [patch.email ?? null, patch.displayName ?? null],
+          WHERE id = $3 RETURNING *`,
+        [patch.email ?? null, patch.displayName ?? null, session.user.id],
       );
       await recordEvent(q, {
         type: "settings.updated",
@@ -180,9 +222,11 @@ export function authRouter(deps: Deps, limits: Limits): Router {
         entityType: "settings",
         entityId: "profile",
         payload: { changed: Object.keys(patch) },
+        userId: session.user.id,
       });
+      return rows[0]!;
     });
-    res.json(sessionInfo(await loadOwner(deps), req.session));
+    res.json(sessionInfo({ ...session, user: asSessionUser(updated) }, false));
   });
 
   return router;

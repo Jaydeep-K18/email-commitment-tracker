@@ -8,6 +8,7 @@
  */
 import type { Request, Response } from "express";
 
+import { currentUserId } from "../db/tenant";
 import { AppError } from "../http/errors";
 
 export interface WorkerClient {
@@ -45,7 +46,13 @@ export function createWorkerClient(baseUrl: string, internalToken: string | unde
       try {
         response = await fetch(`${base}/internal${path}`, {
           method,
-          headers: { "Content-Type": "application/json", "X-Internal-Token": internalToken },
+          // The worker acts for this user (src/server/acting_user.py). Never taken
+          // from the browser: forward() below only relays an allow-list.
+          headers: {
+            "Content-Type": "application/json",
+            "X-Internal-Token": internalToken,
+            ...(currentUserId() ? { "X-User-Id": String(currentUserId()) } : {}),
+          },
           body: body === undefined ? undefined : JSON.stringify(body),
           signal: AbortSignal.timeout(timeoutMs),
         });

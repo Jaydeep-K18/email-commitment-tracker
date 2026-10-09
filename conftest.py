@@ -43,5 +43,16 @@ def _isolated_storage(tmp_path, monkeypatch):
         database, "SessionLocal", sessionmaker(bind=engine, future=True, expire_on_commit=False)
     )
     monkeypatch.setattr(config, "ICS_PATH", tmp_path / "calendar.ics")
-    yield
+    # Code that "makes sure the schema is current" (init_db) migrates whatever
+    # DATABASE_URL names — from .env, the real database. Point it here too.
+    monkeypatch.setattr(config, "DATABASE_URL", "sqlite://")
+
+    # Every test acts as one account unless it says otherwise, as a job does.
+    from src.storage.models import User
+    from src.storage.tenancy import acting_as
+
+    with engine.begin() as connection:
+        connection.execute(User.__table__.insert().values(id=1, email="owner@example.com", is_admin=True))
+    with acting_as(1):
+        yield
     engine.dispose()

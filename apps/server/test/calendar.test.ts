@@ -25,8 +25,8 @@ async function commitment(subject: string, deadline: string, fields: Record<stri
 async function flag(fields: Record<string, unknown>) {
   const row: Record<string, unknown> = { kind: "duplicate", status: "open", details: {}, ...fields };
   const { rows } = await db.query<{ id: number }>(
-    `INSERT INTO calendar_flags (kind, commitment_id, other_commitment_id, external_event_id, details, status, dedupe_key)
-     VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7) RETURNING id`,
+    `INSERT INTO calendar_flags (user_id, kind, commitment_id, other_commitment_id, external_event_id, details, status, dedupe_key)
+     VALUES ((SELECT min(id) FROM users), $1, $2, $3, $4, $5::jsonb, $6, $7) RETURNING id`,
     [row.kind, row.commitment_id, row.other_commitment_id ?? null, row.external_event_id ?? null,
      JSON.stringify(row.details), row.status, `${row.kind}:${Math.random()}`],
   );

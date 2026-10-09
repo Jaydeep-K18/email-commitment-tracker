@@ -52,7 +52,7 @@ describe("first-run setup", () => {
 
   it("stores an argon2id hash, never the password", async () => {
     await post("/api/auth/setup", OWNER);
-    const { rows } = await db.query("SELECT password_hash FROM owner_account");
+    const { rows } = await db.query("SELECT password_hash FROM users");
     expect(rows[0]!.password_hash).toMatch(/^\$argon2id\$/);
     expect(rows[0]!.password_hash).not.toContain(OWNER.password);
   });

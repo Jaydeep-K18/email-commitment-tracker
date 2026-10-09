@@ -34,9 +34,10 @@ from src.events.recorder import SYSTEM_WORKER_STARTED, SYSTEM_WORKER_STOPPED, re
 from src.jobs import queue
 from src.jobs.dispatch import Dispatcher, RedisDispatcher, get_dispatcher
 from src.jobs.handlers import JobContext, Services, run_job
-from src.storage import user_settings
+from src.storage import accounts, user_settings
 from src.storage.database import init_db, session_scope
 from src.storage.models import Job, ServiceHeartbeat, utcnow_naive
+from src.storage.tenancy import acting_as
 
 log = logging.getLogger(__name__)
 
@@ -78,27 +79,30 @@ class Worker:
             self.dispatcher.ack(job_id)
 
     def process(self, job_id: int) -> bool:
-        with session_scope() as session:
+        # Claiming and recording outcomes are the system's business; the work
+        # itself runs as the job's owner, and sees only that user's data.
+        with acting_as(None), session_scope() as session:
             claimed = queue.claim(session, job_id, self.name)
             if claimed is None:
                 return False   # another worker has it, or it is no longer runnable
             job, attempt = claimed
-            job_type, payload = job.type, dict(job.payload or {})
+            job_type, payload, owner = job.type, dict(job.payload or {}), job.user_id
             attempt_id, attempt_no, max_attempts = attempt.id, job.attempts, job.max_attempts
 
         ctx = JobContext(job_id, attempt_no, max_attempts, self.services)
         started = time.monotonic()
         try:
-            result = run_job(job_type, payload, ctx)
+            with acting_as(owner):
+                result = run_job(job_type, payload, ctx)
         except Exception as exc:  # noqa: BLE001 - every failure becomes a retry or a failed job
             elapsed = _ms_since(started)
             log.warning("Job %s (%s) attempt %s failed: %s", job_id, job_type, attempt_no, exc)
-            with session_scope() as session:
+            with acting_as(None), session_scope() as session:
                 retry_at = queue.fail(session, job_id, attempt_id, exc, elapsed)
             if retry_at is not None:
                 self.dispatcher.push(job_id, retry_at)
         else:
-            with session_scope() as session:
+            with acting_as(None), session_scope() as session:
                 queue.complete(session, job_id, attempt_id, result, _ms_since(started))
             log.info("Job %s (%s) done in %sms", job_id, job_type, _ms_since(started))
 
@@ -112,7 +116,8 @@ class Worker:
         """One maintenance pass. Each step is independent and survives failure."""
         for step in (self._promote, self._reap, self._sweep, self._heartbeat, self._schedule):
             try:
-                step()
+                with acting_as(None):   # upkeep sees every user's jobs
+                    step()
             except Exception as exc:  # noqa: BLE001 - upkeep must never kill the worker
                 log.warning("Maintenance step %s failed: %s", step.__name__, exc)
 
@@ -158,8 +163,12 @@ class Worker:
         if not self.schedule:
             return
         now = time.monotonic()
+        with session_scope() as session:
+            owner = accounts.mailbox_owner_id(session)
+        if owner is None:
+            return   # nobody has signed up yet
         if now >= self._next_schedule:
-            with session_scope() as session:
+            with acting_as(owner), session_scope() as session:
                 queue.enqueue_unless_active(session, "fetch_mailbox")
                 queue.enqueue_unless_active(session, "publish_calendar")
                 # Read every time, so a change on the settings page applies from
@@ -167,8 +176,12 @@ class Worker:
                 interval = user_settings.fetch_interval_minutes(session)
             self._next_schedule = now + interval * 60
         if now >= self._next_retention:
-            with session_scope() as session:
+            with acting_as(owner), session_scope() as session:
                 queue.enqueue_unless_active(session, "enforce_retention")
+            with session_scope() as session:
+                pruned = queue.prune_metric_snapshots(session)
+            if pruned:
+                log.info("Dropped %s old metric window(s).", pruned)
             self._next_retention = now + RETENTION_INTERVAL
 
     # --- Lifecycle --------------------------------------------------------
@@ -216,7 +229,7 @@ class Worker:
 
     def _record_lifecycle(self, event_type: str, message: str) -> None:
         try:
-            with session_scope() as session:
+            with acting_as(None), session_scope() as session:
                 record_event(
                     session, event_type, f"{message} ({self.name}, {self.dispatcher.name})",
                     entity_type="service", entity_id="worker",

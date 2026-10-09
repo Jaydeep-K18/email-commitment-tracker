@@ -43,6 +43,17 @@ export const envSchema = z.object({
     .string()
     .regex(/^postgres(ql)?(\+psycopg)?:\/\//, "must be a postgres:// URL")
     .transform((url) => url.replace(/^postgresql\+psycopg:\/\//, "postgres://")),
+  /**
+   * Sign-in and background work, which see every user. Set in production to a
+   * role allowed past row-level security, with DATABASE_URL a role that is not;
+   * unset, one connection serves both (each request still switches role).
+   */
+  DATABASE_SYSTEM_URL: z
+    .string()
+    .regex(/^postgres(ql)?(\+psycopg)?:\/\//, "must be a postgres:// URL")
+    .transform((url) => url.replace(/^postgresql\+psycopg:\/\//, "postgres://"))
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   REDIS_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
   REDIS_KEY_PREFIX: z.string().default("commitmail"),
 

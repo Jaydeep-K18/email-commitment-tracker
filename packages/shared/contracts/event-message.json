@@ -11,5 +11,6 @@
   },
   "severity": "info",
   "source": "worker",
-  "type": "email.received"
+  "type": "email.received",
+  "user_id": 7
 }

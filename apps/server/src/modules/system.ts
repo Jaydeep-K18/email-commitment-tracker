@@ -18,6 +18,7 @@ import type { ComponentHealth, HealthState, MetricWindow, SystemHealth } from "@
 import { Router } from "express";
 import { z } from "zod";
 
+import { requireAdmin } from "../auth/middleware";
 import { utc } from "../db/time";
 import type { Queryable } from "../db/types";
 import type { Deps } from "../deps";
@@ -123,7 +124,7 @@ function ago(seconds: number): string {
 async function checkKafka(deps: Deps): Promise<ComponentHealth> {
   const brokers = deps.env.KAFKA_BROKERS;
   if (!brokers?.length) return { state: "unconfigured", detail: "KAFKA_BROKERS not set — events stream from Postgres" };
-  const [latency, backlog] = await Promise.all([tcpReachable(brokers[0]!), relayBacklog(deps.db)]);
+  const [latency, backlog] = await Promise.all([tcpReachable(brokers[0]!), relayBacklog(deps.systemDb)]);
   const meta = { ...backlog, liveEvents: deps.liveEvents };
   if (latency == null) return { state: "down", detail: `${brokers[0]} not reachable`, meta };
   if (backlog.waiting > 0 && backlog.oldestSeconds > RELAY_STALE_SECONDS) {
@@ -160,7 +161,7 @@ async function checkFlink(deps: Deps): Promise<ComponentHealth> {
   if (running === 0) return { state: "degraded", latencyMs: overview.ms, detail: "cluster up, but no job running", meta };
 
   // Running is not the same as working: a job that cannot reach Postgres runs on.
-  const { rows } = await deps.db.query<{ newest: string | null }>(
+  const { rows } = await deps.systemDb.query<{ newest: string | null }>(
     "SELECT max(window_end) AS newest FROM metric_snapshots WHERE source = 'flink'",
   );
   const newest = rows[0]?.newest;
@@ -176,9 +177,9 @@ const SEVERITY: Record<HealthState, number> = { ok: 0, unconfigured: 0, degraded
 
 export async function systemHealth(deps: Deps): Promise<SystemHealth> {
   const [database, redis, worker, ollama, kafka, flink] = await Promise.all([
-    checkDatabase(deps.db),
+    checkDatabase(deps.systemDb),
     checkRedis(deps),
-    checkWorker(deps.db).catch((): ComponentHealth => ({ state: "down", detail: "unknown" })),
+    checkWorker(deps.systemDb).catch((): ComponentHealth => ({ state: "down", detail: "unknown" })),
     checkOllama(deps.env.OLLAMA_HOST, deps.env.OLLAMA_MODEL),
     checkKafka(deps).catch((): ComponentHealth => ({ state: "down", detail: "check failed" })),
     checkFlink(deps).catch((): ComponentHealth => ({ state: "down", detail: "check failed" })),
@@ -280,17 +281,23 @@ export async function liveMetrics(q: Queryable, minutes: number): Promise<{ sour
 export function systemRouter(deps: Deps): Router {
   const router = Router();
 
-  router.get("/health", async (_req, res) => {
-    res.json(await systemHealth(deps));
+  /** Everyone sees whether things work; only an admin sees how (versions, addresses, queues). */
+  router.get("/health", async (req, res) => {
+    const health = await systemHealth(deps);
+    if (req.session?.user.isAdmin) return void res.json(health);
+    const components = Object.fromEntries(
+      Object.entries(health.components).map(([name, c]) => [name, { state: c.state }]),
+    ) as SystemHealth["components"];
+    res.json({ ...health, components });
   });
 
-  router.get("/metrics", async (req, res) => {
+  router.get("/metrics", requireAdmin, async (req, res) => {
     const { minutes } = parse(z.object({ minutes: z.coerce.number().int().min(5).max(240).default(60) }), req.query);
-    res.json(await liveMetrics(deps.db, minutes));
+    res.json(await liveMetrics(deps.systemDb, minutes));
   });
 
-  router.get("/events", async (_req, res) => {
-    const { rows } = await deps.db.query(
+  router.get("/events", requireAdmin, async (_req, res) => {
+    const { rows } = await deps.systemDb.query(
       `SELECT * FROM events
         WHERE type LIKE 'system.%' OR severity IN ('warning', 'error')
         ORDER BY id DESC LIMIT 50`,

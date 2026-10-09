@@ -23,7 +23,7 @@ from src.extraction.schemas import ExtractedCommitment
 from src.server import api, api_token
 from src.server.calendar_server import app
 from src.storage import database
-from src.storage.models import Base, Commitment, RawEmail
+from src.storage.models import Base, Commitment, RawEmail, User
 
 NOW = datetime(2026, 8, 12, 10, 0)
 
@@ -42,6 +42,8 @@ def token(tmp_path, monkeypatch):
 def db(tmp_path, monkeypatch):
     engine = create_engine(f"sqlite:///{tmp_path / 'api.db'}", future=True)
     Base.metadata.create_all(engine)
+    with engine.begin() as connection:   # the account whose mailbox the panel reads
+        connection.execute(User.__table__.insert().values(id=1, email="owner@example.com", is_admin=True))
     Factory = sessionmaker(bind=engine, future=True, expire_on_commit=False)
     monkeypatch.setattr(database, "engine", engine)
     monkeypatch.setattr(database, "SessionLocal", Factory)

@@ -92,7 +92,7 @@ export function createApp(deps: Deps): Express {
   // --- The API --------------------------------------------------------------
   const api = Router();
   api.use(express.json({ limit: "100kb" }));
-  api.use(loadSession(deps.db, env.SESSION_TTL_HOURS));
+  api.use(loadSession(deps.systemDb, env.SESSION_TTL_HOURS));
   api.use(csrfProtection(env.APP_ORIGINS));
   api.use(limits.api);
 

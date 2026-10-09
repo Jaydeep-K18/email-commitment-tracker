@@ -13,10 +13,19 @@ from sqlalchemy.orm import Session
 
 from src import config
 from src.storage.models import Setting
+from src.storage.tenancy import current_user_id
+
+
+def key(name: str) -> tuple[int, str]:
+    """The settings row for ``name`` of the user this work is for."""
+    user_id = current_user_id()
+    if user_id is None:
+        raise RuntimeError(f"settings belong to a user; '{name}' was read outside acting_as()")
+    return (user_id, name)
 
 
 def section(session: Session, name: str) -> dict[str, Any]:
-    row = session.get(Setting, name)
+    row = session.get(Setting, key(name))
     return dict(row.value) if row is not None and isinstance(row.value, dict) else {}
 
 

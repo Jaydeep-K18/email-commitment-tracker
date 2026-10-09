@@ -196,7 +196,7 @@ def client(monkeypatch):
 
 def test_setup_status_says_the_sign_in_expired(client, keyring_store):
     sign_in_stored(keyring_store, **{google_auth.EXPIRED_KEY: True})
-    google = client.get("/internal/setup/status", headers={"X-Internal-Token": TOKEN}).json()["google"]
+    google = client.get("/internal/setup/status", headers={"X-Internal-Token": TOKEN, "X-User-Id": "1"}).json()["google"]
     assert google["signedIn"] is True
     assert google["expired"] is True
 
@@ -209,7 +209,7 @@ def test_signing_in_again_catches_up_on_mail_and_the_calendar(client, keyring_st
         return google_auth.account()
 
     monkeypatch.setattr(google_auth, "sign_in", sign_in)
-    body = client.post("/internal/setup/google/sign-in", headers={"X-Internal-Token": TOKEN}).json()
+    body = client.post("/internal/setup/google/sign-in", headers={"X-Internal-Token": TOKEN, "X-User-Id": "1"}).json()
 
     assert body["resumed"] is True
     with session_scope() as session:
@@ -224,7 +224,7 @@ def test_a_first_sign_in_queues_nothing(client, keyring_store, monkeypatch):
         return google_auth.account()
 
     monkeypatch.setattr(google_auth, "sign_in", sign_in)
-    body = client.post("/internal/setup/google/sign-in", headers={"X-Internal-Token": TOKEN}).json()
+    body = client.post("/internal/setup/google/sign-in", headers={"X-Internal-Token": TOKEN, "X-User-Id": "1"}).json()
 
     assert body["resumed"] is False
     with session_scope() as session:

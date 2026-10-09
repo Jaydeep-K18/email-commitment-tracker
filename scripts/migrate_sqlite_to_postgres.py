@@ -24,7 +24,7 @@ from sqlalchemy.engine import Engine
 
 from src import config
 from src.storage.database import build_engine, is_sqlite, upgrade_schema
-from src.storage.models import Base, Commitment
+from src.storage.models import Base, Commitment, User
 
 BATCH_SIZE = 500
 
@@ -78,16 +78,36 @@ def _ensure_empty(engine: Engine) -> None:
         )
 
 
-def _copy_table(table: Table, source: Engine, target: Engine, source_columns: set[str]) -> int:
+def _owner(target: Engine) -> int:
+    """The account the copied mail belongs to: the first admin.
+
+    The SQLite database predates accounts. If nobody has signed up yet, the
+    rows go to a placeholder admin that the first account created claims
+    (apps/server/src/auth/routes.ts), as migration 0005 does.
+    """
+    with target.begin() as connection:
+        owner = connection.execute(
+            select(User.id).where(User.is_admin.is_(True)).order_by(User.id)
+        ).scalar()
+        if owner is None:
+            owner = connection.execute(
+                User.__table__.insert().values(email="unclaimed@localhost", is_admin=True).returning(User.id)
+            ).scalar_one()
+    return owner
+
+
+def _copy_table(table: Table, source: Engine, target: Engine, source_columns: set[str], owner: int) -> int:
     columns = [column for column in table.columns if column.name in source_columns]
     deferred = [name for name in _self_references(table) if name in source_columns]
 
     with source.connect() as reader:
         rows = [dict(row._mapping) for row in reader.execute(
-            select(*columns).order_by(*table.primary_key.columns)
+            select(*columns).order_by(*(c for c in table.primary_key.columns if c.name in source_columns))
         )]
     if not rows:
         return 0
+    if "user_id" in table.columns and "user_id" not in source_columns:
+        rows = [{**row, "user_id": owner} for row in rows]
 
     first_pass = [{**row, **{name: None for name in deferred}} for row in rows]
     with target.begin() as writer:
@@ -160,12 +180,13 @@ def migrate(source_url: str, target_url: str) -> MigrationReport:
         _ensure_empty(target)
 
         present = set(inspect(source).get_table_names())
+        owner = _owner(target)
         report = MigrationReport()
         for table in Base.metadata.sorted_tables:
-            if table.name not in present:
+            if table.name not in present or table.name == "users":
                 continue
             source_columns = {c["name"] for c in inspect(source).get_columns(table.name)}
-            report.copied[table.name] = _copy_table(table, source, target, source_columns)
+            report.copied[table.name] = _copy_table(table, source, target, source_columns, owner)
 
         _reset_sequences(target)
         _verify(source, target, report)

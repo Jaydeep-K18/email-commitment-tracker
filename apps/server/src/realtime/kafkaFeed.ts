@@ -16,13 +16,11 @@
  * The message is an events-table row (see src/events/relay.py), so it is
  * mapped by the same function the Postgres feed uses.
  */
-import type { ActivityEvent } from "@commitmail/shared";
 import { Kafka, logLevel, type Consumer, type LogEntry } from "kafkajs";
 import type { Logger } from "pino";
 
 import type { Db } from "../db/types";
-import { toActivityEvent } from "../modules/mappers";
-import type { EventSource } from "./feed";
+import { toLiveEvent, type EventSource, type LiveEvent } from "./feed";
 
 export interface KafkaFeedOptions {
   brokers: string[];
@@ -31,7 +29,7 @@ export interface KafkaFeedOptions {
 }
 
 /** A Kafka message value as an event, or null if it is not one. */
-export function parseEventMessage(value: Buffer | string | null | undefined): ActivityEvent | null {
+export function parseEventMessage(value: Buffer | string | null | undefined): LiveEvent | null {
   if (!value) return null;
   let row: unknown;
   try {
@@ -47,7 +45,7 @@ export function parseEventMessage(value: Buffer | string | null | undefined): Ac
     typeof r.message === "string" &&
     typeof r.severity === "string" &&
     typeof r.created_at === "string";
-  return valid ? toActivityEvent(r) : null;
+  return valid ? toLiveEvent(r) : null;
 }
 
 /** Ids already passed on, forgetting the oldest beyond `limit`. */
@@ -77,12 +75,13 @@ export class KafkaEventFeed implements EventSource {
   private readonly consumer: Consumer;
   private readonly recent = new RecentIds();
   private floor = 0;
+  private stopped = false;
 
   constructor(
     private readonly options: KafkaFeedOptions,
     private readonly db: Db,
     private readonly log: Logger,
-    private readonly deliver: (events: ActivityEvent[]) => void | Promise<void>,
+    private readonly deliver: (events: LiveEvent[]) => void | Promise<void>,
   ) {
     const kafka = new Kafka({
       clientId: "commitmail-server",
@@ -94,7 +93,9 @@ export class KafkaEventFeed implements EventSource {
       // the consumer itself after a broker hiccup.
       retry: { retries: 3, initialRetryTime: 300 },
     });
-    this.consumer = kafka.consumer({ groupId: options.groupId });
+    // A server killed without leaving the group holds its partitions until
+    // this lapses; the default 30 s outlasts the startup wait in index.ts.
+    this.consumer = kafka.consumer({ groupId: options.groupId, sessionTimeout: 10_000, heartbeatInterval: 2_000 });
   }
 
   async start(): Promise<void> {
@@ -102,6 +103,12 @@ export class KafkaEventFeed implements EventSource {
     this.floor = Number(rows[0]?.max ?? 0);
     await this.consumer.connect();
     await this.consumer.subscribe({ topic: this.options.topic, fromBeginning: true });
+    // Gave up on while connecting (the server fell back to Postgres): never
+    // start consuming as well, or every live event would arrive twice.
+    if (this.stopped) {
+      await this.consumer.disconnect();
+      return;
+    }
     await this.consumer.run({
       eachBatch: async ({ batch }) => {
         const events = this.accept(batch.messages.map((message) => message.value));
@@ -111,19 +118,20 @@ export class KafkaEventFeed implements EventSource {
   }
 
   async stop(): Promise<void> {
+    this.stopped = true;
     await this.consumer.disconnect();
   }
 
   /** Message values -> the events to pass on: valid, live, and not seen yet. */
-  accept(values: Array<Buffer | string | null | undefined>): ActivityEvent[] {
-    const events: ActivityEvent[] = [];
+  accept(values: Array<Buffer | string | null | undefined>): LiveEvent[] {
+    const events: LiveEvent[] = [];
     for (const value of values) {
-      const event = parseEventMessage(value);
-      if (!event) {
+      const live = parseEventMessage(value);
+      if (!live) {
         this.log.warn("skipped a Kafka message that is not an event");
         continue;
       }
-      if (event.id > this.floor && this.recent.add(event.id)) events.push(event);
+      if (live.event.id > this.floor && this.recent.add(live.event.id)) events.push(live);
     }
     return events;
   }

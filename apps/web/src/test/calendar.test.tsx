@@ -53,7 +53,7 @@ describe("calendar clashes and duplicates", () => {
     expect(screen.getByRole("link", { name: /Re: Vendor call/ })).toHaveAttribute("href", "/inbox/12");
 
     await user.click(screen.getByRole("button", { name: "Copy times for a reply" }));
-    expect(await screen.findByText(/paste it into your reply/)).toBeInTheDocument();
+    expect(await screen.findByText(/paste it into your reply/, {}, LAZY)).toBeInTheDocument();
     // user-event stands in for the system clipboard.
     const text = await navigator.clipboard.readText();
     expect(text.split("\n")).toHaveLength(3);

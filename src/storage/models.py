@@ -13,7 +13,6 @@ from sqlalchemy import (
     JSON,
     BigInteger,
     Boolean,
-    CheckConstraint,
     DateTime,
     Float,
     ForeignKey,
@@ -40,14 +39,61 @@ class Base(DeclarativeBase):
     """Shared declarative base for all ORM models."""
 
 
+def owner_column(*, nullable: bool = False, index: bool = True, primary_key: bool = False):
+    """The user a row belongs to.
+
+    Postgres enforces it with row-level security (migration 0005), and the ORM
+    adds it to every query run for a user (``src.storage.tenancy``), so a row
+    is only ever seen by the account it belongs to.
+    """
+    return mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=nullable,
+        index=index and not primary_key,
+        primary_key=primary_key,
+    )
+
+
+class User(Base):
+    """An account. Its Google sign-in decides whose mailbox the app reads."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Stored lower-cased; the identity a person signs in as.
+    email: Mapped[str] = mapped_column(String(254), unique=True, nullable=False)
+    display_name: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    # argon2id, written by the Node server. NULL for an account that signs in
+    # with Google only. Never returned by any API.
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Google's stable account id ("sub"), which survives a change of address.
+    google_sub: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+    # Runs the deployment: sees system health and the deployment's own events.
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow_naive, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False
+    )
+    password_changed_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow_naive, nullable=False
+    )
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Set to lock an account out without deleting its data.
+    disabled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 class RawEmail(Base):
     """A fetched email, stored before and after processing (schema §10)."""
 
     __tablename__ = "raw_emails"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    # The email's own Message-ID header — the dedup key.
-    message_id: Mapped[str] = mapped_column(String, unique=True, index=True)
+    user_id: Mapped[int] = owner_column(index=False)
+    # The email's own Message-ID header — the dedup key, per mailbox: two users
+    # can both have received the same message.
+    message_id: Mapped[str] = mapped_column(String, nullable=False)
     thread_id: Mapped[str | None] = mapped_column(String, nullable=True)
     sender_email: Mapped[str | None] = mapped_column(String, nullable=True)
     sender_name: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -95,6 +141,8 @@ class RawEmail(Base):
         secondary="email_tags", back_populates="emails"
     )
 
+    __table_args__ = (UniqueConstraint("user_id", "message_id", name="uq_raw_emails_user_message"),)
+
     def __repr__(self) -> str:  # pragma: no cover - debug aid
         return (
             f"RawEmail(id={self.id!r}, sender_email={self.sender_email!r}, "
@@ -112,6 +160,7 @@ class VipContact(Base):
     __tablename__ = "vip_contacts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = owner_column(index=False)
     # Email address, name pattern, or domain — interpreted per ``match_type``.
     match_value: Mapped[str] = mapped_column(String, nullable=False, index=True)
     # exact_email / name_pattern / domain
@@ -125,7 +174,7 @@ class VipContact(Base):
 
     __table_args__ = (
         # One rule per (value, type); the tier can be updated in place.
-        UniqueConstraint("match_value", "match_type", name="uq_vip_value_type"),
+        UniqueConstraint("user_id", "match_value", "match_type", name="uq_vip_value_type"),
     )
 
     def __repr__(self) -> str:  # pragma: no cover - debug aid
@@ -146,6 +195,7 @@ class Commitment(Base):
     __tablename__ = "commitments"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = owner_column()
     email_id: Mapped[int] = mapped_column(
         ForeignKey("raw_emails.id", ondelete="CASCADE"), index=True, nullable=False
     )
@@ -224,6 +274,7 @@ class SyncLog(Base):
     __tablename__ = "sync_log"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = owner_column()
     commitment_id: Mapped[int] = mapped_column(
         ForeignKey("commitments.id", ondelete="CASCADE"), index=True, nullable=False
     )
@@ -269,7 +320,8 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    user_id: Mapped[int] = owner_column(index=False)
+    name: Mapped[str] = mapped_column(String(64), nullable=False)
     # A palette key rather than a hex value, so the frontend's theme decides
     # what the colour actually looks like in light and dark mode.
     color: Mapped[str] = mapped_column(String(16), default="slate", nullable=False)
@@ -281,12 +333,15 @@ class Tag(Base):
         secondary="email_tags", back_populates="tags"
     )
 
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_tags_user_name"),)
+
 
 class EmailTag(Base):
     """Join table between emails and tags."""
 
     __tablename__ = "email_tags"
 
+    user_id: Mapped[int] = owner_column()
     email_id: Mapped[int] = mapped_column(
         ForeignKey("raw_emails.id", ondelete="CASCADE"), primary_key=True
     )
@@ -304,7 +359,8 @@ class SavedView(Base):
     __tablename__ = "saved_views"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    user_id: Mapped[int] = owner_column(index=False)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
     # Validated by the shared zod schema before it is stored, so the shape here
     # is whatever the inbox filter contract says it is.
     filters: Mapped[dict] = mapped_column(JsonType, default=dict, nullable=False)
@@ -316,6 +372,8 @@ class SavedView(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False
     )
+
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_saved_views_user_name"),)
 
 
 class SentMessage(Base):
@@ -329,13 +387,16 @@ class SentMessage(Base):
     __tablename__ = "sent_messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    message_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    user_id: Mapped[int] = owner_column(index=False)
+    message_id: Mapped[str] = mapped_column(String, nullable=False)
     in_reply_to: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     recipient_email: Mapped[str | None] = mapped_column(String, nullable=True)
     sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, nullable=False
     )
+
+    __table_args__ = (UniqueConstraint("user_id", "message_id", name="uq_sent_messages_user_message"),)
 
 
 class Event(Base):
@@ -353,6 +414,9 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(BigId, primary_key=True)
+    # NULL for the deployment's own events (a worker starting), which only an
+    # admin sees.
+    user_id: Mapped[int | None] = owner_column(nullable=True)
     # Dotted, e.g. "email.received", "calendar.event_created", "job.failed".
     type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     entity_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -391,13 +455,13 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id: Mapped[int] = mapped_column(BigId, primary_key=True)
+    # Whose work this is; NULL for the deployment's own housekeeping.
+    user_id: Mapped[int | None] = owner_column(nullable=True, index=False)
     # fetch_mailbox / process_email / publish_calendar / push_google_event / ...
     type: Mapped[str] = mapped_column(String(48), nullable=False, index=True)
     # The guarantee against duplicate work: enqueueing the same logical job
-    # twice ("process_email:42") hits this constraint and becomes a no-op.
-    idempotency_key: Mapped[str] = mapped_column(
-        String(160), unique=True, nullable=False
-    )
+    # twice ("process_email:42") hits uq_jobs_user_key and becomes a no-op.
+    idempotency_key: Mapped[str] = mapped_column(String(160), nullable=False)
     payload: Mapped[dict] = mapped_column(JsonType, default=dict, nullable=False)
     # queued / running / retrying / succeeded / failed / cancelled
     status: Mapped[str] = mapped_column(
@@ -431,6 +495,13 @@ class Job(Base):
         order_by="JobAttempt.attempt",
     )
 
+    __table_args__ = (
+        # Per user: two people's mailboxes each need their own "publish_calendar".
+        UniqueConstraint(
+            "user_id", "idempotency_key", name="uq_jobs_user_key", postgresql_nulls_not_distinct=True
+        ),
+    )
+
 
 class JobAttempt(Base):
     """One execution of a job: the retry history, and the latency source."""
@@ -438,6 +509,7 @@ class JobAttempt(Base):
     __tablename__ = "job_attempts"
 
     id: Mapped[int] = mapped_column(BigId, primary_key=True)
+    user_id: Mapped[int | None] = owner_column(nullable=True)
     job_id: Mapped[int] = mapped_column(
         ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -468,6 +540,7 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id: Mapped[int] = mapped_column(BigId, primary_key=True)
+    user_id: Mapped[int] = owner_column()
     # important_email / job_failed / job_retry_succeeded / calendar_failed / system
     kind: Mapped[str] = mapped_column(String(32), nullable=False)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -484,7 +557,8 @@ class Notification(Base):
     )
 
     __table_args__ = (
-        UniqueConstraint("event_id", "kind", name="uq_notification_event_kind"),
+        # Per user: one system event can notify several admins, once each.
+        UniqueConstraint("user_id", "event_id", "kind", name="uq_notification_event_kind"),
     )
 
 
@@ -498,6 +572,7 @@ class Setting(Base):
 
     __tablename__ = "settings"
 
+    user_id: Mapped[int] = owner_column(primary_key=True)
     section: Mapped[str] = mapped_column(String(32), primary_key=True)
     value: Mapped[dict] = mapped_column(JsonType, default=dict, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -505,31 +580,16 @@ class Setting(Base):
     )
 
 
-class OwnerAccount(Base):
-    """The single account allowed to use the app.
+class SystemState(Base):
+    """The deployment's own bookkeeping, such as the notifier's place in the event log."""
 
-    The CHECK constraint makes "single owner" a property of the database rather
-    than of whichever code path happens to create the account.
-    """
+    __tablename__ = "system_state"
 
-    __tablename__ = "owner_account"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(254), nullable=False)
-    display_name: Mapped[str | None] = mapped_column(String(80), nullable=True)
-    # argon2id, written by the Node server. Never returned by any API.
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow_naive, nullable=False
-    )
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[dict] = mapped_column(JsonType, default=dict, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, onupdate=utcnow_naive, nullable=False
     )
-    password_changed_at: Mapped[datetime] = mapped_column(
-        DateTime, default=utcnow_naive, nullable=False
-    )
-
-    __table_args__ = (CheckConstraint("id = 1", name="ck_owner_account_single"),)
 
 
 class AuthSession(Base):
@@ -542,6 +602,7 @@ class AuthSession(Base):
     __tablename__ = "sessions"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[int] = owner_column()
     csrf_token: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, nullable=False
@@ -564,6 +625,7 @@ class CalendarFlag(Base):
     __tablename__ = "calendar_flags"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = owner_column(index=False)
     # duplicate / conflict
     kind: Mapped[str] = mapped_column(String(16), nullable=False, index=True)
     commitment_id: Mapped[int] = mapped_column(
@@ -581,11 +643,13 @@ class CalendarFlag(Base):
     status: Mapped[str] = mapped_column(String(16), default="open", nullable=False)
     # A UNIQUE over the nullable columns would not work, since two NULLs are
     # never equal, so detection writes a canonical key and constrains that.
-    dedupe_key: Mapped[str] = mapped_column(String(160), unique=True, nullable=False)
+    dedupe_key: Mapped[str] = mapped_column(String(160), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow_naive, nullable=False
     )
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    __table_args__ = (UniqueConstraint("user_id", "dedupe_key", name="uq_calendar_flags_user_key"),)
 
 
 class MetricSnapshot(Base):

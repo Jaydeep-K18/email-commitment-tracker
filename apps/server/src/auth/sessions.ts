@@ -19,10 +19,18 @@ import { nowUtcText } from "../db/time";
 
 export const SESSION_COOKIE = "cm_session";
 
+export interface SessionUser {
+  id: number;
+  email: string;
+  displayName: string | null;
+  isAdmin: boolean;
+}
+
 export interface Session {
   id: string;
   csrfToken: string;
   expiresAt: string;
+  user: SessionUser;
 }
 
 /** Sliding expiry is renewed at most this often, to avoid a write per request. */
@@ -42,6 +50,7 @@ function addHours(hours: number): string {
 
 export async function createSession(
   q: Queryable,
+  user: SessionUser,
   ttlHours: number,
   context: { userAgent?: string | null; ip?: string | null },
 ): Promise<{ token: string; session: Session }> {
@@ -50,12 +59,14 @@ export async function createSession(
     id: hashToken(token),
     csrfToken: randomToken(24),
     expiresAt: addHours(ttlHours),
+    user,
   };
   await q.query(
-    `INSERT INTO sessions (id, csrf_token, expires_at, user_agent, ip)
-     VALUES ($1, $2, $3, $4, $5)`,
+    `INSERT INTO sessions (id, user_id, csrf_token, expires_at, user_agent, ip)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
     [
       session.id,
+      user.id,
       session.csrfToken,
       session.expiresAt,
       context.userAgent?.slice(0, 255) ?? null,
@@ -67,9 +78,15 @@ export async function createSession(
 
 /** The live session for a cookie token, renewing its expiry as it is used. */
 export async function findSession(q: Queryable, token: string, ttlHours: number): Promise<Session | null> {
-  const { rows } = await q.query<{ id: string; csrf_token: string; expires_at: string; last_seen_at: string }>(
-    `SELECT id, csrf_token, expires_at, last_seen_at FROM sessions
-      WHERE id = $1 AND expires_at > (now() at time zone 'utc')`,
+  const { rows } = await q.query<{
+    id: string; csrf_token: string; expires_at: string; last_seen_at: string;
+    user_id: number; email: string; display_name: string | null; is_admin: boolean;
+  }>(
+    // A disabled account's sessions stop working at once, not when they expire.
+    `SELECT s.id, s.csrf_token, s.expires_at, s.last_seen_at,
+            u.id AS user_id, u.email, u.display_name, u.is_admin
+       FROM sessions s JOIN users u ON u.id = s.user_id
+      WHERE s.id = $1 AND s.expires_at > (now() at time zone 'utc') AND u.disabled_at IS NULL`,
     [hashToken(token)],
   );
   const row = rows[0];
@@ -84,16 +101,24 @@ export async function findSession(q: Queryable, token: string, ttlHours: number)
       [row.id, expiresAt],
     );
   }
-  return { id: row.id, csrfToken: row.csrf_token, expiresAt };
+  return {
+    id: row.id,
+    csrfToken: row.csrf_token,
+    expiresAt,
+    user: { id: row.user_id, email: row.email, displayName: row.display_name, isAdmin: row.is_admin },
+  };
 }
 
 export async function destroySession(q: Queryable, sessionId: string): Promise<void> {
   await q.query("DELETE FROM sessions WHERE id = $1", [sessionId]);
 }
 
-/** Sign out everywhere, optionally keeping the session making the request. */
-export async function destroyOtherSessions(q: Queryable, keepSessionId?: string): Promise<number> {
-  const { rowCount } = await q.query("DELETE FROM sessions WHERE id <> $1", [keepSessionId ?? ""]);
+/** Sign one user out everywhere, optionally keeping the session making the request. */
+export async function destroyOtherSessions(q: Queryable, userId: number, keepSessionId?: string): Promise<number> {
+  const { rowCount } = await q.query(
+    "DELETE FROM sessions WHERE user_id = $1 AND id <> $2",
+    [userId, keepSessionId ?? ""],
+  );
   return rowCount;
 }
 

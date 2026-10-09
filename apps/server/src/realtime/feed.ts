@@ -18,6 +18,17 @@ import type { Logger } from "pino";
 import type { Db } from "../db/types";
 import { toActivityEvent } from "../modules/mappers";
 
+/** An event and whose it is (NULL: the deployment's own, for admins). */
+export interface LiveEvent {
+  event: ActivityEvent;
+  userId: number | null;
+}
+
+export const toLiveEvent = (row: Record<string, unknown>): LiveEvent => ({
+  event: toActivityEvent(row),
+  userId: (row.user_id as number | null | undefined) ?? null,
+});
+
 export interface EventSource {
   start(): Promise<void>;
   stop(): Promise<void>;
@@ -35,7 +46,7 @@ export class PostgresEventFeed implements EventSource {
   constructor(
     private readonly db: Db,
     private readonly log: Logger,
-    private readonly deliver: (events: ActivityEvent[]) => void | Promise<void>,
+    private readonly deliver: (events: LiveEvent[]) => void | Promise<void>,
     private readonly pollMs = 2_000,
   ) {}
 
@@ -69,7 +80,7 @@ export class PostgresEventFeed implements EventSource {
         );
         if (rows.length === 0) break;
         this.cursor = (rows[rows.length - 1] as { id: number }).id;
-        await this.deliver(rows.map(toActivityEvent));
+        await this.deliver(rows.map(toLiveEvent));
         if (rows.length === BATCH) this.rerun = true;
       } while (this.rerun);
     } catch (error) {

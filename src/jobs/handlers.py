@@ -33,15 +33,35 @@ from src.storage.models import Commitment, RawEmail
 log = logging.getLogger(__name__)
 
 
+def _holds_local_credentials() -> bool:
+    """Whether this job's user owns the mail and Google sign-ins on this machine."""
+    from src.storage.accounts import mailbox_owner_id
+    from src.storage.tenancy import acting_as, current_user_id
+
+    user_id = current_user_id()
+    with acting_as(None), session_scope() as session:
+        return user_id is not None and user_id == mailbox_owner_id(session)
+
+
+def _require_local_credentials() -> None:
+    if not _holds_local_credentials():
+        raise PermanentJobError(
+            "This server's mail and calendar sign-ins belong to its admin; "
+            "this account has none of its own yet."
+        )
+
+
 def _default_fetch():
     from src.collection.email_fetcher import fetch_and_store
 
+    _require_local_credentials()
     return fetch_and_store()
 
 
 def _default_sync_sent() -> int:
     from src.collection.sent_fetcher import sync_sent_messages
 
+    _require_local_credentials()
     return sync_sent_messages()
 
 
@@ -54,13 +74,14 @@ def _default_ollama():
 def _default_google_service():
     from src.sync import google_calendar
 
+    _require_local_credentials()
     return google_calendar.build_service()
 
 
 def _default_google_available() -> bool:
     from src.sync import google_calendar
 
-    return google_calendar.is_available()
+    return _holds_local_credentials() and google_calendar.is_available()
 
 
 @dataclass
@@ -446,16 +467,9 @@ def apply_vip_rules(payload: dict, ctx: JobContext) -> dict:
     return {"retagged": counts["total"], "reclassified": reclassified, "queued_for_analysis": queued}
 
 
-# The System page reads four hours of metric windows at most.
-METRIC_SNAPSHOT_DAYS = 2
-
-
 @handler("enforce_retention")
 def enforce_retention(payload: dict, ctx: JobContext) -> dict:
-    """Apply the privacy settings: delete old mail, blank analysed bodies.
-
-    Also drops metric windows older than METRIC_SNAPSHOT_DAYS, which Flink
-    writes one a minute whatever the privacy settings.
+    """Apply the user's privacy settings: delete old mail, blank analysed bodies.
 
     An email is kept past its retention date while it still has a pending
     commitment with a deadline ahead of it — deleting it would silently remove
@@ -467,7 +481,7 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
 
     from src.events.recorder import DATA_PURGED, record_event
     from src.storage import user_settings
-    from src.storage.models import Event, MetricSnapshot, utcnow_naive
+    from src.storage.models import Event, utcnow_naive
 
     with session_scope() as session:
         privacy = user_settings.section(session, "privacy")
@@ -490,12 +504,6 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
                 delete(Event).where(Event.created_at < cutoff)
             ).rowcount
 
-        pruned_metrics = session.execute(
-            delete(MetricSnapshot).where(
-                MetricSnapshot.window_end < now - timedelta(days=METRIC_SNAPSHOT_DAYS)
-            )
-        ).rowcount
-
         if not keep_bodies:
             blanked = session.execute(
                 update(RawEmail)
@@ -517,7 +525,7 @@ def enforce_retention(payload: dict, ctx: JobContext) -> dict:
                     "bodies": blanked,
                 },
             )
-    return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked, "metrics": pruned_metrics}
+    return {"emails": deleted_emails, "events": deleted_events, "bodies": blanked}
 
 
 @handler("classify_emails")

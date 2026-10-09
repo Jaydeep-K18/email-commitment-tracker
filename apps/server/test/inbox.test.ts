@@ -112,11 +112,11 @@ describe("one email", () => {
     const id = await insertEmail(db, { message_id: "orig@x.com", received_at: "2026-09-01 09:00:00" });
     await insertCommitment(db, id);
     await db.query(
-      "INSERT INTO events (type, message, correlation_id) VALUES ('email.received', 'Email from Priya', $1)",
+      "INSERT INTO events (user_id, type, message, correlation_id) VALUES ((SELECT min(id) FROM users), 'email.received', 'Email from Priya', $1)",
       [`email:${id}`],
     );
     await db.query(
-      "INSERT INTO sent_messages (message_id, in_reply_to, sent_at) VALUES ('reply@me', 'orig@x.com', '2026-09-01 10:30:00')",
+      "INSERT INTO sent_messages (user_id, message_id, in_reply_to, sent_at) VALUES ((SELECT min(id) FROM users), 'reply@me', 'orig@x.com', '2026-09-01 10:30:00')",
     );
 
     const res = await session.get(`/api/emails/${id}`);
