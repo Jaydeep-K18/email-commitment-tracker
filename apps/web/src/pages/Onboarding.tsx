@@ -18,7 +18,7 @@ export default function Onboarding() {
       <DotBackground />
       <div className="relative z-10 mx-auto max-w-2xl px-4 py-12">
         <div className="mb-8 flex items-center gap-2.5">
-          <img src="/favicon.svg" alt="" className="size-8" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-8" />
           <span className="text-lg font-semibold">CommitMail</span>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">Let's get you set up</h1>

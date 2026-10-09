@@ -49,6 +49,8 @@ function demoServiceWorker(): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
+  // The hosted demo lives under a sub-path (GitHub Pages: /<repo>/).
+  base: mode === "demo" ? process.env.DEMO_BASE || "/" : "/",
   plugins: [react(), tailwindcss(), mode === "demo" && demoServiceWorker()],
   server: {
     port: WEB_PORT,

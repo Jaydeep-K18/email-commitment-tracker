@@ -133,7 +133,7 @@ export function SidebarNav({ collapsed = false, onNavigate }: { collapsed?: bool
 export function Brand({ collapsed }: { collapsed?: boolean }) {
   return (
     <div className={cn("flex items-center gap-2.5", collapsed && "justify-center")}>
-      <img src="/favicon.svg" alt="" className="size-7" />
+      <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-7" />
       {!collapsed && (
         <div className="leading-tight">
           <p className="text-[15px] font-semibold tracking-tight text-text">CommitMail</p>

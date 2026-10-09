@@ -17,7 +17,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
       <DotBackground />
       <aside className="relative z-10 hidden flex-col justify-between border-r border-border bg-[color-mix(in_oklch,var(--accent)_6%,var(--canvas))] p-12 lg:flex">
         <div className="flex items-center gap-2.5">
-          <img src="/favicon.svg" alt="" className="size-8" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-8" />
           <span className="text-lg font-semibold tracking-tight">CommitMail</span>
         </div>
         <div>
@@ -54,7 +54,7 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
           className="w-full max-w-[400px]"
         >
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <img src="/favicon.svg" alt="" className="size-8" />
+            <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="size-8" />
             <span className="text-lg font-semibold">CommitMail</span>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-text">{title}</h1>

@@ -479,7 +479,8 @@ export const handlers = [
   http.delete("/api/setup/google", () => noContent()),
   http.get("/api/setup/extension-token", () => json({ token: "demo-extension-token-not-real" })),
   http.post("/api/setup/extension-token/rotate", () => json({ token: `demo-extension-token-${Date.now().toString(36)}` })),
-  http.get("/calendar.ics", () => new HttpResponse("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//CommitMail demo//EN\r\nEND:VCALENDAR\r\n", { headers: { "Content-Type": "text/calendar" } })),
+  // Any prefix: the hosted demo lives under a sub-path.
+  http.get("*/calendar.ics", () => new HttpResponse("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//CommitMail demo//EN\r\nEND:VCALENDAR\r\n", { headers: { "Content-Type": "text/calendar" } })),
 
   // --- The live socket: accept it, and say hello now and then like the real one.
   ws.link(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`).addEventListener("connection", ({ client }) => {

@@ -68,7 +68,7 @@ export default function CalendarPage() {
         actions={
           <>
             <ScanButton />
-            <a href="/calendar.ics" download="email-commitments.ics">
+            <a href={`${import.meta.env.BASE_URL}calendar.ics`} download="email-commitments.ics">
               <Button><Download className="size-4" /> Download .ics</Button>
             </a>
           </>

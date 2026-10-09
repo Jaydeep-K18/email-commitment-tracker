@@ -314,7 +314,7 @@ export function CalendarStep({ status, number }: { status: SetupStatus; number?:
 
       <div className="mt-4 space-y-3">
         <div className="flex flex-wrap gap-2">
-          <a href="/calendar.ics" download="email-commitments.ics">
+          <a href={`${import.meta.env.BASE_URL}calendar.ics`} download="email-commitments.ics">
             <Button size="sm">
               <Download className="size-3.5" /> Download .ics
             </Button>

@@ -30,7 +30,8 @@ async function boot() {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={createQueryClient()}>
-        <BrowserRouter>
+        {/* Under a sub-path when the demo is hosted on GitHub Pages; "/" otherwise. */}
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
           <MotionConfig reducedMotion="user">
             <TooltipProvider delayDuration={300}>
               <App />

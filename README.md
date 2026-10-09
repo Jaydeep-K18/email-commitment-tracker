@@ -10,6 +10,10 @@ stop scrolling, and the only record is a message you have already read.
 This reads mail from senders you care about, extracts the commitments, and publishes them
 as calendar events — to Google Calendar, or to any calendar app that reads `.ics`.
 
+**[Try the live demo →](https://jaydeep-k18.github.io/email-commitment-tracker/)** The whole
+app, running on generated sample mail in your browser: nothing is sent anywhere, and there is
+no account to create.
+
 ```
 "Could you send me the Q3 report by Friday 5pm?"
                     │
@@ -147,7 +151,8 @@ calendar app subscribing to a URL cannot send a custom header.
 
 ## Running it
 
-**Just looking?** The web app has a demo mode that needs only Node — no database, no
+**Just looking?** Open the [live demo](https://jaydeep-k18.github.io/email-commitment-tracker/).
+It is the web app's demo mode, which needs only Node to run yourself — no database, no
 model, no mail. Generated sample data answers every request in the browser:
 
 ```bash
