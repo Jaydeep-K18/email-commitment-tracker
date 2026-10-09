@@ -200,20 +200,36 @@ never in a file.
 For one Node process instead of two, set `WEB_DIST=apps/web/dist` in `.env`, then
 `npm run build` and `npm start`: the API server serves the built app itself.
 
+- How it is built: [`docs/architecture.md`](docs/architecture.md)
 - Connecting Google Calendar: [`docs/google-setup.md`](docs/google-setup.md)
 - Installing the Gmail panel: [`docs/gmail-panel.md`](docs/gmail-panel.md)
 - Coming from the SQLite version: `python -m scripts.migrate_sqlite_to_postgres`
 
 
+### Running the tests
+
+```bash
+npm test                 # TypeScript: shared contracts, the server on PGlite, the web app
+python -m pytest         # the Python worker, on throwaway SQLite
+npm run e2e              # Playwright: builds the app, then drives it in Chromium
+```
+
+The end-to-end suite uses its own database, `commitmail_e2e`, on the same Postgres server
+(or `E2E_DATABASE_URL`), and refuses to touch any database with another name.
+
 ## Built with
 
 **Front end** React 18 · TypeScript · Vite · TanStack Query · React Router · Tailwind CSS ·
 Recharts · Radix UI**Server** Node · Express · PostgreSQL · Redis · Kafka · WebSockets · Zod · argon2**Streaming** Apache Flink 1.20 (PyFlink)**Worker** Python 3.12 · SQLAlchemy · Alembic · Pydantic · FastAPI · Ollama · Google
-Calendar & Gmail APIs**Extension** Chrome Manifest V3**Tests** pytest · Vitest · Testing Library · MSW · PGlite
+Calendar & Gmail APIs**Extension** Chrome Manifest V3**Tests** pytest · Vitest · Testing Library · MSW · PGlite · Playwright · GitHub Actions
 
-About 900 tests across both languages — including the 400 tier-policy cases that the
-Python and TypeScript copies of the policy must agree on, word for word. The commit
-messages carry the reasoning behind most of the decisions above.
+About 1,080 tests across both languages, run by CI on every push: the 400 tier-policy cases
+that the Python and TypeScript copies of the policy must agree on word for word, a test that
+signs in as a second account and tries every route at the first one's data, and a Playwright
+suite that drives the built app in a real browser against the real server and Postgres. The
+commit messages carry the reasoning behind most of the decisions above.
+
+How the parts fit, and the guarantees each one gives: [`docs/architecture.md`](docs/architecture.md).
 
 ## Licence
 

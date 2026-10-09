@@ -1,0 +1,19 @@
+{
+  "name": "@commitmail/e2e",
+  "private": true,
+  "description": "End-to-end tests: the built app in a real browser, against the real server and Postgres.",
+  "type": "module",
+  "scripts": {
+    "e2e": "npm run build -w @commitmail/web && npm run build:demo -w @commitmail/web && npm run e2e:run",
+    "e2e:run": "tsx prepare.ts && playwright test",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@node-rs/argon2": "^2.2.2",
+    "@playwright/test": "^1.64.0",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

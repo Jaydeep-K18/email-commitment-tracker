@@ -37,7 +37,13 @@ export function Setup() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (session.isPending) return <FullPageSpinner />;
-  if (!session.data?.setupRequired) return <Navigate to={session.data?.authenticated ? "/" : "/login"} replace />;
+  // Creating the account updates the session before the mutation's own
+  // callback runs, so this redirect is what fires: send a new owner on to
+  // onboarding, not past it.
+  if (!session.data?.setupRequired) {
+    const next = createOwner.isSuccess ? "/onboarding" : session.data?.authenticated ? "/" : "/login";
+    return <Navigate to={next} replace />;
+  }
 
   const set = (key: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) =>
     setForm((current) => ({ ...current, [key]: event.target.value }));

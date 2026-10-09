@@ -1,10 +1,11 @@
 {
   "name": "commitmail",
   "private": true,
-  "description": "CommitMail — the full-stack app. React (apps/web), Express (apps/server), shared contracts (packages/shared).",
+  "description": "CommitMail \u2014 the full-stack app. React (apps/web), Express (apps/server), shared contracts (packages/shared).",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "e2e"
   ],
   "scripts": {
     "dev:server": "npm run dev -w @commitmail/server",
@@ -13,7 +14,8 @@
     "build": "npm run build -w @commitmail/web && npm run build -w @commitmail/server",
     "start": "npm start -w @commitmail/server",
     "test": "npm test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "e2e": "npm run e2e -w @commitmail/e2e"
   },
   "engines": {
     "node": ">=20.12"

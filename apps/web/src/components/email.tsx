@@ -34,7 +34,7 @@ import { ErrorState, Skeleton } from "./ui/states";
 export function EmailDetailPanel({ id, onClose }: { id: number; onClose: () => void }) {
   const email = useEmail(id);
   return (
-    <Card className="flex max-h-[calc(100dvh-8rem)] min-w-0 flex-col overflow-hidden lg:sticky lg:top-20">
+    <Card role="region" aria-label="Email" className="flex max-h-[calc(100dvh-8rem)] min-w-0 flex-col overflow-hidden lg:sticky lg:top-20">
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
         <span className="text-[12px] font-medium tracking-wide text-faint uppercase">Email</span>
         <Button size="icon-sm" variant="ghost" onClick={onClose} aria-label="Close email">

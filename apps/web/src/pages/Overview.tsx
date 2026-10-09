@@ -106,11 +106,11 @@ export default function Overview() {
       </section>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
           <UpcomingCard query={upcoming} />
           <VolumeCard analytics={analytics} />
         </div>
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <LiveFeedCard />
           <AttentionCard failed={jobs.data?.byStatus.failed ?? 0} review={review.data?.total ?? 0} />
           <HealthCard />
